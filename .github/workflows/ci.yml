@@ -1,0 +1,41 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Build Linux binary
+        run: make -f Makefile.linux clean all
+
+      - name: Build PRM-in-XML documentation
+        uses: gerph/riscos-prminxml-action@v1
+        with:
+          files: prminxml/riscos-ccres.xml
+          output: build/prminxml
+          style: prm
+
+      - name: Upload Linux binary artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: ccres-linux
+          path: ccres
+          if-no-files-found: error
+
+      - name: Upload documentation artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: prminxml-documentation
+          path: build/prminxml
+          if-no-files-found: error

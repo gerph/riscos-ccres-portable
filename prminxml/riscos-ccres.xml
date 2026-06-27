@@ -1,0 +1,748 @@
+<?xml version="1.0"?>
+<!DOCTYPE riscos-prm PUBLIC "-//Gerph//DTD PRM documentation 1.03//EN"
+                            "http://gerph.org/dtd/103/prm.dtd">
+
+<riscos-prm>
+<chapter title="CCres">
+<section title="Introduction and Overview">
+<p>
+CCres converts two RISC OS binary resource formats into a stable textual form
+and can reconstruct the binary files from that text. The supported binary
+formats are Toolbox Resource files with filetype <filename type="unix">,fae</filename>
+and Wimp Template files with filetype <filename type="unix">,fec</filename>.
+</p>
+
+<p>
+The textual form is intended for editing, comparison, searching, translation,
+and bulk maintenance. It names object classes, field names, symbolic flags, and
+string contents explicitly, so changes that are awkward in binary editors can be
+made with ordinary text tools. The text syntax is close to C structure initialiser
+style, but remains line-oriented and simple enough to be generated and parsed
+without a full compiler front end.
+</p>
+
+<p>
+This manual describes the standalone command-line program
+<userinput>ccres</userinput>, which performs the same conversions without
+requiring a desktop application.
+</p>
+</section>
+
+<section title="Technical Details">
+<subsection title="Command-line behaviour">
+<p>
+The command-line program takes exactly two positional arguments:
+an input filename and an output filename. There are no option switches in the
+current implementation. The input file type is detected from its contents, not
+from its name.
+</p>
+
+<p>
+<definition-table head-name="Detected form" head-extra="Recognition rule" head-value="Result">
+ <definition name="Toolbox Resource binary" extra="First word is RESF and version is 101">Converted to text. The generated text begins with <userinput>RESF:1.01</userinput>.</definition>
+ <definition name="Wimp Template binary" extra="Second, third, and fourth header words are zero">Converted to text. The generated text begins with <userinput>Template:</userinput>.</definition>
+ <definition name="Text file" extra="First sixteen bytes contain no control characters other than LF">The first line selects the output binary format. <userinput>RESF:1.01</userinput> selects Toolbox Resource output; <userinput>Template:</userinput> selects Wimp Template output.</definition>
+ </definition-table>
+</p>
+
+<p>
+When the input is text, only two text headers are recognised:
+<userinput>RESF:1.01</userinput> and <userinput>Template:</userinput>.
+Although older descriptive material mentions RESF version 1.00, the current
+implementation accepts and writes only RESF version 1.01.
+</p>
+
+<p>
+The program recognises text by scanning the first sixteen bytes for control
+characters. The binary resource and template probes are performed before that
+text test, so binary files are not mistaken for text merely because their
+filenames end in <filename type="unix">.txt</filename>.
+</p>
+</subsection>
+
+<subsection title="Overall text grammar">
+<p>
+CCres text is line-oriented. During import, linefeeds are replaced internally
+with string terminators, so each source line is parsed independently. Object
+bodies are enclosed in braces and nested objects are represented by nested
+brace blocks.
+</p>
+
+<p>
+<extended-example type="format">
+resource-file ::= "RESF:1.01" LF { resource-object }<br/>
+template-file ::= "Template:" LF { wimp-window } { template-font-data }<br/>
+<br/>
+resource-object ::= object-name "{" LF { entry-line | nested-object } "}" LF<br/>
+wimp-window ::= "wimp_window" "{" LF { entry-line | "wimp_icon" block } "}" LF<br/>
+template-font-data ::= "template_font_data" "{" LF { entry-line } "}" LF<br/>
+<br/>
+entry-line ::= entry-name ":" value LF<br/>
+comment ::= "#" text-to-end-of-line
+</extended-example>
+</p>
+
+<p>
+Object names are matched case-insensitively. Entry names should be written
+exactly as CCres emits them. The parser for entries is effectively
+case-sensitive at the first character and is designed around the canonical
+lower-case spellings shown in this chapter.
+</p>
+
+<p>
+Within an object body, a colon introduces the value for that entry and causes
+the remainder of the line to be treated as data. A number sign introduces a
+comment and causes the remainder of the line to be ignored. Because values and
+comments consume the rest of the line, braces inside them do not affect object
+nesting.
+</p>
+</subsection>
+
+<subsection title="Numbers, expressions, and symbolic values">
+<p>
+Numeric fields accept more than plain decimal. The shared number parser
+understands:
+</p>
+
+<p>
+<definition-table head-name="Form" head-extra="Example" head-value="Meaning">
+ <definition name="Decimal" extra="123">Unsigned or signed decimal integer.</definition>
+ <definition name="RISC OS hexadecimal" extra="&amp;80">Hexadecimal integer.</definition>
+ <definition name="C-style hexadecimal" extra="0x80">Hexadecimal integer.</definition>
+ <definition name="Prefixed hexadecimal" extra="16_FF">Hexadecimal integer.</definition>
+ <definition name="Prefixed binary" extra="2_1010">Binary integer.</definition>
+ <definition name="Prefixed decimal" extra="10_42">Explicit decimal integer.</definition>
+ </definition-table>
+</p>
+
+<p>
+Fields of type <userinput>cmp</userinput>, <userinput>bbox</userinput>, and
+<userinput>coord</userinput> are evaluated as arithmetic expressions rather
+than simple integers. The operators <userinput>()</userinput>,
+<userinput>+</userinput>, <userinput>-</userinput>, <userinput>*</userinput>,
+and <userinput>/</userinput> are supported. Division is integer division.
+Expression depth is deliberately small and malformed expressions are reported
+with a line number.
+</p>
+
+<p>
+Many fields use symbolic values instead of raw numbers. Flag fields accept one
+or more symbolic names separated by vertical bars. Enumeration fields accept a
+single symbolic name. Residual flag bits that do not correspond to a known
+symbol are written as <userinput>0x...</userinput> on export and may be read
+back in that form.
+</p>
+
+<p>
+Component-reference fields accept either a numeric component id or the special
+names <userinput>toolbox_NULL_COMPONENT</userinput> and
+<userinput>toolbox_WINDOW_FOCUS</userinput>.
+</p>
+</subsection>
+
+<subsection title="Strings, quoting, and size fields">
+<p>
+CCres always exports strings in double quotes. Import does not require quotes,
+but quoted strings are the canonical form and should be preferred.
+</p>
+
+<p>
+Quoted strings may have spaces after the closing quote. Unquoted strings run
+to the end of the line. Quotes are mainly significant for preserving trailing
+spaces unambiguously. Unmatched quotes are reported as an input error.
+</p>
+
+<p>
+The textual format uses several kinds of string field:
+</p>
+
+<p>
+<definition-table head-name="Kind" head-extra="Common entries" head-value="Behaviour">
+ <definition name="Message-table string" extra="title:, text:, help_message:">Stored in the object's message string table. The associated <userinput>..._limit:</userinput> field may be a number or <userinput>*</userinput>.</definition>
+ <definition name="Ordinary string" extra="object_name:, sprite_name:, menu_name:">Stored in the object's ordinary string table. Associated limits behave the same way as message-table strings.</definition>
+ <definition name="Template inline string" extra="text.text:, sprite.id:, window title text">Stored inside a Template window's trailing string area and terminated with carriage return in the binary file.</definition>
+ <definition name="Fixed-size inline character field" extra="template_name:, text_only:, sprite_only:">Stored directly in the structure body. Template names are limited by the binary field width.</definition>
+ </definition-table>
+</p>
+
+<p>
+For Resource strings, a limit field of <userinput>*</userinput> means
+"allocate only enough space for the current string plus its terminator". If
+the string is empty and the limit is <userinput>*</userinput>, CCres may omit
+the stored string reference entirely.
+</p>
+
+<p>
+For Template strings, the exported size is the allocated byte count in the
+Template string area. A limit of <userinput>*</userinput> means "use the
+current string length including its carriage-return terminator". If a supplied
+size is smaller than the string actually needs, CCres increases it and emits a
+warning rather than silently truncating the data.
+</p>
+</subsection>
+
+<subsection title="Toolbox Resource text format">
+<p>
+A Resource text file begins with <userinput>RESF:1.01</userinput> followed by
+zero or more top-level Toolbox objects. Each object has a class-specific
+object name and contains a common object header followed by class-specific
+entries.
+</p>
+
+<p>
+<definition-table head-name="Top-level object name" head-extra="Purpose" head-value="Notes">
+ <definition name="window_object" extra="Toolbox Window object">Supports keyboard shortcuts and all gadget blocks documented later in this chapter.</definition>
+ <definition name="menu_object" extra="Toolbox Menu object">Contains nested <userinput>Entry</userinput> blocks.</definition>
+ <definition name="saveas_object" extra="SaveAs dialogue">Standalone Toolbox object.</definition>
+ <definition name="iconbar_object" extra="Iconbar icon">Standalone Toolbox object.</definition>
+ <definition name="scale_object" extra="Scale dialogue">Standalone Toolbox object.</definition>
+ <definition name="colourdbox_object" extra="ColourDbox dialogue">Standalone Toolbox object.</definition>
+ <definition name="colourmenu_object" extra="ColourMenu object">Standalone Toolbox object.</definition>
+ <definition name="dcs_object" extra="DCS dialogue">Standalone Toolbox object.</definition>
+ <definition name="fileinfo_object" extra="FileInfo dialogue">Standalone Toolbox object.</definition>
+ <definition name="fontdbox_object" extra="FontDbox dialogue">Standalone Toolbox object.</definition>
+ <definition name="fontmenu_object" extra="FontMenu object">Standalone Toolbox object.</definition>
+ <definition name="printdbox_object" extra="PrintDbox dialogue">Standalone Toolbox object.</definition>
+ <definition name="proginfo_object" extra="ProgInfo dialogue">Version-dependent fields exist for version 1.01 objects.</definition>
+ <definition name="quit_object" extra="Quit dialogue">Standalone Toolbox object.</definition>
+ </definition-table>
+</p>
+
+<subsubsection title="Common object header fields">
+<p>
+Every top-level Resource object begins with the same three fields.
+</p>
+
+<p>
+<definition-table head-name="Entry" head-extra="Type" head-value="Meaning">
+ <definition name="header_flags:" extra="flags">Zero or more of <userinput>toolbox_OBJECT_CREATE_ON_LOAD</userinput>, <userinput>toolbox_OBJECT_SHOW_ON_CREATE</userinput>, <userinput>toolbox_OBJECT_SHARED</userinput>, and <userinput>toolbox_OBJECT_ANCESTOR</userinput>.</definition>
+ <definition name="version:" extra="integer">Object format version stored in the Resource object header.</definition>
+ <definition name="object_name:" extra="string">Object name used for Toolbox references.</definition>
+ </definition-table>
+</p>
+</subsubsection>
+
+<subsubsection title="Window objects">
+<p>
+<userinput>window_object</userinput> is the richest Resource form. It carries
+the Toolbox-level window metadata, the embedded Wimp window definition, zero
+or more <userinput>keyboardshortcut_object</userinput> blocks, and zero or
+more gadget blocks.
+</p>
+
+<p>
+<definition-table head-name="Entry" head-extra="Type" head-value="Meaning">
+ <definition name="window_flags:" extra="flags">Toolbox window flags such as <userinput>window_AUTO_OPEN</userinput>, <userinput>window_AUTO_CLOSE</userinput>, and <userinput>window_IS_TOOL_BAR</userinput>.</definition>
+ <definition name="help_message:" extra="message string">Window help text.</definition>
+ <definition name="help_limit:" extra="limit">Allocation for <userinput>help_message:</userinput>.</definition>
+ <definition name="sprite_name:" extra="string">Pointer sprite name.</definition>
+ <definition name="pointer_limit:" extra="integer">Pointer sprite limit value.</definition>
+ <definition name="hotspot:" extra="coord expression">Pointer hotspot.</definition>
+ <definition name="menu_name:" extra="string">Associated menu object name.</definition>
+ <definition name="default_focus:" extra="component reference">Default focus component id.</definition>
+ <definition name="show_action:" extra="action bits">Action code sent when the object is shown. A blank value means unset.</definition>
+ <definition name="hide_action:" extra="action bits">Action code sent when the object is hidden. A blank value means unset.</definition>
+ <definition name="toolbar_ibl:" extra="string">Toolbar internal bottom-left link name.</definition>
+ <definition name="toolbar_itl:" extra="string">Toolbar internal top-left link name.</definition>
+ <definition name="toolbar_ebl:" extra="string">Toolbar external bottom-left link name.</definition>
+ <definition name="toolbar_etl:" extra="string">Toolbar external top-left link name.</definition>
+ <definition name="window.visible:" extra="box expression">Initial visible rectangle.</definition>
+ <definition name="window.xscroll:" extra="integer">Initial horizontal scroll position.</definition>
+ <definition name="window.yscroll:" extra="integer">Initial vertical scroll position.</definition>
+ <definition name="window.next:" extra="enumeration">Stacking order such as <userinput>wimp_TOP</userinput>, <userinput>wimp_BOTTOM</userinput>, or <userinput>wimp_HIDDEN</userinput>.</definition>
+ <definition name="window.flags:" extra="flags">Wimp window flags, including furniture and scrolling bits.</definition>
+ <definition name="window.title_fg:" extra="Wimp colour">Title foreground colour.</definition>
+ <definition name="window.title_bg:" extra="Wimp colour">Title background colour.</definition>
+ <definition name="window.work_fg:" extra="Wimp colour">Work area foreground colour.</definition>
+ <definition name="window.work_bg:" extra="Wimp colour">Work area background colour.</definition>
+ <definition name="window.scroll_outer:" extra="Wimp colour">Outer scroll bar colour.</definition>
+ <definition name="window.scroll_inner:" extra="Wimp colour">Inner scroll bar colour.</definition>
+ <definition name="window.highlight_bg:" extra="Wimp colour">Highlight background colour.</definition>
+ <definition name="window.extra_flags:" extra="byte flags">Extended Wimp window flags such as title-validation use and 3D preferences.</definition>
+ <definition name="window.extent:" extra="box expression">Work area extent rectangle.</definition>
+ <definition name="window.title_flags:" extra="flags">Title icon flags.</definition>
+ <definition name="window.work_flags:" extra="flags">Work-area button type bits.</definition>
+ <definition name="window.sprite_area:" extra="bits">Sprite area reference, exported as hexadecimal.</definition>
+ <definition name="window.xmin:" extra="short integer">Minimum width.</definition>
+ <definition name="window.ymin:" extra="short integer">Minimum height.</definition>
+ <definition name="window.title_text:" extra="message string">Indirected title text.</definition>
+ <definition name="window.title_text_limit:" extra="limit">Allocation for the title text.</definition>
+ <definition name="window.title_valid:" extra="string">Title validation string.</definition>
+ </definition-table>
+</p>
+
+<p>
+The nested <userinput>keyboardshortcut_object</userinput> blocks use these
+entries:
+</p>
+
+<p>
+<definition-table head-name="Entry" head-extra="Type" head-value="Meaning">
+ <definition name="flags:" extra="flags">Shortcut show flags such as <userinput>keyboardshortcut_SHOW_AS_MENU</userinput>, <userinput>keyboardshortcut_SHOW_AT_CENTRE</userinput>, and <userinput>keyboardshortcut_SHOW_AT_POINTER</userinput>.</definition>
+ <definition name="key_code:" extra="bits">Key code value.</definition>
+ <definition name="key_event:" extra="bits">Action or Toolbox event value associated with the key.</definition>
+ <definition name="key_show:" extra="string">Object name to show.</definition>
+ </definition-table>
+</p>
+</subsubsection>
+
+<subsubsection title="Window gadget blocks">
+<p>
+Every gadget block begins with the same three header entries and then adds
+class-specific entries.
+</p>
+
+<p>
+<definition-table head-name="Common entry" head-extra="Type" head-value="Meaning">
+ <definition name="cmp:" extra="expression or component value">Component id. Expressions are allowed.</definition>
+ <definition name="bbox:" extra="box expression">Bounding box in window work-area coordinates.</definition>
+ <definition name="help_message:" extra="message string">Help text for the gadget.</definition>
+ <definition name="help_limit:" extra="limit">Allocation for the help text.</definition>
+ </definition-table>
+</p>
+
+<p>
+The supported gadget object names are
+<userinput>actionbutton_object</userinput>,
+<userinput>adjuster_object</userinput>,
+<userinput>button_object</userinput>,
+<userinput>displayfield_object</userinput>,
+<userinput>draggable_object</userinput>,
+<userinput>label_object</userinput>,
+<userinput>labelledbox_object</userinput>,
+<userinput>numberrange_object</userinput>,
+<userinput>optionbutton_object</userinput>,
+<userinput>popup_object</userinput>,
+<userinput>radiobutton_object</userinput>,
+<userinput>scrolllist_object</userinput>,
+<userinput>slider_object</userinput>,
+<userinput>stringset_object</userinput>,
+<userinput>tabs_object</userinput>,
+<userinput>textarea_object</userinput>,
+<userinput>treeview_object</userinput>,
+<userinput>toolaction_object</userinput>, and
+<userinput>writablefield_object</userinput>.
+</p>
+
+<p>
+<definition-table head-name="Gadget object" head-extra="Additional entries" head-value="Notes">
+ <definition name="actionbutton_object" extra="flags:, text:, text_limit:, click_show:, action:">Action button gadget.</definition>
+ <definition name="adjuster_object" extra="flags:, reserved:">Adjuster gadget.</definition>
+ <definition name="button_object" extra="flags:, button_flags:, button_esg:, button_fg:, button_bg:, value:, value_limit:, validation:, validation_limit:">Button gadget using Wimp icon flags and colours.</definition>
+ <definition name="displayfield_object" extra="flags:, text:, text_limit:">Display field gadget.</definition>
+ <definition name="draggable_object" extra="flags:, text:, text_limit:, sprite_name:, sprite_limit:">Draggable gadget with optional text and sprite names.</definition>
+ <definition name="label_object" extra="flags:, label:">Static label gadget.</definition>
+ <definition name="labelledbox_object" extra="flags:, label:">Labelled box gadget.</definition>
+ <definition name="numberrange_object" extra="flags:, lower_bound:, upper_bound:, step_size:, initial_value:, precision:, prev:, next:, display_length:">Number range gadget with writable, adjuster, and slider-style options.</definition>
+ <definition name="optionbutton_object" extra="flags:, label:, label_limit:, action:">Option button gadget.</definition>
+ <definition name="popup_object" extra="flags:, menu_name:">Pop-up gadget linked to a named menu.</definition>
+ <definition name="radiobutton_object" extra="flags:, group:, label:, label_limit:, action:">Radio button gadget.</definition>
+ <definition name="scrolllist_object" extra="flags:, event:, foreground:, background:">Scroll list gadget.</definition>
+ <definition name="slider_object" extra="flags:, lower_bound:, upper_bound:, step_size:, initial_value:">Slider gadget.</definition>
+ <definition name="stringset_object" extra="flags:, string_set:, title:, initial_selected_string:, selected_string_limit:, allowable:, allowable_limit:, prev:, next:">StringSet gadget.</definition>
+ <definition name="tabs_object" extra="flags:, foreground:, background:, text:">Tabs gadget.</definition>
+ <definition name="textarea_object" extra="flags:, type:, event:, text:, foreground:, background:">TextArea gadget.</definition>
+ <definition name="treeview_object" extra="flags:, foreground:, background:">TreeView gadget.</definition>
+ <definition name="toolaction_object" extra="flags:, off_text:, off_text_limit:, on_text:, on_text_limit:, click_action:, select_show:, adjust_action:, adjust_show:, fade_text:, fade_text_limit:">ToolAction gadget.</definition>
+ <definition name="writablefield_object" extra="flags:, text:, text_limit:, allowable:, allowable_limit:, prev:, next:">Writable field gadget.</definition>
+ </definition-table>
+</p>
+</subsubsection>
+
+<subsubsection title="Menu objects">
+<p>
+A <userinput>menu_object</userinput> contains the menu header followed by one
+or more nested <userinput>Entry</userinput> blocks.
+</p>
+
+<p>
+<definition-table head-name="Menu entry" head-extra="Type" head-value="Meaning">
+ <definition name="menu_flags:" extra="flags">Menu-level flags such as <userinput>menu_GENERATE_ABOUT_TO_BE_SHOWN</userinput>, <userinput>menu_GENERATE_DIALOGUE_COMPLETED</userinput>, and <userinput>menu_GENERATE_HAS_BEEN_HIDDEN</userinput>.</definition>
+ <definition name="title:" extra="message string">Menu title.</definition>
+ <definition name="title_limit:" extra="limit">Allocation for the title.</definition>
+ <definition name="help:" extra="message string">Menu help text.</definition>
+ <definition name="help_limit:" extra="limit">Allocation for the help text.</definition>
+ <definition name="show_action:" extra="action bits">Action generated when shown. Blank means unset.</definition>
+ <definition name="hide_action:" extra="action bits">Action generated when hidden. Blank means unset.</definition>
+ </definition-table>
+</p>
+
+<p>
+Each nested <userinput>Entry</userinput> block uses:
+</p>
+
+<p>
+<definition-table head-name="Entry field" head-extra="Type" head-value="Meaning">
+ <definition name="flags:" extra="flags">Entry flags including ticked, separate, faded, sprite, sub-menu, generated sub-menu action, and menu interpretation bits.</definition>
+ <definition name="cmp:" extra="expression">Component id.</definition>
+ <definition name="text:" extra="message string or ordinary string">Normal entries use the message table. If <userinput>menu_ENTRY_IS_SPRITE</userinput> is set, the same field is stored as an ordinary string naming the sprite.</definition>
+ <definition name="text_limit:" extra="limit">Allocation for <userinput>text:</userinput>.</definition>
+ <definition name="click_object_name:" extra="string">Object to show or act upon when clicked.</definition>
+ <definition name="sub_menu_object_name:" extra="string">Sub-menu object name.</definition>
+ <definition name="sub_menu_action:" extra="action bits">Action used for sub-menu display.</definition>
+ <definition name="click_action:" extra="action bits">Action generated or invoked on click.</definition>
+ <definition name="help:" extra="message string">Entry help string.</definition>
+ <definition name="help_limit:" extra="limit">Allocation for the help string.</definition>
+ </definition-table>
+</p>
+</subsubsection>
+
+<subsubsection title="Standalone Toolbox object classes">
+<p>
+The remaining top-level Resource object classes are simple fixed-field objects.
+Their accepted entries are listed below.
+</p>
+
+<p>
+<definition-table head-name="Object" head-extra="Entries" head-value="Notes">
+ <definition name="saveas_object" extra="saveas_flags:, file_name:, file_type:, title:, title_limit:, alternative_window_name:">SaveAs dialogue object.</definition>
+ <definition name="iconbar_object" extra="iconbar_flags:, position:, priority:, sprite_name:, sprite_limit:, text:, text_limit:, menu:, select_action:, adjust_action:, select_show:, adjust_show:, help_message:, help_limit:">Iconbar object.</definition>
+ <definition name="scale_object" extra="scale_flags:, lower_bound:, upper_bound:, step_size:, title:, title_limit:, alternative_window_name:, std_value:">Scale dialogue object.</definition>
+ <definition name="colourdbox_object" extra="colourdbox_flags:, title:, title_limit:, colour:">ColourDbox object.</definition>
+ <definition name="colourmenu_object" extra="colourmenu_flags:, title:, title_limit:, colour:">ColourMenu object. The <userinput>colour:</userinput> field also accepts the special names <userinput>colourmenu_TRANSPARENT</userinput> and <userinput>colourmenu_NONE</userinput>.</definition>
+ <definition name="dcs_object" extra="dcs_flags:, title:, title_limit:, message:, message_limit:, alternative_window_name:">DCS dialogue object.</definition>
+ <definition name="fileinfo_object" extra="fileinfo_flags:, title:, title_limit:, file_type:, file_name:, alternative_window_name:">FileInfo dialogue object.</definition>
+ <definition name="fontdbox_object" extra="fontdbox_flags:, title:, title_limit:, initial_font:, initial_height:, initial_aspect:, try_string:, alternative_window_name:">FontDbox object.</definition>
+ <definition name="fontmenu_object" extra="fontmenu_flags:, ticked_font:">FontMenu object.</definition>
+ <definition name="printdbox_object" extra="printdbox_flags:, from:, to:, copies:, scale:, further_options:, alternative_window_name:">PrintDbox object.</definition>
+ <definition name="proginfo_object" extra="proginfo_flags:, title:, title_limit:, purpose:, author:, licence_type:, prog_version:, alternative_window_name:">ProgInfo object.</definition>
+ <definition name="quit_object" extra="quit_flags:, title:, title_limit:, message:, message_limit:, alternative_window_name:">Quit dialogue object.</definition>
+ </definition-table>
+</p>
+
+<p>
+For <userinput>proginfo_object</userinput>, a Resource object whose
+<userinput>version:</userinput> field is 101 also accepts
+<userinput>visit_url:</userinput> and <userinput>visit_url_event:</userinput>.
+Later versions do not carry those fields in the current implementation.
+</p>
+</subsubsection>
+
+</subsection>
+
+<subsection title="Wimp Template text format">
+<p>
+A Template text file begins with the literal line <userinput>Template:</userinput>.
+The normal canonical order is:
+</p>
+
+<p>
+<list type="ordered">
+ <item><p>One or more top-level <userinput>wimp_window</userinput> blocks.</p></item>
+ <item><p>Zero or more top-level <userinput>template_font_data</userinput> blocks.</p></item>
+</list>
+</p>
+
+<p>
+CCres counts top-level brace blocks before conversion, then performs a first
+pass that consumes only leading <userinput>wimp_window</userinput> blocks.
+For that reason, Template text should keep all window blocks before any
+<userinput>template_font_data</userinput> blocks and should not place other
+top-level object names in the file.
+</p>
+
+<subsubsection title="Template window fields">
+<p>
+Each <userinput>wimp_window</userinput> block begins with
+<userinput>template_name:</userinput> and then carries the embedded Wimp
+window definition.
+</p>
+
+<p>
+<definition-table head-name="Entry" head-extra="Type" head-value="Meaning">
+ <definition name="template_name:" extra="fixed-size string">Template name. The binary field is twelve bytes including the terminator, so names longer than eleven visible characters are truncated with a warning.</definition>
+ <definition name="visible:" extra="box expression">Visible rectangle.</definition>
+ <definition name="xscroll:" extra="integer">Horizontal scroll position.</definition>
+ <definition name="yscroll:" extra="integer">Vertical scroll position.</definition>
+ <definition name="next:" extra="enumeration">Window stacking order.</definition>
+ <definition name="window_flags:" extra="flags">Wimp window flags.</definition>
+ <definition name="title_fg:" extra="Wimp colour">Title foreground colour.</definition>
+ <definition name="title_bg:" extra="Wimp colour">Title background colour.</definition>
+ <definition name="work_fg:" extra="Wimp colour">Work-area foreground colour.</definition>
+ <definition name="work_bg:" extra="Wimp colour">Work-area background colour.</definition>
+ <definition name="scroll_outer:" extra="Wimp colour">Outer scroll colour.</definition>
+ <definition name="scroll_inner:" extra="Wimp colour">Inner scroll colour.</definition>
+ <definition name="highlight_bg:" extra="Wimp colour">Highlight background colour.</definition>
+ <definition name="extra_flags:" extra="byte flags">Extended Wimp window flags.</definition>
+ <definition name="extent:" extra="box expression">Work area extent.</definition>
+ <definition name="title_flags:" extra="flags">Title icon flags. These determine which title text entries are legal.</definition>
+ <definition name="work_flags:" extra="enumeration">Wimp button-type flags for the work area.</definition>
+ <definition name="sprite_area:" extra="bits">Sprite area reference.</definition>
+ <definition name="xmin:" extra="short integer">Minimum width.</definition>
+ <definition name="ymin:" extra="short integer">Minimum height.</definition>
+ </definition-table>
+</p>
+
+<p>
+The title text or sprite payload is encoded through the same icon-data rules
+that ordinary <userinput>wimp_icon</userinput> blocks use. Depending on the
+<userinput>title_flags:</userinput> bits, the title section may therefore use
+one of the following entry sets:
+</p>
+
+<p>
+<definition-table head-name="Form" head-extra="Required flag combination" head-value="Entries">
+ <definition name="Text only" extra="wimp_ICON_TEXT without wimp_ICON_INDIRECTED">text_only:</definition>
+ <definition name="Sprite only" extra="wimp_ICON_SPRITE without wimp_ICON_INDIRECTED">sprite_only:</definition>
+ <definition name="Text and sprite" extra="wimp_ICON_TEXT | wimp_ICON_SPRITE without wimp_ICON_INDIRECTED">text_and_sprite:</definition>
+ <definition name="Indirected text" extra="wimp_ICON_INDIRECTED | wimp_ICON_TEXT">text.text:, text.size:, text.validation:</definition>
+ <definition name="Indirected sprite" extra="wimp_ICON_INDIRECTED | wimp_ICON_SPRITE">sprite.id:, sprite.size:, sprite.area:</definition>
+ <definition name="Indirected text and sprite" extra="wimp_ICON_INDIRECTED | wimp_ICON_TEXT | wimp_ICON_SPRITE">text_and_sprite.text:, text_and_sprite.size:, text_and_sprite.validation:</definition>
+ </definition-table>
+</p>
+</subsubsection>
+
+<subsubsection title="Template icon blocks">
+<p>
+Each nested <userinput>wimp_icon</userinput> block inside a window uses the
+common entries below before any icon-data payload entries.
+</p>
+
+<p>
+<definition-table head-name="Entry" head-extra="Type" head-value="Meaning">
+ <definition name="extent:" extra="box expression">Icon extent rectangle.</definition>
+ <definition name="icon_flags:" extra="flags">Wimp icon flags plus the encoded Wimp button type. Symbolic button types such as <userinput>wimp_BUTTON_CLICK</userinput> are accepted in the same field.</definition>
+ <definition name="icon_esg:" extra="integer">Exclusive selection group number.</definition>
+ <definition name="icon_fg:" extra="Wimp colour">Foreground colour for normal icons.</definition>
+ <definition name="icon_bg:" extra="Wimp colour">Background colour for normal icons and anti-aliased icons.</definition>
+ <definition name="font_handle:" extra="byte">Anti-aliased icon font handle. This is used instead of <userinput>icon_fg:</userinput> when <userinput>wimp_ICON_ANTI_ALIASED</userinput> is set.</definition>
+ </definition-table>
+</p>
+
+<p>
+The icon payload entries follow the same six-way selection described for
+window titles:
+</p>
+
+<p>
+<definition-table head-name="Form" head-extra="Required flag combination" head-value="Entries">
+ <definition name="Text only" extra="wimp_ICON_TEXT without wimp_ICON_INDIRECTED">text_only:</definition>
+ <definition name="Sprite only" extra="wimp_ICON_SPRITE without wimp_ICON_INDIRECTED">sprite_only:</definition>
+ <definition name="Text and sprite" extra="wimp_ICON_TEXT | wimp_ICON_SPRITE without wimp_ICON_INDIRECTED">text_and_sprite:</definition>
+ <definition name="Indirected text" extra="wimp_ICON_INDIRECTED | wimp_ICON_TEXT">text.text:, text.size:, text.validation:</definition>
+ <definition name="Indirected sprite" extra="wimp_ICON_INDIRECTED | wimp_ICON_SPRITE">sprite.id:, sprite.size:, sprite.area:</definition>
+ <definition name="Indirected text and sprite" extra="wimp_ICON_INDIRECTED | wimp_ICON_TEXT | wimp_ICON_SPRITE">text_and_sprite.text:, text_and_sprite.size:, text_and_sprite.validation:</definition>
+ </definition-table>
+</p>
+</subsubsection>
+
+<subsubsection title="Template font blocks">
+<p>
+Optional <userinput>template_font_data</userinput> blocks represent entries
+from the Template font table. Each block accepts exactly these entries:
+</p>
+
+<p>
+<definition-table head-name="Entry" head-extra="Type" head-value="Meaning">
+ <definition name="x_point_size:" extra="bits">Horizontal point size.</definition>
+ <definition name="y_point_size:" extra="bits">Vertical point size.</definition>
+ <definition name="font_name:" extra="fixed-size string">Font name stored in the forty-byte binary field.</definition>
+ </definition-table>
+</p>
+</subsubsection>
+</subsection>
+
+<subsection title="Round-tripping and canonical output">
+<p>
+CCres does not attempt byte-for-byte recreation of files created by other
+tools. It recreates equivalent Resource or Template content in its own normal
+serialisation.
+</p>
+
+<p>
+Important consequences of that normalisation are:
+</p>
+
+<p>
+<list type="unordered">
+ <item><p>Resource relocation entries are written in ascending offset order.</p></item>
+ <item><p>Superfluous fields that some GUI editors save are omitted when CCres does not use them.</p></item>
+ <item><p>Template text is truncated at the first control character terminator; stray bytes after a terminator are ignored when exporting to text.</p></item>
+ <item><p>Strings are re-emitted in quoted canonical form, and size fields may be normalised to <userinput>*</userinput> when they match the minimal required allocation.</p></item>
+</list>
+</p>
+
+<p>
+For these reasons, binary comparison against an original editor-produced file
+is not a reliable validation method. The canonical validation loop is
+text-to-binary-to-text round-tripping and comparison of the textual forms.
+</p>
+</subsection>
+</section>
+
+<section title="Command-line usage">
+<p>
+The standalone program is invoked as:
+</p>
+<p>
+<extended-example type="shell">
+<userinput>ccres infile outfile</userinput>
+</extended-example>
+</p>
+<p>
+<userinput>infile</userinput> must be a Toolbox Resource binary, a Wimp
+Template binary, or a CCres text file beginning with
+<userinput>RESF:1.01</userinput> or <userinput>Template:</userinput>.
+<userinput>outfile</userinput> receives the converted form. When the input is
+binary, the output is text. When the input is text, the output is either a
+Resource binary or a Template binary according to the first line of the file.
+</p>
+<p>
+The program performs a single conversion in the direction implied by the input
+file. Binary Resource files and binary Template files are converted to text.
+Text files are converted back into binary using their first line as the format
+selector.
+</p>
+<p>
+The current implementation requires exactly two positional arguments and
+provides no option switches. If the argument count is wrong, the tool exits
+with an error after printing a short usage summary.
+</p>
+</section>
+
+<section title="Examples">
+<subsection title="Converting a Toolbox Resource file to text">
+<p>
+This is the normal editing path for a Toolbox Resource file.
+</p>
+<p>
+<extended-example type="shell">
+<userinput>ccres MyRes,fae MyRes.txt</userinput><br/>
+<userinput>ccres MyRes.txt MyRes,fae</userinput>
+</extended-example>
+</p>
+</subsection>
+
+<subsection title="A minimal Resource text file">
+<p>
+This example shows the required outer structure of a Resource text file.
+</p>
+<p>
+<extended-example type="format">
+RESF:1.01<br/>
+<br/>
+window_object {<br/>
+  header_flags:<br/>
+  version:102<br/>
+  object_name:"Main"<br/>
+  window_flags:<br/>
+  help_message:""<br/>
+  help_limit:*<br/>
+  sprite_name:""<br/>
+  pointer_limit:0<br/>
+  hotspot:0,0<br/>
+  menu_name:""<br/>
+  default_focus:toolbox_NULL_COMPONENT<br/>
+  show_action:<br/>
+  hide_action:<br/>
+  toolbar_ibl:""<br/>
+  toolbar_itl:""<br/>
+  toolbar_ebl:""<br/>
+  toolbar_etl:""<br/>
+  window.visible:0,0,640,480<br/>
+  window.xscroll:0<br/>
+  window.yscroll:0<br/>
+  window.next:wimp_TOP<br/>
+  window.flags:wimp_WINDOW_MOVEABLE | wimp_WINDOW_NEW_FORMAT<br/>
+  window.title_fg:wimp_COLOUR_BLACK<br/>
+  window.title_bg:wimp_COLOUR_LIGHT_GREY<br/>
+  window.work_fg:wimp_COLOUR_BLACK<br/>
+  window.work_bg:wimp_COLOUR_VERY_LIGHT_GREY<br/>
+  window.scroll_outer:wimp_COLOUR_CREAM<br/>
+  window.scroll_inner:wimp_COLOUR_ORANGE<br/>
+  window.highlight_bg:wimp_COLOUR_LIGHT_GREY<br/>
+  window.extra_flags:<br/>
+  window.extent:0,-480,640,0<br/>
+  window.title_flags:wimp_ICON_TEXT | wimp_ICON_INDIRECTED<br/>
+  window.work_flags:<br/>
+  window.sprite_area:&amp;ffffffff<br/>
+  window.xmin:0<br/>
+  window.ymin:0<br/>
+  window.title_text:"Main window"<br/>
+  window.title_text_limit:*<br/>
+  window.title_valid:""<br/>
+}<br/>
+</extended-example>
+</p>
+</subsection>
+
+<subsection title="A minimal Template text file">
+<p>
+This example shows the required outer structure of a Template text file.
+</p>
+<p>
+<extended-example type="format">
+Template:<br/>
+<br/>
+wimp_window {<br/>
+  template_name:"Main"<br/>
+  visible:0,0,640,480<br/>
+  xscroll:0<br/>
+  yscroll:0<br/>
+  next:wimp_TOP<br/>
+  window_flags:wimp_WINDOW_MOVEABLE | wimp_WINDOW_NEW_FORMAT<br/>
+  title_fg:wimp_COLOUR_BLACK<br/>
+  title_bg:wimp_COLOUR_LIGHT_GREY<br/>
+  work_fg:wimp_COLOUR_BLACK<br/>
+  work_bg:wimp_COLOUR_VERY_LIGHT_GREY<br/>
+  scroll_outer:wimp_COLOUR_CREAM<br/>
+  scroll_inner:wimp_COLOUR_ORANGE<br/>
+  highlight_bg:wimp_COLOUR_LIGHT_GREY<br/>
+  extra_flags:<br/>
+  extent:0,-480,640,0<br/>
+  title_flags:wimp_ICON_TEXT | wimp_ICON_INDIRECTED<br/>
+  work_flags:wimp_BUTTON_CLICK<br/>
+  sprite_area:&amp;1<br/>
+  xmin:0<br/>
+  ymin:0<br/>
+  text.text:"Main window"<br/>
+  text.size:12<br/>
+  text.validation:""<br/>
+}<br/>
+</extended-example>
+</p>
+</subsection>
+</section>
+</chapter>
+<meta>
+ <maintainer>
+  <email name="Charles Ferguson" address="gerph@gerph.org" />
+ </maintainer>
+ <disclaimer>
+  <p>Copyright Charles Ferguson, 2026.</p>
+ </disclaimer>
+ <history>
+  <revision number="1" author="Dave Appleby" date="Before 9 Dec 2003" title="Original CCres releases up to v1.08">
+   <change>Created and maintained the original CCres implementation through version 1.08, distributed as FreeWare.</change>
+  </revision>
+  <revision number="2" author="John Tytgat / BASS" date="9 Dec 2003" title="Version 1.09 released">
+   <change>Prepared the first BASS-maintained public source and binary release.</change>
+   <change>Changed the CCres licence to the GNU General Public License.</change>
+  </revision>
+  <revision number="3" author="John Tytgat / BASS" date="3 Mar 2004" title="Version 1.10 released">
+   <change>Stopped Template icons without the Text and Sprite bit set from reporting a harmless unexpected flag-combination error.</change>
+  </revision>
+  <revision number="4" author="John Tytgat / BASS" date="2 Dec 2004" title="Version 1.11 released">
+   <change>Added version and syntax reporting when the program is run without parameters in a TaskWindow or outside the Desktop.</change>
+   <change>Added four missing Iconbar flags.</change>
+   <change>Made uncovered flag bits report the error "Not all bits are covered".</change>
+  </revision>
+  <revision number="5" author="John Tytgat / BASS" date="28 Jan 2006" title="Version 1.12 released">
+   <change>Added support for Tab and TreeView gadgets.</change>
+   <change>Created a command-line version without Wimp support and added GCCSDK cross-compilation support.</change>
+   <change>Reduced memory usage and made uncovered Resource and Template bits round-trippable through hexadecimal output.</change>
+   <change>Added support for menu_GENERATE_HAS_BEEN_HIDDEN.</change>
+  </revision>
+  <revision number="6" author="John Tytgat / BASS" date="3 Jun 2007" title="Version 1.13 released">
+   <change>Simplified parts of the source code.</change>
+   <change>Corrected the maximum-icons-per-window calculation that could otherwise corrupt memory.</change>
+   <change>Added a Unix-based regression test queue for binary-to-text and text-to-binary round-tripping.</change>
+   <change>Corrected a missing text_and_sprite.text: column in indirected text-and-sprite Template handling.</change>
+   <change>Made string allocation respect explicit limit values and warn when the limit is too small for the supplied text or sprite string.</change>
+  </revision>
+  <revision number="7" author="Gerph" date="26 Jun 2026" title="Initial canonical CCres reference">
+   <change>Created the canonical PRM-in-XML documentation for CCres, covering the standalone command-line tool, file recognition, the common text grammar, the Toolbox Resource textual format, and the Wimp Template textual format from the current implementation.</change>
+  </revision>
+ </history>
+</meta>
+</riscos-prm>
