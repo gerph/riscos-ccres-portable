@@ -558,7 +558,7 @@ while (*p != '\0')
   nFlags = ELEMENTS(WimpIconType);
   for (n = 0; n < nFlags; n++)
     {
-    if (strcmp(pstrFlags, pFlags[n].pstr) == 0)
+    if (strncasecmp(pstrFlags, pFlags[n].pstr, cb) == 0 && strlen(pFlags[n].pstr) == cb)
       {
       f |= pFlags[n].flag;
       goto put_iflags_next_flag;
