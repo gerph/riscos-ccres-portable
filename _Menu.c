@@ -97,17 +97,26 @@ int menu_t2g(DATA *data, char *pszIn, toolbox_relocatable_object_base * object)
 }
 
 
-        void menu_g2t(DATA *data, FILE * hf, toolbox_resource_file_object_base * object, char *pszStringTable, char *pszMessageTable)
-//      ===========================================================================================================================
+        void menu_g2t(DATA *data, FILE * hf, toolbox_resource_file_object_base * object, char *pszStringTable, char *pszMessageTable, int cbObject)
+//      ==========================================================================================================================================
 {
 menu_object_base * menu;
 menu_entry_object * entry;
 int n;
 
 menu = (menu_object_base *) (object + 1);
-get_objects(data, hf, pszStringTable, pszMessageTable, (const char *)menu, MenuObjectList, ELEMENTS(MenuObjectList), 1, sizeof(menu_object));
+get_objects(data, hf, pszStringTable, pszMessageTable, (const char *)menu, MenuObjectList, ELEMENTS(MenuObjectList), 1, cbObject);
 
-for (n = 0, entry = (menu_entry_object *) (menu + 1); n < menu->entry_count; n++, entry++)
+/* entry_count is the last field of menu_object_base and is read directly here,
+   not through get_objects()'s bounds checking. A real Toolbox menu template
+   compiled before entry_count existed (confirmed against a genuine !Hyper
+   Res,fae: a "Views" menu whose body_size is 24 bytes - only enough for
+   flags..show_action, nothing more) has no entry_count in the file at all, and
+   is a perfectly normal "populated at runtime" menu (eg. a list of open
+   views) - not corruption. Treat a missing entry_count as zero entries rather
+   than trusting whatever bytes happen to follow the object. */
+n = (cbObject >= (int) (offsetof(menu_object_base, entry_count) + sizeof(int))) ? menu->entry_count : 0;
+for (entry = (menu_entry_object *) (menu + 1); n > 0; n--, entry++)
   {
   fprintf(hf, "  Entry {\n    cmp:%d\n", (int) entry->cmp);
   MenuEntryObjectList[0].nTable = (entry->flags & menu_ENTRY_IS_SPRITE) ? iol_STRING : iol_MSG;		// text or sprite?

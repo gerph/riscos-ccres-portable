@@ -52,8 +52,8 @@ return sizeof(fileinfo_object);
 }
 
 
-        void fileinfo_g2t(DATA *data, FILE * hf, toolbox_resource_file_object_base * object, char *pszStringTable, char *pszMessageTable)
-//      ===============================================================================================================================
+        void fileinfo_g2t(DATA *data, FILE * hf, toolbox_resource_file_object_base * object, char *pszStringTable, char *pszMessageTable, int cbObject)
+//      ==============================================================================================================================================
 {
-get_objects(data, hf, pszStringTable, pszMessageTable, (char *) (object + 1), FileInfoObjectList, ELEMENTS(FileInfoObjectList), 1, sizeof(fileinfo_object));
+get_objects(data, hf, pszStringTable, pszMessageTable, (char *) (object + 1), FileInfoObjectList, ELEMENTS(FileInfoObjectList), 1, cbObject);
 }

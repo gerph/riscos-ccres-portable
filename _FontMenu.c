@@ -51,8 +51,8 @@ return sizeof(fontmenu_object);
 }
 
 
-        void fontmenu_g2t(DATA *data, FILE * hf, toolbox_resource_file_object_base * object, char *pszStringTable, char *pszMessageTable)
-//      ===============================================================================================================================
+        void fontmenu_g2t(DATA *data, FILE * hf, toolbox_resource_file_object_base * object, char *pszStringTable, char *pszMessageTable, int cbObject)
+//      ==============================================================================================================================================
 {
-get_objects(data, hf, pszStringTable, pszMessageTable, (char *) (object + 1), FontMenuObjectList, ELEMENTS(FontMenuObjectList), 1, sizeof(fontmenu_object));
+get_objects(data, hf, pszStringTable, pszMessageTable, (char *) (object + 1), FontMenuObjectList, ELEMENTS(FontMenuObjectList), 1, cbObject);
 }

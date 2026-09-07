@@ -1097,5 +1097,5 @@ void object_resource2text(DATA *data, FILE * hf, toolbox_relocatable_object_base
 	}
 
 	get_objects(data, hf, pszStringTable, pszMessageTable, (const char *)&object->rf_obj, ObjectHeaderList, ELEMENTS(ObjectHeaderList), 1, sizeof(toolbox_resource_file_object_base));
-	o2t(data, hf, (toolbox_resource_file_object_base *) &object->rf_obj, pszStringTable, pszMessageTable);
+	o2t(data, hf, (toolbox_resource_file_object_base *) &object->rf_obj, pszStringTable, pszMessageTable, object->rf_obj.body_size);
 }

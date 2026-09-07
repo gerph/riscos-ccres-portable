@@ -143,7 +143,7 @@ typedef struct {
 
 typedef void (* action_handler)(DATA *data);
 typedef int  (* text2object)(DATA *data, char *pszIn, toolbox_relocatable_object_base *object);
-typedef void (* object2text)(DATA *data, FILE * hf, toolbox_resource_file_object_base *object, char *pszStringTable, char *pszMessageTable);
+typedef void (* object2text)(DATA *data, FILE * hf, toolbox_resource_file_object_base *object, char *pszStringTable, char *pszMessageTable, int cbObject);
 typedef int  (* text2gadget)(DATA *data, char *pszIn, int nOffset, gadget_object_base *gadget);
 typedef void (* gadget2text)(DATA *data, FILE *hf, gadget_object_base * gadget, char *pszStringTable, char *pszMessageTable, int cbGadget);
 

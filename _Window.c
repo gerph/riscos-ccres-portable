@@ -297,8 +297,8 @@ _window_gadget_added:
 }
 
 
-        void window_g2t(DATA *data, FILE * hf, toolbox_resource_file_object_base * object, char *pszStringTable, char *pszMessageTable)
-//      =============================================================================================================================
+        void window_g2t(DATA *data, FILE * hf, toolbox_resource_file_object_base * object, char *pszStringTable, char *pszMessageTable, int cbObject)
+//      ============================================================================================================================================
 {
 window_object_base * window_object;
 gadget_object_base * gadget;
@@ -306,7 +306,7 @@ keyboardshortcut_object * shortcut;
 int n, g, nSize, nClass;
 
 window_object = (window_object_base *) (object + 1);
-get_objects(data, hf, pszStringTable, pszMessageTable, (const char *)window_object, WindowObjectList, ELEMENTS(WindowObjectList), 1, sizeof(window_object_base));
+get_objects(data, hf, pszStringTable, pszMessageTable, (const char *)window_object, WindowObjectList, ELEMENTS(WindowObjectList), 1, cbObject);
 
 shortcut = (keyboardshortcut_object *) ((char *) window_object + (int) window_object->shortcuts);
 for (n = 0; n < window_object->shortcut_count; n++, shortcut++)
