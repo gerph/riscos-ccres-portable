@@ -58,5 +58,5 @@ return sizeof(fontdbox_object);
         void fontdbox_g2t(DATA *data, FILE * hf, toolbox_resource_file_object_base * object, char *pszStringTable, char *pszMessageTable)
 //      ===============================================================================================================================
 {
-get_objects(data, hf, pszStringTable, pszMessageTable, (char *) (object + 1), FontDboxObjectList, ELEMENTS(FontDboxObjectList), 1);
+get_objects(data, hf, pszStringTable, pszMessageTable, (char *) (object + 1), FontDboxObjectList, ELEMENTS(FontDboxObjectList), 1, sizeof(fontdbox_object));
 }

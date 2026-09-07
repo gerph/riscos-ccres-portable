@@ -76,10 +76,10 @@ put_objects(data, pszIn, nOffset, (char *) gadget, ActionbuttonObjectList, ELEME
 return sizeof(actionbutton_object);
 }
 
-        void actionbutton_g2t(DATA *data, FILE * hf, gadget_object_base * gadget, char *pszStringTable, char *pszMessageTable)
-//      ====================================================================================================================
+        void actionbutton_g2t(DATA *data, FILE * hf, gadget_object_base * gadget, char *pszStringTable, char *pszMessageTable, int cbGadget)
+//      ===================================================================================================================================
 {
-get_objects(data, hf, pszStringTable, pszMessageTable, (char *) gadget, ActionbuttonObjectList, ELEMENTS(ActionbuttonObjectList), 2);
+get_objects(data, hf, pszStringTable, pszMessageTable, (char *) gadget, ActionbuttonObjectList, ELEMENTS(ActionbuttonObjectList), 2, cbGadget);
 }
 
 
@@ -106,10 +106,10 @@ put_objects(data, pszIn, nOffset, (char *) gadget, AdjusterObjectList, ELEMENTS(
 return sizeof(adjuster_object);
 }
 
-        void adjuster_g2t(DATA *data, FILE * hf, gadget_object_base * gadget, char *pszStringTable, char *pszMessageTable)
-//      ================================================================================================================
+        void adjuster_g2t(DATA *data, FILE * hf, gadget_object_base * gadget, char *pszStringTable, char *pszMessageTable, int cbGadget)
+//      ===============================================================================================================================
 {
-get_objects(data, hf, pszStringTable, pszMessageTable, (char *) gadget, AdjusterObjectList, ELEMENTS(AdjusterObjectList), 2);
+get_objects(data, hf, pszStringTable, pszMessageTable, (char *) gadget, AdjusterObjectList, ELEMENTS(AdjusterObjectList), 2, cbGadget);
 }
 
 
@@ -135,10 +135,10 @@ put_objects(data, pszIn, nOffset, (char *) gadget, DisplayFieldObjectList, ELEME
 return sizeof(displayfield_object);
 }
 
-        void displayfield_g2t(DATA *data, FILE * hf, gadget_object_base * gadget, char *pszStringTable, char *pszMessageTable)
-//      ====================================================================================================================
+        void displayfield_g2t(DATA *data, FILE * hf, gadget_object_base * gadget, char *pszStringTable, char *pszMessageTable, int cbGadget)
+//      ===================================================================================================================================
 {
-get_objects(data, hf, pszStringTable, pszMessageTable, (char *) gadget, DisplayFieldObjectList, ELEMENTS(DisplayFieldObjectList), 2);
+get_objects(data, hf, pszStringTable, pszMessageTable, (char *) gadget, DisplayFieldObjectList, ELEMENTS(DisplayFieldObjectList), 2, cbGadget);
 }
 
 
@@ -171,10 +171,10 @@ put_objects(data, pszIn, nOffset, (char *) gadget, DraggableObjectList, ELEMENTS
 return sizeof(draggable_object);
 }
 
-        void draggable_g2t(DATA *data, FILE * hf, gadget_object_base * gadget, char *pszStringTable, char *pszMessageTable)
-//      =================================================================================================================
+        void draggable_g2t(DATA *data, FILE * hf, gadget_object_base * gadget, char *pszStringTable, char *pszMessageTable, int cbGadget)
+//      ================================================================================================================================
 {
-get_objects(data, hf, pszStringTable, pszMessageTable, (char *) gadget, DraggableObjectList, ELEMENTS(DraggableObjectList), 2);
+get_objects(data, hf, pszStringTable, pszMessageTable, (char *) gadget, DraggableObjectList, ELEMENTS(DraggableObjectList), 2, cbGadget);
 }
 
 
@@ -201,10 +201,10 @@ put_objects(data, pszIn, nOffset, (char *) gadget, LabelObjectList, ELEMENTS(Lab
 return sizeof(label_object);
 }
 
-        void label_g2t(DATA *data, FILE * hf, gadget_object_base * gadget, char *pszStringTable, char *pszMessageTable)
-//      =============================================================================================================
+        void label_g2t(DATA *data, FILE * hf, gadget_object_base * gadget, char *pszStringTable, char *pszMessageTable, int cbGadget)
+//      ============================================================================================================================
 {
-get_objects(data, hf, pszStringTable, pszMessageTable, (char *) gadget, LabelObjectList, ELEMENTS(LabelObjectList), 2);
+get_objects(data, hf, pszStringTable, pszMessageTable, (char *) gadget, LabelObjectList, ELEMENTS(LabelObjectList), 2, cbGadget);
 }
 
 
@@ -230,10 +230,10 @@ put_objects(data, pszIn, nOffset, (char *) gadget, LabelledBoxObjectList, ELEMEN
 return sizeof(labelledbox_object);
 }
 
-        void labelledbox_g2t(DATA *data, FILE * hf, gadget_object_base * gadget, char *pszStringTable, char *pszMessageTable)
-//      ===================================================================================================================
+        void labelledbox_g2t(DATA *data, FILE * hf, gadget_object_base * gadget, char *pszStringTable, char *pszMessageTable, int cbGadget)
+//      ==================================================================================================================================
 {
-get_objects(data, hf, pszStringTable, pszMessageTable, (char *) gadget, LabelledBoxObjectList, ELEMENTS(LabelledBoxObjectList), 2);
+get_objects(data, hf, pszStringTable, pszMessageTable, (char *) gadget, LabelledBoxObjectList, ELEMENTS(LabelledBoxObjectList), 2, cbGadget);
 }
 
 
@@ -335,10 +335,10 @@ put_objects(data, pszIn, nOffset, (char *) gadget, NumberRangeObjectList, ELEMEN
 return sizeof(numberrange_object);
 }
 
-        void numberrange_g2t(DATA *data, FILE * hf, gadget_object_base * gadget, char *pszStringTable, char *pszMessageTable)
-//      ===================================================================================================================
+        void numberrange_g2t(DATA *data, FILE * hf, gadget_object_base * gadget, char *pszStringTable, char *pszMessageTable, int cbGadget)
+//      ==================================================================================================================================
 {
-	get_objects(data, hf, pszStringTable, pszMessageTable, (char *) gadget, NumberRangeObjectList, ELEMENTS(NumberRangeObjectList), 2);
+	get_objects(data, hf, pszStringTable, pszMessageTable, (char *) gadget, NumberRangeObjectList, ELEMENTS(NumberRangeObjectList), 2, cbGadget);
 }
 
 
@@ -365,10 +365,10 @@ put_objects(data, pszIn, nOffset, (char *) gadget, OptionButtonObjectList, ELEME
 return sizeof(optionbutton_object);
 }
 
-        void optionbutton_g2t(DATA *data, FILE * hf, gadget_object_base * gadget, char *pszStringTable, char *pszMessageTable)
-//      ====================================================================================================================
+        void optionbutton_g2t(DATA *data, FILE * hf, gadget_object_base * gadget, char *pszStringTable, char *pszMessageTable, int cbGadget)
+//      ===================================================================================================================================
 {
-get_objects(data, hf, pszStringTable, pszMessageTable, (char *) gadget, OptionButtonObjectList, ELEMENTS(OptionButtonObjectList), 2);
+get_objects(data, hf, pszStringTable, pszMessageTable, (char *) gadget, OptionButtonObjectList, ELEMENTS(OptionButtonObjectList), 2, cbGadget);
 }
 
 
@@ -393,10 +393,10 @@ put_objects(data, pszIn, nOffset, (char *) gadget, PopupObjectList, ELEMENTS(Pop
 return sizeof(popup_object);
 }
 
-        void popup_g2t(DATA *data, FILE * hf, gadget_object_base * gadget, char *pszStringTable, char *pszMessageTable)
-//      =============================================================================================================
+        void popup_g2t(DATA *data, FILE * hf, gadget_object_base * gadget, char *pszStringTable, char *pszMessageTable, int cbGadget)
+//      ============================================================================================================================
 {
-get_objects(data, hf, pszStringTable, pszMessageTable, (char *) gadget, PopupObjectList, ELEMENTS(PopupObjectList), 2);
+get_objects(data, hf, pszStringTable, pszMessageTable, (char *) gadget, PopupObjectList, ELEMENTS(PopupObjectList), 2, cbGadget);
 }
 
 
@@ -425,10 +425,10 @@ put_objects(data, pszIn, nOffset, (char *) gadget, RadioButtonObjectList, ELEMEN
 return sizeof(radiobutton_object);
 }
 
-        void radiobutton_g2t(DATA *data, FILE * hf, gadget_object_base * gadget, char *pszStringTable, char *pszMessageTable)
-//      ===================================================================================================================
+        void radiobutton_g2t(DATA *data, FILE * hf, gadget_object_base * gadget, char *pszStringTable, char *pszMessageTable, int cbGadget)
+//      ==================================================================================================================================
 {
-get_objects(data, hf, pszStringTable, pszMessageTable, (char *) gadget, RadioButtonObjectList, ELEMENTS(RadioButtonObjectList), 2);
+get_objects(data, hf, pszStringTable, pszMessageTable, (char *) gadget, RadioButtonObjectList, ELEMENTS(RadioButtonObjectList), 2, cbGadget);
 }
 
 
@@ -455,10 +455,10 @@ put_objects(data, pszIn, nOffset, (char *) gadget, ScrolllistObjectList, ELEMENT
 return sizeof(scrolllist_object);
 }
 
-        void scrolllist_g2t(DATA *data, FILE * hf, gadget_object_base * gadget, char *pszStringTable, char *pszMessageTable)
-//      ==================================================================================================================
+        void scrolllist_g2t(DATA *data, FILE * hf, gadget_object_base * gadget, char *pszStringTable, char *pszMessageTable, int cbGadget)
+//      =================================================================================================================================
 {
-get_objects(data, hf, pszStringTable, pszMessageTable, (char *) gadget, ScrolllistObjectList, ELEMENTS(ScrolllistObjectList), 2);
+get_objects(data, hf, pszStringTable, pszMessageTable, (char *) gadget, ScrolllistObjectList, ELEMENTS(ScrolllistObjectList), 2, cbGadget);
 }
 
 #define slider_KNOB_COLOUR_VERY_LIGHT_GREY    (wimp_COLOUR_VERY_LIGHT_GREY << slider_KNOB_COLOUR_SHIFT)
@@ -548,10 +548,10 @@ put_objects(data, pszIn, nOffset, (char *) gadget, SliderObjectList, ELEMENTS(Sl
 return sizeof(slider_object);
 }
 
-        void slider_g2t(DATA *data, FILE * hf, gadget_object_base * gadget, char *pszStringTable, char *pszMessageTable)
-//      ==============================================================================================================
+        void slider_g2t(DATA *data, FILE * hf, gadget_object_base * gadget, char *pszStringTable, char *pszMessageTable, int cbGadget)
+//      =============================================================================================================================
 {
-get_objects(data, hf, pszStringTable, pszMessageTable, (char *) gadget, SliderObjectList, ELEMENTS(SliderObjectList), 2);
+get_objects(data, hf, pszStringTable, pszMessageTable, (char *) gadget, SliderObjectList, ELEMENTS(SliderObjectList), 2, cbGadget);
 }
 
 
@@ -590,10 +590,10 @@ put_objects(data, pszIn, nOffset, (char *) gadget, StringsetObjectList, ELEMENTS
 return sizeof(stringset_object);
 }
 
-        void stringset_g2t(DATA *data, FILE * hf, gadget_object_base * gadget, char *pszStringTable, char *pszMessageTable)
-//      =================================================================================================================
+        void stringset_g2t(DATA *data, FILE * hf, gadget_object_base * gadget, char *pszStringTable, char *pszMessageTable, int cbGadget)
+//      ================================================================================================================================
 {
-get_objects(data, hf, pszStringTable, pszMessageTable, (char *) gadget, StringsetObjectList, ELEMENTS(StringsetObjectList), 2);
+get_objects(data, hf, pszStringTable, pszMessageTable, (char *) gadget, StringsetObjectList, ELEMENTS(StringsetObjectList), 2, cbGadget);
 }
 
 // TextArea gadget
@@ -628,10 +628,10 @@ put_objects(data, pszIn, nOffset, (char *) gadget, TextAreaObjectList, ELEMENTS(
 return sizeof(textarea_object);
 }
 
-        void textarea_g2t(DATA *data, FILE * hf, gadget_object_base * gadget, char *pszStringTable, char *pszMessageTable)
-//      ================================================================================================================
+        void textarea_g2t(DATA *data, FILE * hf, gadget_object_base * gadget, char *pszStringTable, char *pszMessageTable, int cbGadget)
+//      ===============================================================================================================================
 {
-get_objects(data, hf, pszStringTable, pszMessageTable, (char *) gadget, TextAreaObjectList, ELEMENTS(TextAreaObjectList), 2);
+get_objects(data, hf, pszStringTable, pszMessageTable, (char *) gadget, TextAreaObjectList, ELEMENTS(TextAreaObjectList), 2, cbGadget);
 }
 
 
@@ -656,24 +656,54 @@ static const OBJECTLIST ToolActionObjectList[] = {
 	{iol_STRING, "off_text:",      offsetof(toolaction_object, off_text),       "off_text_limit:",  offsetof(toolaction_object, off_text_limit) },
 	{iol_STRING, "on_text:",       offsetof(toolaction_object, on_text),        "on_text_limit:",   offsetof(toolaction_object, on_text_limit)  },
 	{iol_BITS,   "click_action:",  offsetof(toolaction_object, click_action),   NULL,               bits_ACTION                                 },
-	{iol_STRING, "select_show:",   offsetof(toolaction_object, select_show),    NULL,               0                                           },
+	{iol_STRING, "select_show:",   offsetof(toolaction_object, select_show),    NULL,               0                                           }
+};
+
+/* Fields added when the ToolAction module extended the gadget to let adjust
+   click behave independently of select/click (RISC OS ToolAction module,
+   c/toolact: TOOL_ACTION_OBJECT_SIZE_0 = 6 words, TOOL_ACTION_OBJECT_SIZE_1 =
+   10 words). A gadget compiled against the older, shorter layout genuinely
+   does not have these fields in the file at all - see ToolActionObjectListV0Extra
+   below for what that older layout means instead. */
+static const OBJECTLIST ToolActionObjectListV1[] = {
 	{iol_BITS,   "adjust_action:", offsetof(toolaction_object, adjust_action),  NULL,               bits_ACTION                                 },
 	{iol_STRING, "adjust_show:",   offsetof(toolaction_object, adjust_show),    NULL,               0                                           },
 	{iol_STRING, "fade_text:",     offsetof(toolaction_object, fade_text),      "fade_text_limit:", offsetof(toolaction_object, fade_text_limit)}
+};
+
+/* toolaction_add() in the ToolAction module (c/toolact) treats a gadget
+   without the version-1 fields as "adjust behaves exactly like click", not as
+   "adjust_action unset": tb->adjust_action_no = (version == 0) ? tb->select_action_no
+   : ... . There is no adjust_show/fade_text concept at all for this version
+   (they're only ever read "if (version >= 1)"), so we must not print them as
+   blank/unset values - we print what the module actually does, which is to
+   read click_action's offset under the adjust_action: label, and omit
+   adjust_show/fade_text entirely. Generic zero-filling of the missing bytes
+   would have printed the wrong click behaviour and an invented empty string. */
+static const OBJECTLIST ToolActionObjectListV0Extra[] = {
+	{iol_BITS,   "adjust_action:", offsetof(toolaction_object, click_action),   NULL,               bits_ACTION                                 }
 };
 
         int toolaction_t2g(DATA *data, char *pszIn, int nOffset, gadget_object_base * gadget)
 //      ====================================================================================
 {
 put_objects(data, pszIn, nOffset, (char *) gadget, ToolActionObjectList, ELEMENTS(ToolActionObjectList));
+put_objects(data, pszIn, nOffset, (char *) gadget, ToolActionObjectListV1, ELEMENTS(ToolActionObjectListV1));
 
 return sizeof(toolaction_object);
 }
 
-        void toolaction_g2t(DATA *data, FILE * hf, gadget_object_base * gadget, char *pszStringTable, char *pszMessageTable)
-//      ==================================================================================================================
+        void toolaction_g2t(DATA *data, FILE * hf, gadget_object_base * gadget, char *pszStringTable, char *pszMessageTable, int cbGadget)
+//      =================================================================================================================================
 {
-get_objects(data, hf, pszStringTable, pszMessageTable, (char *) gadget, ToolActionObjectList, ELEMENTS(ToolActionObjectList), 2);
+get_objects(data, hf, pszStringTable, pszMessageTable, (char *) gadget, ToolActionObjectList, ELEMENTS(ToolActionObjectList), 2, cbGadget);
+
+/* Match the module's own version test (c/toolact, toolaction_add()): strictly
+   more than the "version 0" size means the adjust/fade fields are present. */
+if (cbGadget > (int) offsetof(toolaction_object, adjust_action))
+  get_objects(data, hf, pszStringTable, pszMessageTable, (char *) gadget, ToolActionObjectListV1, ELEMENTS(ToolActionObjectListV1), 2, cbGadget);
+else
+  get_objects(data, hf, pszStringTable, pszMessageTable, (char *) gadget, ToolActionObjectListV0Extra, ELEMENTS(ToolActionObjectListV0Extra), 2, cbGadget);
 }
 
 
@@ -705,10 +735,10 @@ put_objects(data, pszIn, nOffset, (char *) gadget, WritableFieldObjectList, ELEM
 return sizeof(writablefield_object);
 }
 
-        void writablefield_g2t(DATA *data, FILE * hf, gadget_object_base * gadget, char *pszStringTable, char *pszMessageTable)
-//      =====================================================================================================================
+        void writablefield_g2t(DATA *data, FILE * hf, gadget_object_base * gadget, char *pszStringTable, char *pszMessageTable, int cbGadget)
+//      ====================================================================================================================================
 {
-get_objects(data, hf, pszStringTable, pszMessageTable, (char *) gadget, WritableFieldObjectList, ELEMENTS(WritableFieldObjectList), 2);
+get_objects(data, hf, pszStringTable, pszMessageTable, (char *) gadget, WritableFieldObjectList, ELEMENTS(WritableFieldObjectList), 2, cbGadget);
 }
 
 
@@ -735,10 +765,10 @@ put_objects(data, pszIn, nOffset, (char *) gadget, TabsObjectList, ELEMENTS(Tabs
 return sizeof(tabs_object);
 }
 
-        void tabs_g2t(DATA *data, FILE * hf, gadget_object_base * gadget, char *pszStringTable, char *pszMessageTable)
-//      ============================================================================================================
+        void tabs_g2t(DATA *data, FILE * hf, gadget_object_base * gadget, char *pszStringTable, char *pszMessageTable, int cbGadget)
+//      ===========================================================================================================================
 {
-get_objects(data, hf, pszStringTable, pszMessageTable, (char *) gadget, TabsObjectList, ELEMENTS(TabsObjectList), 2);
+get_objects(data, hf, pszStringTable, pszMessageTable, (char *) gadget, TabsObjectList, ELEMENTS(TabsObjectList), 2, cbGadget);
 }
 
 
@@ -779,8 +809,8 @@ put_objects(data, pszIn, nOffset, (char *) gadget, TreeviewObjectList, ELEMENTS(
 return sizeof(treeview_object);
 }
 
-        void treeview_g2t(DATA *data, FILE * hf, gadget_object_base * gadget, char *pszStringTable, char *pszMessageTable)
-//      ================================================================================================================
+        void treeview_g2t(DATA *data, FILE * hf, gadget_object_base * gadget, char *pszStringTable, char *pszMessageTable, int cbGadget)
+//      ===============================================================================================================================
 {
-get_objects(data, hf, pszStringTable, pszMessageTable, (char *) gadget, TreeviewObjectList, ELEMENTS(TreeviewObjectList), 2);
+get_objects(data, hf, pszStringTable, pszMessageTable, (char *) gadget, TreeviewObjectList, ELEMENTS(TreeviewObjectList), 2, cbGadget);
 }

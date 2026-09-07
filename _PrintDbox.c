@@ -66,5 +66,5 @@ return sizeof(printdbox_object);
         void printdbox_g2t(DATA *data, FILE * hf, toolbox_resource_file_object_base * object, char *pszStringTable, char *pszMessageTable)
 //      ================================================================================================================================
 {
-get_objects(data, hf, pszStringTable, pszMessageTable, (const char *)(object + 1), PrintDboxObjectList, ELEMENTS(PrintDboxObjectList), 1);
+get_objects(data, hf, pszStringTable, pszMessageTable, (const char *)(object + 1), PrintDboxObjectList, ELEMENTS(PrintDboxObjectList), 1, sizeof(printdbox_object));
 }

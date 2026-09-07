@@ -27,7 +27,7 @@
 #include "ccres.h"
 
 void put_objects(DATA *data, char *pszIn, int nOffset, char *object, const OBJECTLIST *Objectlist, int nObjects);
-void get_objects(DATA *data, FILE * hf, char *pszStringTable, char *pszMessageTable, const char *objectP, const OBJECTLIST *ObjectList, int nObjects, int nIndent);
+void get_objects(DATA *data, FILE * hf, char *pszStringTable, char *pszMessageTable, const char *objectP, const OBJECTLIST *ObjectList, int nObjects, int nIndent, int cbObject);
 char *next_object(char ** pszIn, char *pszEnd);
 char *object_end(DATA *data, char *pszIn, char *pszEnd);
 void object_text2resource(DATA *data, FILE * hf, char *pszIn, char *pszOut, const CLASSES *pClass);

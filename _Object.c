@@ -821,16 +821,39 @@ for (n = 0; n < nObjects; n++, ObjectList++)
 }
 
 
-void get_objects(DATA *data, FILE * hf, char *pszStringTable, char *pszMessageTable, const char *objectP, const OBJECTLIST *ObjectList, int nObjects, int nIndent)
+void get_objects(DATA *data, FILE * hf, char *pszStringTable, char *pszMessageTable, const char *objectP, const OBJECTLIST *ObjectList, int nObjects, int nIndent, int cbObject)
 {
 char *pszIndent;
 int i, n;
+bool fTruncated = false;
 
 pszIndent = (nIndent == 1) ? "  " : (nIndent == 2) ? "    " : "";
 for (n = 0; n < nObjects; n++, ++ObjectList)
   {
   if (ObjectList->nTable != iol_OBJECT)
     { // do nothing for res2text
+
+    /* cbObject is how many bytes this particular instance actually has (eg. a
+       gadget's class_no_and_size word). RISC OS Toolbox structures grow new
+       trailing fields across module versions, and a shorter/older instance is
+       entirely valid - but the missing bytes are NOT reliably zero, and what
+       their absence *means* is decided by the owning module, not by us. For
+       example ToolAction's own toolaction_add() (ToolAction/c/toolact) makes
+       an older gadget's adjust click behave exactly like click_action, and
+       drops the fade/adjust-show features outright, rather than treating them
+       as zero/unset (see ToolActionObjectListV0Extra in _Gadgets.c). So the
+       only safe *generic* behaviour when a field lies beyond what was really
+       stored is to say so and stop - not invent a value for it. */
+    if (ObjectList->nEntry >= cbObject)
+      {
+      if (!fTruncated)
+        {
+        error(data, "'%s' is beyond the stored size of this object (%d bytes) - this is an older/shorter version of the structure that isn't specifically handled here, so remaining fields are omitted rather than guessed", ObjectList->pszEntry, cbObject);
+        fTruncated = true;
+        }
+      continue;
+      }
+
     fputs(pszIndent, hf);
     switch (ObjectList->nTable)
       {
@@ -1073,6 +1096,6 @@ void object_resource2text(DATA *data, FILE * hf, toolbox_relocatable_object_base
 		pszMessageTable = ((char *) object) + object->message_table_offset;
 	}
 
-	get_objects(data, hf, pszStringTable, pszMessageTable, (const char *)&object->rf_obj, ObjectHeaderList, ELEMENTS(ObjectHeaderList), 1);
+	get_objects(data, hf, pszStringTable, pszMessageTable, (const char *)&object->rf_obj, ObjectHeaderList, ELEMENTS(ObjectHeaderList), 1, sizeof(toolbox_resource_file_object_base));
 	o2t(data, hf, (toolbox_resource_file_object_base *) &object->rf_obj, pszStringTable, pszMessageTable);
 }

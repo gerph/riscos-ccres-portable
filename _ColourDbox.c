@@ -55,5 +55,5 @@ return sizeof(colourdbox_object);
         void colourdbox_g2t(DATA *data, FILE * hf, toolbox_resource_file_object_base * object, char *pszStringTable, char *pszMessageTable)
 //      =================================================================================================================================
 {
-get_objects(data, hf, pszStringTable, pszMessageTable, (char *) (object + 1), ColourDboxObjectList, ELEMENTS(ColourDboxObjectList), 1);
+get_objects(data, hf, pszStringTable, pszMessageTable, (char *) (object + 1), ColourDboxObjectList, ELEMENTS(ColourDboxObjectList), 1, sizeof(colourdbox_object));
 }

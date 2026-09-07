@@ -60,5 +60,5 @@ return sizeof(colourmenu_object);
         void colourmenu_g2t(DATA *data, FILE * hf, toolbox_resource_file_object_base * object, char *pszStringTable, char *pszMessageTable)
 //      =================================================================================================================================
 {
-get_objects(data, hf, pszStringTable, pszMessageTable, (char *) (object + 1), ColourMenuObjectList, ELEMENTS(ColourMenuObjectList), 1);
+get_objects(data, hf, pszStringTable, pszMessageTable, (char *) (object + 1), ColourMenuObjectList, ELEMENTS(ColourMenuObjectList), 1, sizeof(colourmenu_object));
 }

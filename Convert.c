@@ -361,7 +361,7 @@ static void get_template_fonts(DATA *data, FILE *hf, template_font_data *font_da
 		pszFrom = (char *) font_data;			// bug in memcpy? without this it does a word-aligned copy
 		memcpy(&temp, pszFrom, sizeof(temp));
 		fputs("\ntemplate_font_data {\n", hf);
-		get_objects(data, hf, NULL, NULL, (const char *) &temp, TemplateFontDataList, ELEMENTS(TemplateFontDataList), 1);
+		get_objects(data, hf, NULL, NULL, (const char *) &temp, TemplateFontDataList, ELEMENTS(TemplateFontDataList), 1, sizeof(temp));
 		fputs("}\n", hf);
 		font_data++;
 	}
@@ -508,7 +508,7 @@ for (obj = (template_index *) (template_hdr + 1); obj->offset != 0; ++obj)
     }
   memcpy(pszBuff, data->pszIn + obj->offset, obj->size);
   fputs("\nwimp_window {\n", hf);
-  get_objects(data, hf, NULL, NULL, (const char *) obj, TemplateHeaderList, ELEMENTS(TemplateHeaderList), 1);
+  get_objects(data, hf, NULL, NULL, (const char *) obj, TemplateHeaderList, ELEMENTS(TemplateHeaderList), 1, sizeof(template_index));
   window_template2text(data, hf, pszBuff);
   fputs("}\n", hf);
   }

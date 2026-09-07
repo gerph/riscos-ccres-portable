@@ -52,5 +52,5 @@ return sizeof(quit_object);
         void quit_g2t(DATA *data, FILE * hf, toolbox_resource_file_object_base * object, char *pszStringTable, char *pszMessageTable)
 //      ===========================================================================================================================
 {
-get_objects(data, hf, pszStringTable, pszMessageTable, (const char *)(object + 1), QuitObjectList, ELEMENTS(QuitObjectList), 1);
+get_objects(data, hf, pszStringTable, pszMessageTable, (const char *)(object + 1), QuitObjectList, ELEMENTS(QuitObjectList), 1, sizeof(quit_object));
 }

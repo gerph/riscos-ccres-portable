@@ -79,7 +79,7 @@ return offsetof(proginfo_object, uri);
         void proginfo_g2t(DATA *data, FILE * hf, toolbox_resource_file_object_base * object, char *pszStringTable, char *pszMessageTable)
 //      ===============================================================================================================================
 {
-get_objects(data, hf, pszStringTable, pszMessageTable, (const char *)(object + 1), ProgInfoObjectList, ELEMENTS(ProgInfoObjectList), 1);
+get_objects(data, hf, pszStringTable, pszMessageTable, (const char *)(object + 1), ProgInfoObjectList, ELEMENTS(ProgInfoObjectList), 1, sizeof(proginfo_object));
 if (object->version == 101)
-  get_objects(data, hf, pszStringTable, pszMessageTable, (const char *)(object + 1), ProgInfoObjectList101, ELEMENTS(ProgInfoObjectList101), 1);
+  get_objects(data, hf, pszStringTable, pszMessageTable, (const char *)(object + 1), ProgInfoObjectList101, ELEMENTS(ProgInfoObjectList101), 1, sizeof(proginfo_object));
 }

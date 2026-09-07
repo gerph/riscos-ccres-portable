@@ -306,13 +306,13 @@ keyboardshortcut_object * shortcut;
 int n, g, nSize, nClass;
 
 window_object = (window_object_base *) (object + 1);
-get_objects(data, hf, pszStringTable, pszMessageTable, (const char *)window_object, WindowObjectList, ELEMENTS(WindowObjectList), 1);
+get_objects(data, hf, pszStringTable, pszMessageTable, (const char *)window_object, WindowObjectList, ELEMENTS(WindowObjectList), 1, sizeof(window_object_base));
 
 shortcut = (keyboardshortcut_object *) ((char *) window_object + (int) window_object->shortcuts);
 for (n = 0; n < window_object->shortcut_count; n++, shortcut++)
   {
   fprintf(hf, "  %s {\n", pszShortcutObject);
-  get_objects(data, hf, pszStringTable, pszMessageTable, (const char *)shortcut, ShortcutList, ELEMENTS(ShortcutList), 2);
+  get_objects(data, hf, pszStringTable, pszMessageTable, (const char *)shortcut, ShortcutList, ELEMENTS(ShortcutList), 2, sizeof(keyboardshortcut_object));
   fputs("  }\n", hf);
   }
 
@@ -325,8 +325,11 @@ for (n = 0; n < window_object->gadget_count; n++) {
     if (Gadgets[g].class_no == nClass)
       {
       fprintf(hf, "  %s {\n", Gadgets[g].name);
-      get_objects(data, hf, pszStringTable, pszMessageTable, (const char *)gadget, GadgetHeaderList, ELEMENTS(GadgetHeaderList), 2);
-      Gadgets[g].g2t(data, hf, gadget, pszStringTable, pszMessageTable);
+      // nSize is the size actually stored for this gadget instance - pass it through
+      // so get_objects()/g2t() can tell an older/shorter version of the gadget from
+      // memory corruption, instead of reading past the end of what was really there.
+      get_objects(data, hf, pszStringTable, pszMessageTable, (const char *)gadget, GadgetHeaderList, ELEMENTS(GadgetHeaderList), 2, nSize);
+      Gadgets[g].g2t(data, hf, gadget, pszStringTable, pszMessageTable, nSize);
       fputs("  }\n", hf);
       goto window_gadget_added;
       }
@@ -406,7 +409,7 @@ wimp_icon * i;
 int n;
 
 window = (wimp_window_base *) pszBuff;
-get_objects(data, hf, pszBuff, NULL, (const char *)window, WimpWindowObjectList, ELEMENTS(WimpWindowObjectList), 1);
+get_objects(data, hf, pszBuff, NULL, (const char *)window, WimpWindowObjectList, ELEMENTS(WimpWindowObjectList), 1, sizeof(wimp_window_base));
 get_icon_data(data, hf, pszBuff, (wimp_icon_data *) &window->title_data, window->title_flags, 1);
 
 i = (wimp_icon *) (window + 1);

@@ -105,14 +105,14 @@ menu_entry_object * entry;
 int n;
 
 menu = (menu_object_base *) (object + 1);
-get_objects(data, hf, pszStringTable, pszMessageTable, (const char *)menu, MenuObjectList, ELEMENTS(MenuObjectList), 1);
+get_objects(data, hf, pszStringTable, pszMessageTable, (const char *)menu, MenuObjectList, ELEMENTS(MenuObjectList), 1, sizeof(menu_object));
 
 for (n = 0, entry = (menu_entry_object *) (menu + 1); n < menu->entry_count; n++, entry++)
   {
   fprintf(hf, "  Entry {\n    cmp:%d\n", (int) entry->cmp);
   MenuEntryObjectList[0].nTable = (entry->flags & menu_ENTRY_IS_SPRITE) ? iol_STRING : iol_MSG;		// text or sprite?
-  get_objects(data, hf, pszStringTable, pszMessageTable, (const char *)entry, MenuEntryObjectListFlags, ELEMENTS(MenuEntryObjectListFlags), 2);
-  get_objects(data, hf, pszStringTable, pszMessageTable, (const char *)entry, MenuEntryObjectList, ELEMENTS(MenuEntryObjectList), 2);
+  get_objects(data, hf, pszStringTable, pszMessageTable, (const char *)entry, MenuEntryObjectListFlags, ELEMENTS(MenuEntryObjectListFlags), 2, sizeof(menu_entry_object));
+  get_objects(data, hf, pszStringTable, pszMessageTable, (const char *)entry, MenuEntryObjectList, ELEMENTS(MenuEntryObjectList), 2, sizeof(menu_entry_object));
   fputs("  }\n", hf);
   }
 }
