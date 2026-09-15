@@ -48,7 +48,8 @@ CCRES_LIBOBJS = Eval.o Convert.o Utils.o Library.o Error.o \
 	_ColourDbox.o _ColourMenu.o _DCS.o \
 	_FileInfo.o _FontDbox.o _FontMenu.o _Gadgets.o \
 	_Icon.o _Iconbar.o _Menu.o _Object.o _PrintDbox.o \
-	_ProgInfo.o _Quit.o _SaveAs.o _Scale.o _Window.o
+	_ProgInfo.o _Quit.o _SaveAs.o _Scale.o _Window.o \
+	_OptionsWindow.o _UpdateCheck.o
 
 DOBJS = Release/ccres
 

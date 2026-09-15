@@ -62,5 +62,19 @@ int tabs_t2g(DATA *data, char *pszIn, int nOffset, gadget_object_base * gadget);
 void tabs_g2t(DATA *data, FILE * hf, gadget_object_base * gadget, char *pszStringTable, char *pszMessageTable, int cbGadget);
 int treeview_t2g(DATA *data, char *pszIn, int nOffset, gadget_object_base * gadget);
 void treeview_g2t(DATA *data, FILE * hf, gadget_object_base * gadget, char *pszStringTable, char *pszMessageTable, int cbGadget);
+int scrollbar_t2g(DATA *data, char *pszIn, int nOffset, gadget_object_base * gadget);
+void scrollbar_g2t(DATA *data, FILE * hf, gadget_object_base * gadget, char *pszStringTable, char *pszMessageTable, int cbGadget);
+int imagefilegadget_t2g(DATA *data, char *pszIn, int nOffset, gadget_object_base * gadget);
+void imagefilegadget_g2t(DATA *data, FILE * hf, gadget_object_base * gadget, char *pszStringTable, char *pszMessageTable, int cbGadget);
+int colourswatch_t2g(DATA *data, char *pszIn, int nOffset, gadget_object_base * gadget);
+void colourswatch_g2t(DATA *data, FILE * hf, gadget_object_base * gadget, char *pszStringTable, char *pszMessageTable, int cbGadget);
+int amplayer_t2g(DATA *data, char *pszIn, int nOffset, gadget_object_base * gadget);
+void amplayer_g2t(DATA *data, FILE * hf, gadget_object_base * gadget, char *pszStringTable, char *pszMessageTable, int cbGadget);
+int mdnsservice_t2g(DATA *data, char *pszIn, int nOffset, gadget_object_base * gadget);
+void mdnsservice_g2t(DATA *data, FILE * hf, gadget_object_base * gadget, char *pszStringTable, char *pszMessageTable, int cbGadget);
+int urlimage_t2g(DATA *data, char *pszIn, int nOffset, gadget_object_base * gadget);
+void urlimage_g2t(DATA *data, FILE * hf, gadget_object_base * gadget, char *pszStringTable, char *pszMessageTable, int cbGadget);
+int divider_t2g(DATA *data, char *pszIn, int nOffset, gadget_object_base * gadget);
+void divider_g2t(DATA *data, FILE * hf, gadget_object_base * gadget, char *pszStringTable, char *pszMessageTable, int cbGadget);
 
 #endif

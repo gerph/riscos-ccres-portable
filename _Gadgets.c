@@ -41,6 +41,13 @@
 #include <oslib/toolaction.h>
 #include <oslib/toolbox.h>
 #include <oslib/writablefield.h>
+#include <oslib/scrollbar.h>
+#include <oslib/imagefilegadget.h>
+#include <oslib/colourswatch.h>
+#include <oslib/amplayer.h>
+#include <oslib/mdnsservice.h>
+#include <oslib/urlimage.h>
+#include <oslib/divider.h>
 
 #include "ccres.h"
 #include "tabs_treeview.h"
@@ -813,4 +820,225 @@ return sizeof(treeview_object);
 //      ===============================================================================================================================
 {
 get_objects(data, hf, pszStringTable, pszMessageTable, (char *) gadget, TreeviewObjectList, ELEMENTS(TreeviewObjectList), 2, cbGadget);
+}
+
+
+// Scrollbar gadget
+
+static const FLAGS ScrollbarFlags[] = {
+	{gadget_FADED  , "gadget_FADED"  },
+	{gadget_AT_BACK, "gadget_AT_BACK"}
+};
+
+static const FLAGS ScrollbarStateFlags[] = {
+	{scrollbar_HAS_VERTICAL_SCROLLBAR  , "scrollbar_HAS_VERTICAL_SCROLLBAR"  },
+	{scrollbar_HAS_HORIZONTAL_SCROLLBAR, "scrollbar_HAS_HORIZONTAL_SCROLLBAR"}
+};
+
+static const OBJECTLIST ScrollbarObjectList[] = {
+	{iol_FLAGS, "flags:",           offsetof(scrollbar_object, flags),          ScrollbarFlags,      ELEMENTS(ScrollbarFlags)     },
+	{iol_FLAGS, "type:",            offsetof(scrollbar_object, type),           ScrollbarStateFlags, ELEMENTS(ScrollbarStateFlags)},
+	{iol_INT,   "event:",           offsetof(scrollbar_object, event),          NULL,                0                            },
+	{iol_INT,   "lower_bound:",     offsetof(scrollbar_object, lower_bound),    NULL,                0                            },
+	{iol_INT,   "upper_bound:",     offsetof(scrollbar_object, upper_bound),    NULL,                0                            },
+	{iol_INT,   "value:",           offsetof(scrollbar_object, value),          NULL,                0                            },
+	{iol_INT,   "visible_length:",  offsetof(scrollbar_object, visible_length), NULL,                0                            },
+	{iol_INT,   "line_increment:",  offsetof(scrollbar_object, line_increment), NULL,                0                            },
+	{iol_INT,   "page_increment:",  offsetof(scrollbar_object, page_increment), NULL,                0                            }
+};
+
+        int scrollbar_t2g(DATA *data, char *pszIn, int nOffset, gadget_object_base * gadget)
+//      =================================================================================
+{
+put_objects(data, pszIn, nOffset, (char *) gadget, ScrollbarObjectList, ELEMENTS(ScrollbarObjectList));
+
+return sizeof(scrollbar_object);
+}
+
+        void scrollbar_g2t(DATA *data, FILE * hf, gadget_object_base * gadget, char *pszStringTable, char *pszMessageTable, int cbGadget)
+//      ====================================================================================================================================
+{
+get_objects(data, hf, pszStringTable, pszMessageTable, (char *) gadget, ScrollbarObjectList, ELEMENTS(ScrollbarObjectList), 2, cbGadget);
+}
+
+
+// ImageFileGadget gadget
+
+static const FLAGS ImageFileGadgetFlags[] = {
+	{imagefilegadget_NO_BORDER       , "imagefilegadget_NO_BORDER"       },
+	{imagefilegadget_COLOUR_MAP_WHOLE, "imagefilegadget_COLOUR_MAP_WHOLE"},
+	{gadget_FADED                    , "gadget_FADED"                    },
+	{gadget_AT_BACK                  , "gadget_AT_BACK"                  }
+};
+
+static const OBJECTLIST ImageFileGadgetObjectList[] = {
+	{iol_FLAGS, "flags:",      offsetof(imagefilegadget_object, flags),      ImageFileGadgetFlags, ELEMENTS(ImageFileGadgetFlags)},
+	{iol_INT,   "event:",      offsetof(imagefilegadget_object, event),      NULL,                 0                             },
+	{iol_INT,   "unused:",     offsetof(imagefilegadget_object, unused),     NULL,                 0                             },
+	{iol_OSCOL, "background:", offsetof(imagefilegadget_object, background), NULL,                 0                             }
+};
+
+        int imagefilegadget_t2g(DATA *data, char *pszIn, int nOffset, gadget_object_base * gadget)
+//      ========================================================================================
+{
+put_objects(data, pszIn, nOffset, (char *) gadget, ImageFileGadgetObjectList, ELEMENTS(ImageFileGadgetObjectList));
+
+return sizeof(imagefilegadget_object);
+}
+
+        void imagefilegadget_g2t(DATA *data, FILE * hf, gadget_object_base * gadget, char *pszStringTable, char *pszMessageTable, int cbGadget)
+//      ============================================================================================================================================
+{
+get_objects(data, hf, pszStringTable, pszMessageTable, (char *) gadget, ImageFileGadgetObjectList, ELEMENTS(ImageFileGadgetObjectList), 2, cbGadget);
+}
+
+
+// ColourSwatch gadget
+
+static const FLAGS ColourSwatchFlags[] = {
+	{colourswatch_INCLUDE_NONE_BUTTON, "colourswatch_INCLUDE_NONE_BUTTON"},
+	{colourswatch_SELECT_NONE_BUTTON , "colourswatch_SELECT_NONE_BUTTON" },
+	{gadget_FADED                    , "gadget_FADED"                    },
+	{gadget_AT_BACK                  , "gadget_AT_BACK"                  }
+};
+
+static const OBJECTLIST ColourSwatchObjectList[] = {
+	{iol_FLAGS,  "flags:",  offsetof(colourswatch_object, flags),  ColourSwatchFlags, ELEMENTS(ColourSwatchFlags)},
+	{iol_OSCOL,  "colour:", offsetof(colourswatch_object, colour), NULL,              0                          },
+	{iol_STRING, "title:",  offsetof(colourswatch_object, title),  NULL,              0                          }
+};
+
+        int colourswatch_t2g(DATA *data, char *pszIn, int nOffset, gadget_object_base * gadget)
+//      =====================================================================================
+{
+put_objects(data, pszIn, nOffset, (char *) gadget, ColourSwatchObjectList, ELEMENTS(ColourSwatchObjectList));
+
+return sizeof(colourswatch_object);
+}
+
+        void colourswatch_g2t(DATA *data, FILE * hf, gadget_object_base * gadget, char *pszStringTable, char *pszMessageTable, int cbGadget)
+//      =========================================================================================================================================
+{
+get_objects(data, hf, pszStringTable, pszMessageTable, (char *) gadget, ColourSwatchObjectList, ELEMENTS(ColourSwatchObjectList), 2, cbGadget);
+}
+
+
+// AMPlayer gadget (GAMPlayer)
+
+static const FLAGS AMPlayerFlags[] = {
+	{gadget_FADED  , "gadget_FADED"  },
+	{gadget_AT_BACK, "gadget_AT_BACK"}
+};
+
+static const OBJECTLIST AMPlayerObjectList[] = {
+	{iol_FLAGS, "flags:", offsetof(amplayer_object, flags), AMPlayerFlags, ELEMENTS(AMPlayerFlags)},
+	{iol_INT,   "type:",  offsetof(amplayer_object, type),  NULL,          0                      }
+};
+
+        int amplayer_t2g(DATA *data, char *pszIn, int nOffset, gadget_object_base * gadget)
+//      ================================================================================
+{
+put_objects(data, pszIn, nOffset, (char *) gadget, AMPlayerObjectList, ELEMENTS(AMPlayerObjectList));
+
+return sizeof(amplayer_object);
+}
+
+        void amplayer_g2t(DATA *data, FILE * hf, gadget_object_base * gadget, char *pszStringTable, char *pszMessageTable, int cbGadget)
+//      ===================================================================================================================================
+{
+get_objects(data, hf, pszStringTable, pszMessageTable, (char *) gadget, AMPlayerObjectList, ELEMENTS(AMPlayerObjectList), 2, cbGadget);
+}
+
+
+// MDNSService gadget (GMDNSService)
+
+static const FLAGS MDNSServiceFlags[] = {
+	{gadget_FADED  , "gadget_FADED"  },
+	{gadget_AT_BACK, "gadget_AT_BACK"}
+};
+
+static const OBJECTLIST MDNSServiceObjectList[] = {
+	{iol_FLAGS,  "flags:",      offsetof(mdnsservice_object, flags),      MDNSServiceFlags, ELEMENTS(MDNSServiceFlags)},
+	{iol_INT,    "event:",      offsetof(mdnsservice_object, event),      NULL,             0                         },
+	{iol_OSCOL,  "background:", offsetof(mdnsservice_object, background), NULL,             0                         },
+	{iol_OSCOL,  "foreground:", offsetof(mdnsservice_object, foreground), NULL,             0                         },
+	{iol_STRING, "service:",    offsetof(mdnsservice_object, service),    NULL,             0                         },
+	{iol_STRING, "domain:",     offsetof(mdnsservice_object, domain),     NULL,             0                         }
+};
+
+        int mdnsservice_t2g(DATA *data, char *pszIn, int nOffset, gadget_object_base * gadget)
+//      ====================================================================================
+{
+put_objects(data, pszIn, nOffset, (char *) gadget, MDNSServiceObjectList, ELEMENTS(MDNSServiceObjectList));
+
+return sizeof(mdnsservice_object);
+}
+
+        void mdnsservice_g2t(DATA *data, FILE * hf, gadget_object_base * gadget, char *pszStringTable, char *pszMessageTable, int cbGadget)
+//      =======================================================================================================================================
+{
+get_objects(data, hf, pszStringTable, pszMessageTable, (char *) gadget, MDNSServiceObjectList, ELEMENTS(MDNSServiceObjectList), 2, cbGadget);
+}
+
+
+// URLImage gadget (GURLImage)
+
+static const FLAGS URLImageFlags[] = {
+	{urlimage_RETAIN_SOURCE_IMAGE  , "urlimage_RETAIN_SOURCE_IMAGE"  },
+	{urlimage_DIRECT_RENDER        , "urlimage_DIRECT_RENDER"        },
+	{urlimage_BORDER               , "urlimage_BORDER"               },
+	{urlimage_DELIVER_CLICK        , "urlimage_DELIVER_CLICK"        },
+	{urlimage_DELIVER_COMPLETE     , "urlimage_DELIVER_COMPLETE"     },
+	{urlimage_PROGRESS_PERCENTAGE  , "urlimage_PROGRESS_PERCENTAGE"  },
+	{gadget_FADED                  , "gadget_FADED"                  },
+	{gadget_AT_BACK                , "gadget_AT_BACK"                }
+};
+
+static const OBJECTLIST URLImageObjectList[] = {
+	{iol_FLAGS,  "flags:",       offsetof(urlimage_object, flags),       URLImageFlags, ELEMENTS(URLImageFlags)},
+	{iol_STRING, "url:",         offsetof(urlimage_object, url),         NULL,          0                      },
+	{iol_INT,    "event_click:", offsetof(urlimage_object, event_click), NULL,          0                      },
+	{iol_OSCOL,  "foreground:",  offsetof(urlimage_object, foreground),  NULL,          0                      },
+	{iol_OSCOL,  "background:",  offsetof(urlimage_object, background), NULL,          0                      }
+};
+
+        int urlimage_t2g(DATA *data, char *pszIn, int nOffset, gadget_object_base * gadget)
+//      ================================================================================
+{
+put_objects(data, pszIn, nOffset, (char *) gadget, URLImageObjectList, ELEMENTS(URLImageObjectList));
+
+return sizeof(urlimage_object);
+}
+
+        void urlimage_g2t(DATA *data, FILE * hf, gadget_object_base * gadget, char *pszStringTable, char *pszMessageTable, int cbGadget)
+//      ===================================================================================================================================
+{
+get_objects(data, hf, pszStringTable, pszMessageTable, (char *) gadget, URLImageObjectList, ELEMENTS(URLImageObjectList), 2, cbGadget);
+}
+
+
+// Divider gadget (GDivider)
+
+static const FLAGS DividerFlags[] = {
+	{divider_VERTICAL, "divider_VERTICAL"},
+	{gadget_FADED    , "gadget_FADED"    },
+	{gadget_AT_BACK  , "gadget_AT_BACK"  }
+};
+
+static const OBJECTLIST DividerObjectList[] = {
+	{iol_FLAGS, "flags:", offsetof(divider_object, flags), DividerFlags, ELEMENTS(DividerFlags)}
+};
+
+        int divider_t2g(DATA *data, char *pszIn, int nOffset, gadget_object_base * gadget)
+//      ===============================================================================
+{
+put_objects(data, pszIn, nOffset, (char *) gadget, DividerObjectList, ELEMENTS(DividerObjectList));
+
+return sizeof(divider_object);
+}
+
+        void divider_g2t(DATA *data, FILE * hf, gadget_object_base * gadget, char *pszStringTable, char *pszMessageTable, int cbGadget)
+//      ==================================================================================================================================
+{
+get_objects(data, hf, pszStringTable, pszMessageTable, (char *) gadget, DividerObjectList, ELEMENTS(DividerObjectList), 2, cbGadget);
 }

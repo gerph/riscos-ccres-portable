@@ -46,6 +46,13 @@
 #include <oslib/textgadgets.h>
 #include <oslib/toolaction.h>
 #include <oslib/writablefield.h>
+#include <oslib/scrollbar.h>
+#include <oslib/imagefilegadget.h>
+#include <oslib/colourswatch.h>
+#include <oslib/amplayer.h>
+#include <oslib/mdnsservice.h>
+#include <oslib/urlimage.h>
+#include <oslib/divider.h>
 
 #include "ccres.h"
 #include "Error.h"
@@ -76,7 +83,14 @@ static const GADGETS Gadgets[] = {
 	{class_TEXT_AREA,      textarea_g2t,      textarea_t2g,      "textarea_object"     },
 	{class_TREE_VIEW,      treeview_g2t,      treeview_t2g,      "treeview_object",    },
 	{class_TOOL_ACTION,    toolaction_g2t,    toolaction_t2g,    "toolaction_object"   },
-	{class_WRITABLE_FIELD, writablefield_g2t, writablefield_t2g, "writablefield_object"}
+	{class_WRITABLE_FIELD, writablefield_g2t, writablefield_t2g, "writablefield_object"},
+	{class_SCROLLBAR,       scrollbar_g2t,       scrollbar_t2g,       "scrollbar_object"      },
+	{class_IMAGEFILEGADGET, imagefilegadget_g2t, imagefilegadget_t2g, "imagefilegadget_object"},
+	{class_COLOURSWATCH,    colourswatch_g2t,    colourswatch_t2g,    "colourswatch_object"   },
+	{class_AMPLAYER,        amplayer_g2t,        amplayer_t2g,        "amplayer_object"       },
+	{class_MDNSSERVICE,     mdnsservice_g2t,     mdnsservice_t2g,     "mdnsservice_object"    },
+	{class_URLIMAGE,        urlimage_g2t,        urlimage_t2g,        "urlimage_object"       },
+	{class_DIVIDER,         divider_g2t,         divider_t2g,         "divider_object"        }
 };
 
 static const FLAGS WindowFlags[] = {

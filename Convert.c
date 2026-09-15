@@ -37,6 +37,8 @@
 #include <oslib/saveas.h>
 #include <oslib/scale.h>
 #include <oslib/window.h>
+#include <oslib/optionswindow.h>
+#include <oslib/updatecheck.h>
 
 #include "ccres.h"
 #include "Convert.h"
@@ -59,6 +61,8 @@
 #include "_SaveAs.h"
 #include "_Scale.h"
 #include "_Window.h"
+#include "_OptionsWindow.h"
+#include "_UpdateCheck.h"
 
 static const CLASSES Classes[] = {
 	{ColourDbox_ClassSWI, colourdbox_g2t, colourdbox_t2g, "colourdbox_object"},
@@ -74,7 +78,9 @@ static const CLASSES Classes[] = {
 	{Quit_ClassSWI      , quit_g2t      , quit_t2g      , "quit_object"      },
 	{SaveAs_ClassSWI    , saveas_g2t    , saveas_t2g    , "saveas_object"    },
 	{Scale_ClassSWI     , scale_g2t     , scale_t2g     , "scale_object"     },
-	{Window_ClassSWI    , window_g2t    , window_t2g    , "window_object"    }
+	{Window_ClassSWI    , window_g2t    , window_t2g    , "window_object"    },
+	{OptionsWindow_ClassSWI, optionswindow_g2t, optionswindow_t2g, "optionswindow_object"},
+	{UpdateCheck_ClassSWI  , updatecheck_g2t  , updatecheck_t2g  , "updatecheck_object"  }
 };
 
 

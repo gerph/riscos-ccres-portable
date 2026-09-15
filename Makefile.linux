@@ -11,7 +11,8 @@ SRCS = CMD.c Convert.c Error.c Utils.c Library.c Eval.c \
        _Object.c _Window.c _Menu.c _SaveAs.c _Iconbar.c \
        _Scale.c _ColourDbox.c _ColourMenu.c _DCS.c \
        _FileInfo.c _FontDbox.c _FontMenu.c _PrintDbox.c \
-       _ProgInfo.c _Quit.c _Gadgets.c _Icon.c
+       _ProgInfo.c _Quit.c _Gadgets.c _Icon.c \
+       _OptionsWindow.c _UpdateCheck.c
 
 OBJS = $(SRCS:.c=.o)
 
