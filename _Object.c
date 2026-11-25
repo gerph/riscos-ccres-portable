@@ -40,6 +40,9 @@
    the message fits the buffer used by report() */
 #define WARNING_STRING_MAX 200
 
+/* Most characters of a flag or value name to include in an error message */
+#define NAME_SHOWN_MAX 64
+
 static const FLAGS ObjectHeaderFlags[] = {
 	{toolbox_OBJECT_CREATE_ON_LOAD, "toolbox_OBJECT_CREATE_ON_LOAD"},
 	{toolbox_OBJECT_SHOW_ON_CREATE, "toolbox_OBJECT_SHOW_ON_CREATE"},
@@ -50,7 +53,7 @@ static const FLAGS ObjectHeaderFlags[] = {
 static const OBJECTLIST ObjectHeaderList[] = {
 	{iol_FLAGS, "header_flags:", offsetof(toolbox_resource_file_object_base, flags),   ObjectHeaderFlags, ELEMENTS(ObjectHeaderFlags)},
 	{iol_INT,   "version:",      offsetof(toolbox_resource_file_object_base, version), NULL,              0                          },
-	{iol_CHARPTR,  "object_name:",  offsetof(toolbox_resource_file_object_base, name),    NULL,              0                          }
+	{iol_CHARPTR,  "object_name:",  offsetof(toolbox_resource_file_object_base, name),    NULL,              -12                        }
 };
 
 // Icon flags to be masked with 0xFFF + 0xE00000 :
@@ -343,7 +346,7 @@ static bool put_tstring(DATA *data, char *pszIn, int nOffset, char *object, STRI
 				cbShown = cbEntry ? cbEntry - 1 : 0;
 				if (cbShown > WARNING_STRING_MAX)
 					cbShown = WARNING_STRING_MAX;
-				report(data, pszLimitLine, "Warning: increased size value for %s from %d to %d to fully include string <%.*s%s>", StringList->pszEntry, cbLimit, cbEntry, cbShown, pstr ? pstr : "", (cbShown < cbEntry - 1) ? "..." : "");
+				report_warning(data, pszLimitLine, "increased size value for %s from %d to %d to fully include string <%.*s%s>", StringList->pszEntry, cbLimit, cbEntry, cbShown, pstr ? pstr : "", (cbShown < cbEntry - 1) ? "..." : "");
 				cbLimit = cbEntry;
 			}
 		}
@@ -461,21 +464,44 @@ if (StringList->pszLimit != NULL)
 }
 
 
-static  bits put_flags(DATA *data, char *pstrFlags, FLAGS *pFlags, int nFlags)
-//      =====================================================================
+/*******************************************************************
+ Function:      next_flag
+ Description:   Find the next name in a list of flags separated by '|'
+                and white space (spaces, tabs or other control
+                characters other than the terminator).
+ Parameters:    p = position in the flag list
+                pcb = updated with the length of the name found
+ Returns:       pointer to the name, or NULL if there are no more
+ ******************************************************************/
+static char *next_flag(char *p, int *pcb)
+{
+char *pstr;
+unsigned char ch;
+
+while ((ch = (unsigned char) *p) != '\0' && (ch <= ' ' || ch == '|'))
+  p++;
+if (ch == '\0')
+  return NULL;
+pstr = p;
+while ((ch = (unsigned char) *p) > ' ' && ch != '|')
+  p++;
+*pcb = p - pstr;
+return pstr;
+}
+
+
+static  bits put_flags(DATA *data, char *pstrFlags, FLAGS *pFlags, int nFlags, const char *pszField)
+//      ==========================================================================================
 {
 char *p;
 bits f;
+int cb;
 
 f = 0;
-for (p = pstrFlags; *p != '\0'; /* */)
+for (p = pstrFlags; (pstrFlags = next_flag(p, &cb)) != NULL; p = pstrFlags + cb)
   {
-  int n, cb;
-  char ch;
+  int n;
 
-  while ((ch = *p) > ' ' && ch != '|')
-    p++;
-  cb = p - pstrFlags;
   for (n = 0; n < nFlags; n++)
     {
     if (strncasecmp(pstrFlags, pFlags[n].pstr, cb) == 0 && strlen(pFlags[n].pstr) == cb)
@@ -493,12 +519,8 @@ for (p = pstrFlags; *p != '\0'; /* */)
       f |= result;
       }
     else
-      report(data, pstrFlags, "Unknown flag '%.*s'", cb, pstrFlags);
+      report(data, pstrFlags, "Unknown flag '%.*s' in %s", (cb > NAME_SHOWN_MAX) ? NAME_SHOWN_MAX : cb, pstrFlags, pszField);
     }
-
-  while ((ch = *p) == ' ' || ch == '|')
-    p++;
-  pstrFlags = p;
   }
 
 return f;
@@ -531,20 +553,32 @@ fwrite(achBuff, cb, 1, hf);
 
 
 // fInt - value may be a #defined variable or a nunber (hex or decimal)
-static int put_enum(DATA *data, char *pstrFlags, const FLAGS *pFlags, int nFlags, bool fInt)
+static int put_enum(DATA *data, char *pstrFlags, const FLAGS *pFlags, int nFlags, bool fInt, const char *pszField)
 {
-	int n;
+	int n, cb;
 
-	if (*pstrFlags > ' ') {
+	/* Ignore white space around the name */
+	while (*pstrFlags != '\0' && (unsigned char) *pstrFlags <= ' ')
+		pstrFlags++;
+	for (cb = 0; (unsigned char) pstrFlags[cb] > ' '; cb++)
+		/* */;
+
+	if (cb > 0) {
+		for (n = cb; pstrFlags[n] != '\0'; n++) {
+			if ((unsigned char) pstrFlags[n] > ' ' && !fInt) {
+				report(data, pstrFlags, "Unexpected text after '%.*s' in %s", (cb > NAME_SHOWN_MAX) ? NAME_SHOWN_MAX : cb, pstrFlags, pszField);
+				break;
+			}
+		}
 		for (n = 0; n < nFlags; n++) {
-			if (strcmp(pstrFlags, pFlags[n].pstr) == 0) {
+			if (strncmp(pstrFlags, pFlags[n].pstr, cb) == 0 && pFlags[n].pstr[cb] == '\0') {
 				return pFlags[n].flag;
 			}
 		}
 		if (fInt) {
 			return my_atoi(&pstrFlags);
 		}
-		report(data, pstrFlags, "Unknown variable '%s'", pstrFlags);
+		report(data, pstrFlags, "Unknown value '%.*s' in %s", (cb > NAME_SHOWN_MAX) ? NAME_SHOWN_MAX : cb, pstrFlags, pszField);
 	}
 
 	return 0;
@@ -575,22 +609,17 @@ get_enum_found:
 }
 
 
-static bits put_iflags(DATA *data, char *pstrFlags)
+static bits put_iflags(DATA *data, char *pstrFlags, const char *pszField)
 {
 char *p;
 bits f;
+int cb;
 
 f = 0;
-p = pstrFlags;
-while (*p != '\0')
+for (p = pstrFlags; (pstrFlags = next_flag(p, &cb)) != NULL; p = pstrFlags + cb)
   {
   const FLAGS *pFlags;
-  int n, cb, nFlags;
-  char ch;
-
-  while ((ch = *p) > ' ' && ch != '|')
-    p++;
-  cb = p - pstrFlags;
+  int n, nFlags;
 
   pFlags = WimpIconFlags;
   nFlags = ELEMENTS(WimpIconFlags);
@@ -620,14 +649,11 @@ while (*p != '\0')
     f |= result;
     }
   else
-    report(data, pstrFlags, "Unknown flag '%.*s'", cb, pstrFlags);
+    report(data, pstrFlags, "Unknown flag '%.*s' in %s", (cb > NAME_SHOWN_MAX) ? NAME_SHOWN_MAX : cb, pstrFlags, pszField);
 
 put_iflags_next_flag:
-
-  while ((ch = *p) == ' ' || ch == '|')
-    p++;
-  pstrFlags = p;
-}
+  ;
+  }
 
 return f;
 }
@@ -719,21 +745,50 @@ fprintf(hf, "%s%d,%d\n", pszCoord, coord->x, coord->y);
 }
 
 
-static  void put_pstr(DATA *data, char *pstr, char *pszEntry, int nChars)
-//      ===============================================================
+/*******************************************************************
+ Function:      put_pstr
+ Description:   Store a string from the text in a fixed size field,
+                truncating it with a warning if it does not fit.
+ Parameters:    data = conversion session
+                pstr = field to store the string in
+                pszEntry = the string from the text, possibly quoted
+                nChars = size of the field: positive if the string may
+                         fill it without a terminator, negative if it
+                         must be terminated within -nChars bytes (see
+                         iol_CHARPTR)
+                pszField = name of the field, for messages
+ Returns:       none
+ ******************************************************************/
+static  void put_pstr(DATA *data, char *pstr, char *pszEntry, int nChars, const char *pszField)
+//      =========================================================================================
 {
+int cb, cbMax;
+char *pszLine;
+
+pszLine = pszEntry;
 pszEntry = remove_quotes(data, pszEntry);
-if (nChars != 0 && strlen(pszEntry) == nChars)
-  memcpy(pstr, pszEntry, nChars);
+cb = strlen(pszEntry);
+/* Most characters the field can hold */
+cbMax = (nChars < 0) ? (-nChars - 1) : nChars;
+if (cb > cbMax)
+  {
+  report_warning(data, pszLine, "%s is longer than %d characters, so was truncated to '%.*s'", pszField, cbMax, cbMax, pszEntry);
+  cb = cbMax;
+  }
+if (nChars > 0 && cb == nChars)
+  memcpy(pstr, pszEntry, cb);
+else if (data->nFiletypeOut == osfile_TYPE_TEMPLATE)
+  {
+  /* Template strings end at any control character, and with '\r' */
+  int n;
+  for (n = 0; n < cb && (unsigned char) pszEntry[n] >= ' '; n++)
+    pstr[n] = pszEntry[n];
+  pstr[n] = '\r';
+  }
 else
   {
-  if (data->nFiletypeOut == osfile_TYPE_TEMPLATE)
-    {
-    int cb = my_strcpy0d(pstr, pszEntry);
-    pstr[cb] = '\r';
-    }
-  else
-    strcpy(pstr, pszEntry);
+  memcpy(pstr, pszEntry, cb);
+  pstr[cb] = '\0';
   }
 }
 
@@ -748,11 +803,15 @@ if (nChars == 0)
   fprintf(hf, "%s\"%s\"\n", pszEntry, string_from_table((char * /* yucky; any better solution ? */)objectP, nEntry));
 else
   {
+  /* A terminated field holds at most -nChars - 1 characters */
+  if (nChars < 0)
+    nChars = -nChars - 1;
   if ((pszBuff = MyAlloc(nChars + 1)) == NULL)
     error(data, "Not enough memory to get %s", pszEntry);
   else
     {
-    my_strncpy0d(pszBuff, &objectP[nEntry], nChars);
+    /* my_strncpy0d copies at most one less than its limit */
+    my_strncpy0d(pszBuff, &objectP[nEntry], nChars + 1);
     fprintf(hf, "%s\"%s\"\n", pszEntry, pszBuff);
     MyFree(pszBuff);
     }
@@ -790,27 +849,27 @@ for (n = 0; n < nObjects; n++, ObjectList++)
           {
           case iol_FLAGS:
             pBits = (bits *) &Object[ObjectList->nEntry];
-            *pBits = put_flags(data, pszEntry, (FLAGS *) ObjectList->pData, ObjectList->nData);
+            *pBits = put_flags(data, pszEntry, (FLAGS *) ObjectList->pData, ObjectList->nData, ObjectList->pszEntry);
             break;
           case iol_IFLAGS:
             pBits = (bits *) &Object[ObjectList->nEntry];
-            *pBits = put_iflags(data, pszEntry);
+            *pBits = put_iflags(data, pszEntry, ObjectList->pszEntry);
             break;
           case iol_BFLAGS:
             pByte = (uint8_t *) &Object[ObjectList->nEntry];
-            *pByte = (uint8_t) put_flags(data, pszEntry, (FLAGS *) ObjectList->pData, ObjectList->nData);
+            *pByte = (uint8_t) put_flags(data, pszEntry, (FLAGS *) ObjectList->pData, ObjectList->nData, ObjectList->pszEntry);
             break;
           case iol_ENUM:
             pInt = (int *) &Object[ObjectList->nEntry];
-            *pInt = put_enum(data, pszEntry, (FLAGS *) ObjectList->pData, ObjectList->nData, false);
+            *pInt = put_enum(data, pszEntry, (FLAGS *) ObjectList->pData, ObjectList->nData, false, ObjectList->pszEntry);
             break;
           case iol_CMP:
             pInt = (int *) &Object[ObjectList->nEntry];
-            *pInt = put_enum(data, pszEntry, CmpFlags, ELEMENTS(CmpFlags), true);
+            *pInt = put_enum(data, pszEntry, CmpFlags, ELEMENTS(CmpFlags), true, ObjectList->pszEntry);
             break;
           case iol_OSCOL:
             pInt = (int *) &Object[ObjectList->nEntry];
-            *pInt = put_enum(data, pszEntry, OsColours, ELEMENTS(OsColours), false);
+            *pInt = put_enum(data, pszEntry, OsColours, ELEMENTS(OsColours), false, ObjectList->pszEntry);
             break;
           case iol_BOX:
             put_box(data, pszEntry, (os_box *) &Object[ObjectList->nEntry]);
@@ -843,7 +902,7 @@ for (n = 0; n < nObjects; n++, ObjectList++)
             add_to_reloc_table(&data->RelocTable, ObjectList->nEntry, toolbox_RELOCATE_SPRITE_AREA_REFERENCE);
             break;
           case iol_CHARPTR:
-            put_pstr(data, &Object[ObjectList->nEntry], pszEntry, ObjectList->nData);
+            put_pstr(data, &Object[ObjectList->nEntry], pszEntry, ObjectList->nData, ObjectList->pszEntry);
             break;
           case iol_ESG:
             pBits = (bits *) &Object[ObjectList->nEntry];
@@ -851,13 +910,13 @@ for (n = 0; n < nObjects; n++, ObjectList++)
             break;
           case iol_WCOL:
             pByte = (uint8_t *) &Object[ObjectList->nEntry];
-            *pByte = (uint8_t) put_enum(data, pszEntry, WimpColour, ELEMENTS(WimpColour), false);
+            *pByte = (uint8_t) put_enum(data, pszEntry, WimpColour, ELEMENTS(WimpColour), false, ObjectList->pszEntry);
             break;
           case iol_BCOLS:
             pBits = (bits *) &Object[ObjectList->nEntry];
-            *pBits |= put_enum(data, pszEntry, WimpColour, ELEMENTS(WimpColour), false) << wimp_ICON_FG_COLOUR_SHIFT;
+            *pBits |= put_enum(data, pszEntry, WimpColour, ELEMENTS(WimpColour), false, ObjectList->pszEntry) << wimp_ICON_FG_COLOUR_SHIFT;
             if ((pszEntry = parse(data, pszIn, ObjectList->pData)) != NULL)
-              *pBits |= put_enum(data, pszEntry, WimpColour, ELEMENTS(WimpColour), false) << wimp_ICON_BG_COLOUR_SHIFT;
+              *pBits |= put_enum(data, pszEntry, WimpColour, ELEMENTS(WimpColour), false, (const char *) ObjectList->pData) << wimp_ICON_BG_COLOUR_SHIFT;
             break;
           default:
             error(data, "Unknown iol_ value (%d)", ObjectList->nTable);
@@ -1033,6 +1092,9 @@ char *next_object(char ** pszIn, char *pszEnd)
 	static char achObject[48];
 
 	p = *pszIn;
+	if (p >= pszEnd) {
+		return NULL;
+	}
 	while ((ch = *p++) != '{') {
 		if (ch == '}' || p >= pszEnd) {
 			return NULL;
@@ -1070,13 +1132,19 @@ char *object_end(DATA *data, char *pszIn, char *pszEnd)
 					return NULL;
 				}
 			}
+			/* The value or comment may have been the last line */
+			if (p >= pszEnd) {
+				report(data, pszIn, "Missing brace }");
+				return NULL;
+			}
 		} else {
 			if (ch == '{') {
 				nDepth++;
 			} else if (ch == '}') {
 				nDepth--;
 			}
-			if (p >= pszEnd) {
+			/* A closing brace may be the last character of the file */
+			if (nDepth > 0 && p >= pszEnd) {
 				report(data, pszIn, "Missing brace }");
 				return NULL;
 			}

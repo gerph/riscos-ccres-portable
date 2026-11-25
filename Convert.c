@@ -375,7 +375,7 @@ static void get_template_fonts(DATA *data, FILE *hf, template_font_data *font_da
 
 
 static const OBJECTLIST TemplateHeaderList[] = {
-	{iol_CHARPTR,  "template_name:",  offsetof(template_index, name), NULL, 12}
+	{iol_CHARPTR,  "template_name:",  offsetof(template_index, name), NULL, -12}
 };
 
 /*******************************************************************
@@ -481,13 +481,8 @@ static bool text2template(DATA *data, char *pszOutFile)
 					nOut += cbFixed + cbStrings;
 					i->type = template_TYPE_WINDOW;
 					put_objects(data, pszIn, 0, (char *) i, TemplateHeaderList, ELEMENTS(TemplateHeaderList));
-// template name is different to icon name because it always needs a terminator, which restricts it to 11 chars
-// to avoid having to write separate code, use the iol_char *data type then apply this bodge...
-					if (i->name[11] >= ' ') {
-						i->name[11] = '\0';
-						report(data, pszObject, "Template name truncated to '%s'", i->name);
-						i->name[11] = '\r';
-					}
+// template name is different to icon name because it always needs a terminator, which restricts it to 11 chars;
+// TemplateHeaderList gives it as a terminated field (-12), so put_pstr truncates it with a warning
 					nIndex++;
 					if ((pszIn = object_end(data, pszIn, pszEnd)) == NULL) {
 						break;

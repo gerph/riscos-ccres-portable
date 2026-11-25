@@ -1,0 +1,3 @@
+# A misspelt enumeration name is an error, naming the value and the field.
+encode-rc 1
+stderr-contains Line 8: Unknown value 'wimp_ICON_BAR_RIHT' in position:

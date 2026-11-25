@@ -24,7 +24,31 @@
 
 #include "ccres.h"
 
+/*******************************************************************
+ Function:      report
+ Description:   Report an error in the input text, with the line
+                number it is on. The conversion will exit with a
+                failure status.
+ Parameters:    data = conversion session
+                ptrP = position in the input text of the error
+                pszFmt = printf format of the message, and its values
+ Returns:       none
+ ******************************************************************/
 void report(DATA *data, const char *ptrP, char *pszFmt, ...);
+
+/*******************************************************************
+ Function:      report_warning
+ Description:   Report a problem in the input text that the conversion
+                has worked around, with the line number it is on and
+                'Warning: ' before the message. The exit status is not
+                changed.
+ Parameters:    data = conversion session
+                ptrP = position in the input text of the problem
+                pszFmt = printf format of the message, and its values
+ Returns:       none
+ ******************************************************************/
+void report_warning(DATA *data, const char *ptrP, char *pszFmt, ...);
+
 void report_end(DATA *data);
 void error(DATA *data, char *pszFmt, ...);
 

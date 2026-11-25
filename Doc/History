@@ -1,3 +1,33 @@
+v1.15 25 Nov 2026
+~~~~~~~~~~~~~~~~~
+
+Changes by Gerph:
+
+- Error.c: errors in the text being converted (unknown flags and values,
+  missing entries and braces, expression and hex errors, unmatched quotes)
+  now make the conversion exit with a failure status; previously the
+  output was written without the faulty value and the exit status was 0.
+  report_warning() reports problems which have been worked around (a size
+  increased, a name truncated), with 'Warning: ', and does not.
+- _Object.c(put_flags, put_iflags, put_enum): errors now name the field as
+  well as the flag or value.  White space before the first flag or value
+  is ignored; it was reported as "Unknown flag ''".  A tab, or any other
+  control character, in a flag list made the conversion loop forever.
+  Text after an enumeration value is now an error, not ignored.
+- _Object.c(put_pstr): strings too long for a fixed size field (template
+  names, object names, icon text, font names) were written past the end of
+  the field; they are now truncated, with a warning.  Template and object
+  names are given as terminated fields in their tables, replacing the
+  separate template name truncation in Convert.c.
+- _Object.c(get_pstr): text filling a fixed size field (such as text_only:
+  with 12 characters) lost its last character when decoded.
+- _Object.c(object_end, next_object), Utils.c: a file whose last line is
+  the closing brace, with no newline after it, was reported as missing a
+  brace; the input is now terminated, and end of file checked, so it is
+  never read beyond.
+- Added test cases for each of these, and a time limit on each conversion
+  in the test runner.
+
 v1.14 25 Nov 2026
 ~~~~~~~~~~~~~~~~~
 

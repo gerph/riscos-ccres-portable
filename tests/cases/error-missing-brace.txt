@@ -1,0 +1,20 @@
+RESF:1.01
+
+iconbar_object {
+  header_flags:
+  version:100
+  object_name:"Iconbar"
+  iconbar_flags:iconbar_GENERATE_SELECT_CLICKED | iconbar_GENERATE_ADJUST_CLICKED
+  position:wimp_ICON_BAR_RIGHT
+  priority:0
+  sprite_name:"!resed"
+  sprite_limit:*
+  text:"iconbar"
+  text_limit:*
+  menu:""
+  select_action:&0
+  adjust_action:&0
+  select_show:""
+  adjust_show:""
+  help_message:""
+  help_limit:*

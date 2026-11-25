@@ -1,0 +1,3 @@
+# An object which is not closed is an error.
+encode-rc 1
+stderr-contains Missing brace }

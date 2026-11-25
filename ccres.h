@@ -36,7 +36,7 @@
 #include <oslib/toolbox.h>
 #include <oslib/wimp.h>
 
-#define VERSION "1.14 (25-Nov-2026)"
+#define VERSION "1.15 (25-Nov-2026)"
 #define APPNAME	"CCres"
 
 #define RESF	0x46534552
@@ -53,7 +53,9 @@ enum {
 	iol_STRING,		// toolbox_RELOCATE_STRING_REFERENCE
 	iol_SPRITE,		// toolbox_RELOCATE_SPRITE_AREA_REFERENCE
 	iol_OBJECT,		// toolbox_RELOCATE_OBJECT_OFFSET, but without entry in text file
-	iol_CHARPTR,		// bodge for iol_OBJECT also needing string
+	iol_CHARPTR,		// bodge for iol_OBJECT also needing string; string held in a fixed size
+				// field of nData bytes, which may be filled without a terminator, or
+				// if nData is negative, a terminated string in a field of -nData bytes
 	iol_BITS,		// unsigned int
 	iol_INT,		// signed int
 	iol_SHORT,		// 16 bit int

@@ -1,0 +1,3 @@
+# A misspelt flag name is an error, naming the flag and the field.
+encode-rc 1
+stderr-contains Line 7: Unknown flag 'iconbar_GENERATE_SELECT_CLIKED' in iconbar_flags:

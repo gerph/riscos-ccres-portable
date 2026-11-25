@@ -28,16 +28,19 @@
 #include "ccres.h"
 #include "Error.h"
 
-void report(DATA *data, const char *ptrP, char *pszFmt, ...)
+/* Prefix for messages from report_warning() */
+#define WARNING_PREFIX "Warning: "
+
+static void report_line(DATA *data, const char *ptrP, const char *pszPrefix, char *pszFmt, va_list list)
 {
-	va_list list;
 	const char *pP;
-	int nRow;
+	int nRow, cb;
 	char achError[1024];
 
-	va_start(list, pszFmt);
-	vsprintf(achError, pszFmt, list);
-	va_end(list);
+	/* vsprintf, as vsnprintf may not be in the RISC OS C library stubs;
+	   callers limit the length of any input text they include. */
+	cb = sprintf(achError, "%s", pszPrefix);
+	vsprintf(achError + cb, pszFmt, list);
 	for (nRow = 1, pP = data->pszIn; pP < ptrP; pP++) {
 		if (*pP < ' ') {
 			nRow++;
@@ -55,6 +58,27 @@ void report(DATA *data, const char *ptrP, char *pszFmt, ...)
 #else
 	fprintf(stderr, "Line %d: %s\n", nRow, achError);
 #endif
+}
+
+
+void report(DATA *data, const char *ptrP, char *pszFmt, ...)
+{
+	va_list list;
+
+	va_start(list, pszFmt);
+	report_line(data, ptrP, "", pszFmt, list);
+	va_end(list);
+	data->returnStatus = EXIT_FAILURE;
+}
+
+
+void report_warning(DATA *data, const char *ptrP, char *pszFmt, ...)
+{
+	va_list list;
+
+	va_start(list, pszFmt);
+	report_line(data, ptrP, WARNING_PREFIX, pszFmt, list);
+	va_end(list);
 }
 
 

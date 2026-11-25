@@ -67,6 +67,10 @@ mkdir -p "$workdir"
 # Text that marks a sanitizer failure in a conversion's stderr.
 asan_marker='ERROR: AddressSanitizer'
 
+# Seconds a conversion may take before it is treated as hung; even the
+# largest cases take well under a second.
+convert_timeout=${CCRES_TIMEOUT:-30}
+
 # User variables that they can use to override our defaults
 JUNITXML_DIR=${JUNITXML_DIR:-${rootdir}/test-results}
 JUNITXML_SUITE=${JUNITXML_SUITE:-ccres}
@@ -199,9 +203,13 @@ function convert() {
     local rc=0
 
     echo "\$ ccres $(basename "$input") $(basename "$output")"
-    "$ccres" "$input" "$output" 2> "$errors" || rc=$?
+    timeout "$convert_timeout" "$ccres" "$input" "$output" 2> "$errors" || rc=$?
     if [[ -s "$errors" ]] ; then
-        sed "s/^/    stderr: /" "$errors" | cut -c1-300
+        # Only the start, in case a fault repeats a message endlessly
+        head -50 "$errors" | sed "s/^/    stderr: /" | cut -c1-300
+    fi
+    if [[ "$rc" = 124 ]] ; then
+        echo "    timed out after ${convert_timeout} seconds" | tee -a "$errors"
     fi
     echo "    exit status: $rc"
     return $rc

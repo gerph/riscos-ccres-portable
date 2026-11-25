@@ -1,0 +1,3 @@
+# Text after an enumeration name is an error rather than being ignored.
+encode-rc 1
+stderr-contains Line 8: Unexpected text after 'wimp_ICON_BAR_RIGHT' in position:

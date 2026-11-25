@@ -1,0 +1,3 @@
+# Template names longer than 11 characters are truncated, with a warning.
+encode-rc 0
+stderr-contains Warning: template_name: is longer than 11 characters, so was truncated to 'averylongna'

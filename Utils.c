@@ -127,7 +127,9 @@ int cbIn = (int)ftell(fhandle);
 fseek(fhandle, 0, SEEK_SET);
 
 char *pszIn;
-if ((pszIn = (char *) MyAlloc(cbIn)) == NULL)
+/* One more byte than the file, left zero, so that the text parsers always
+   find a terminator after the last line */
+if ((pszIn = (char *) MyAlloc(cbIn + 1)) == NULL)
   return false;
 
 if (fread(pszIn, cbIn, 1, fhandle) != 1)
