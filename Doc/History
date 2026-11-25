@@ -44,6 +44,18 @@ Changes by Gerph:
   an author (each block's introduction and notes, and the meaning of each
   field and value) is kept, and text which no longer has a place is
   reported rather than lost.  Its unit tests run with 'make tests'.
+- prminxml/riscos-ccres.xml: the hand-written field tables are replaced by
+  the generated field reference, for every object, gadget, menu entry,
+  window, icon and font block, with the flag and enumeration values each
+  field accepts, keeping the existing descriptions.  Added descriptions of
+  the layout of icons with text and a sprite (from the PRM, and Pyromaniac
+  for icons with only one), of window flag bit 3 (which raises an event
+  when the window is hidden; tboxlibs calls it Window_GenerateHasBeenHidden,
+  and OSLib window_GENERATE_DIALOGUE_COMPLETED), of the fields which must be
+  given though unused (such as licence_type:), of the order fields must be
+  in, of errors and exit status, and of the new options.
+- Makefile.linux: 'docs' regenerates the field reference and 'docs-check'
+  checks it is up to date, which the GitHub workflow runs.
 
 v1.14 25 Nov 2026
 ~~~~~~~~~~~~~~~~~

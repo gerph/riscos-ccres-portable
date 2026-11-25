@@ -94,7 +94,7 @@ TYPE_MEANINGS = {
     'message': 'Text, held in the message table so that it can be translated.',
     'string': 'Text.',
     'template-string': 'Text, held in an indirected buffer.',
-    'flags': 'Zero or more of the flags below, separated by <userinput>|</userinput>. A value with no name may be given in hexadecimal, as <userinput>0x</userinput><emphasis>value</emphasis>.',
+    'flags': 'Zero or more of the flags below, separated by <userinput>|</userinput>. A value with no name may be given in hexadecimal, as <userinput>0x</userinput><em>value</em>.',
     'icon-flags': 'Zero or more Wimp icon flags, separated by <userinput>|</userinput>, and at most one button type.',
     'enum': 'One of the names below.',
     'component': 'A component id, as a number or one of the names below.',
@@ -578,7 +578,7 @@ def build_sections(description):
             table = description.tables[number]
             if not table.values:
                 continue
-            section.add_text('<p>\nValues for <userinput>{}</userinput>{}:\n</p>\n'.format(
+            section.add_text('<p>\nValues for <userinput>{}</userinput>{}\n</p>\n'.format(
                 escape(field_name), '' if not shared else ' (and other fields)'))
             section.add_text('<p>\n<value-table head-number="Value" head-name="Name" head-value="Meaning">\n')
             table_key = '{}/{}'.format(owner, field_name)

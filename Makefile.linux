@@ -14,6 +14,12 @@
 # Run the tests against an AddressSanitizer build, to find memory errors:
 #   - `make -f Makefile.linux tests-asan`
 #
+# Regenerate the field reference in the manual, after changing the converter:
+#   - `make -f Makefile.linux docs`
+#
+# Check that the manual's field reference is up to date:
+#   - `make -f Makefile.linux docs-check`
+#
 # Remove generated files:
 #   - `make -f Makefile.linux clean`
 
@@ -31,6 +37,10 @@ ASAN_CFLAGS = -I. -DHAVE_STRCASECMP -DHAVE_STRNCASECMP -Wall -Wno-parentheses -O
 ASAN_OPTIONS_TESTS = detect_leaks=0
 
 TEST_RUNNER = tests/run-tests.sh
+
+# The manual, and the generator of its field reference
+MANUAL = prminxml/riscos-ccres.xml
+FORMAT_DOCS = tools/formatdocs.py
 TEST_RESULTS = test-results
 
 SRCS = CMD.c Convert.c Error.c Utils.c Library.c Eval.c \
@@ -72,8 +82,14 @@ tests-asan: $(ASAN_TARGET)
 	ASAN_OPTIONS=$(ASAN_OPTIONS_TESTS) JUNITXML_SUITE=ccres-asan JUNITXML_NAME=Test-ccres-asan.xml \
 		bash $(TEST_RUNNER) --ccres ./$(ASAN_TARGET)
 
+docs: $(TARGET)
+	python3 -P $(FORMAT_DOCS) --ccres ./$(TARGET) $(MANUAL)
+
+docs-check: $(TARGET)
+	python3 -P $(FORMAT_DOCS) --ccres ./$(TARGET) --check $(MANUAL)
+
 # `make help` generates its message from the comment at the top of the file
 help:
 	@sed -E '/^$$/q ; /^([^#]|#[#!])/ d ; s/^#+ ?//' < $(firstword $(MAKEFILE_LIST))
 
-.PHONY: all clean test tests tests-tools tests-asan help
+.PHONY: all clean test tests tests-tools tests-asan docs docs-check help

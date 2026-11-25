@@ -27,6 +27,9 @@ jobs:
       - name: Run tests
         run: make -f Makefile.linux tests
 
+      - name: Check the manual's field reference is up to date
+        run: make -f Makefile.linux docs-check
+
       - name: Publish Test Report
         uses: mikepenz/action-junit-report@v6
         if: success() || failure()

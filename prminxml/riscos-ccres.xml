@@ -31,10 +31,10 @@ requiring a desktop application.
 <section title="Technical Details">
 <subsection title="Command-line behaviour">
 <p>
-The command-line program takes exactly two positional arguments:
-an input filename and an output filename. There are no option switches in the
-current implementation. The input file type is detected from its contents, not
-from its name.
+The command-line program normally takes two positional arguments: an input
+filename and an output filename. The input file type is detected from its
+contents, not from its name. Two options instead write a skeleton of the text
+format; they are described under <em>Command-line usage</em>.
 </p>
 
 <p>
@@ -57,6 +57,17 @@ The program recognises text by scanning the first sixteen bytes for control
 characters. The binary resource and template probes are performed before that
 text test, so binary files are not mistaken for text merely because their
 filenames end in <filename type="unix">.txt</filename>.
+</p>
+
+<p>
+Problems in a text file are reported on standard error with the line they are
+on, as <userinput>Line </userinput><em>n</em><userinput>: </userinput><em>message</em>.
+An error, such as an unknown flag or value (which names the field it is in), a
+missing field or a missing brace, makes the program exit with a failure status,
+even though an output file may have been written. A warning, which begins
+<userinput>Warning: </userinput>, reports something the program has worked
+around, such as a buffer size increased to hold its text or a name truncated
+to fit its field, and does not change the exit status.
 </p>
 </subsection>
 
@@ -207,211 +218,735 @@ entries.
  <definition name="printdbox_object" extra="PrintDbox dialogue">Standalone Toolbox object.</definition>
  <definition name="proginfo_object" extra="ProgInfo dialogue">Version-dependent fields exist for version 1.01 objects.</definition>
  <definition name="quit_object" extra="Quit dialogue">Standalone Toolbox object.</definition>
+ <definition name="optionswindow_object" extra="OptionsWindow dialogue">Standalone Toolbox object.</definition>
+ <definition name="updatecheck_object" extra="UpdateCheck object">Standalone Toolbox object.</definition>
  </definition-table>
 </p>
 
-<subsubsection title="Common object header fields">
 <p>
-Every top-level Resource object begins with the same three fields.
+The fields of each kind of block are listed below, generated from the
+converter's own tables, followed by an example with every field at its zero
+value. Every field listed for a block must be present, even when its value
+is not used: a missing field is reported as <userinput>Missing entry</userinput>
+and the conversion fails. The fields of a block may be given in any order, but
+all of them must come before any nested blocks (such as gadgets, icons or menu
+entries), as the search for a field stops at the end of the first nested block. Fields that are
+only used in one form of a block (an icon with indirected text, for example)
+say so. A field which takes a string has a limit field, which gives the size
+of the buffer for it; <userinput>*</userinput> makes the buffer just large
+enough for the text given.
 </p>
 
 <p>
-<definition-table head-name="Entry" head-extra="Type" head-value="Meaning">
+Flags are written as names separated by <userinput>|</userinput>, and any bits
+without a name are written in hexadecimal, as <userinput>0x</userinput><em>value</em>,
+so that they convert back unchanged. Where two names are listed for the same
+value, either is accepted, and the first is written.
+</p>
+
+<!-- ccres-region: resource -->
+<subsubsection title="Common object fields">
+<!-- ccres:key common-object -->
+<p>
+<!-- generated -->These fields begin every block of the following kinds: <userinput>colourdbox_object</userinput>, <userinput>colourmenu_object</userinput>, <userinput>dcs_object</userinput>, <userinput>fileinfo_object</userinput>, <userinput>fontdbox_object</userinput>, <userinput>fontmenu_object</userinput>, <userinput>iconbar_object</userinput>, <userinput>menu_object</userinput>, <userinput>printdbox_object</userinput>, <userinput>proginfo_object</userinput>, <userinput>quit_object</userinput>, <userinput>saveas_object</userinput>, <userinput>scale_object</userinput>, <userinput>window_object</userinput>, <userinput>optionswindow_object</userinput>, <userinput>updatecheck_object</userinput>.
+</p>
+<!-- ccres:generated -->
+<p>
+<definition-table head-name="Field" head-extra="Type" head-value="Meaning">
  <definition name="header_flags:" extra="flags">Zero or more of <userinput>toolbox_OBJECT_CREATE_ON_LOAD</userinput>, <userinput>toolbox_OBJECT_SHOW_ON_CREATE</userinput>, <userinput>toolbox_OBJECT_SHARED</userinput>, and <userinput>toolbox_OBJECT_ANCESTOR</userinput>.</definition>
  <definition name="version:" extra="integer">Object format version stored in the Resource object header.</definition>
- <definition name="object_name:" extra="string">Object name used for Toolbox references.</definition>
+ <definition name="object_name:" extra="string of at most 11 characters">Object name used for Toolbox references.</definition>
  </definition-table>
 </p>
+<p>
+Values for <userinput>header_flags:</userinput>
+</p>
+<!-- ccres:table common-object/header_flags: -->
+<p>
+<value-table head-number="Value" head-name="Name" head-value="Meaning">
+ <value number="&amp;1" name="toolbox_OBJECT_CREATE_ON_LOAD"></value>
+ <value number="&amp;2" name="toolbox_OBJECT_SHOW_ON_CREATE"></value>
+ <value number="&amp;4" name="toolbox_OBJECT_SHARED"></value>
+ <value number="&amp;8" name="toolbox_OBJECT_ANCESTOR"></value>
+ </value-table>
+</p>
+<!-- ccres:notes -->
 </subsubsection>
 
-<subsubsection title="Window objects">
+<subsubsection title="Common gadget fields">
+<!-- ccres:key common-gadget -->
 <p>
-<userinput>window_object</userinput> is the richest Resource form. It carries
-the Toolbox-level window metadata, the embedded Wimp window definition, zero
-or more <userinput>keyboardshortcut_object</userinput> blocks, and zero or
-more gadget blocks.
+<!-- generated -->These fields begin every block of the following kinds: <userinput>actionbutton_object</userinput>, <userinput>adjuster_object</userinput>, <userinput>button_object</userinput>, <userinput>displayfield_object</userinput>, <userinput>draggable_object</userinput>, <userinput>label_object</userinput>, <userinput>labelledbox_object</userinput>, <userinput>numberrange_object</userinput>, <userinput>optionbutton_object</userinput>, <userinput>popup_object</userinput>, <userinput>radiobutton_object</userinput>, <userinput>scrolllist_object</userinput>, <userinput>slider_object</userinput>, <userinput>stringset_object</userinput>, <userinput>tabs_object</userinput>, <userinput>textarea_object</userinput>, <userinput>treeview_object</userinput>, <userinput>toolaction_object</userinput>, <userinput>writablefield_object</userinput>, <userinput>scrollbar_object</userinput>, <userinput>imagefilegadget_object</userinput>, <userinput>colourswatch_object</userinput>, <userinput>amplayer_object</userinput>, <userinput>mdnsservice_object</userinput>, <userinput>urlimage_object</userinput>, <userinput>divider_object</userinput>.
 </p>
-
+<!-- ccres:generated -->
 <p>
-<definition-table head-name="Entry" head-extra="Type" head-value="Meaning">
- <definition name="window_flags:" extra="flags">Toolbox window flags such as <userinput>window_AUTO_OPEN</userinput>, <userinput>window_AUTO_CLOSE</userinput>, and <userinput>window_IS_TOOL_BAR</userinput>.</definition>
- <definition name="help_message:" extra="message string">Window help text.</definition>
- <definition name="help_limit:" extra="limit">Allocation for <userinput>help_message:</userinput>.</definition>
- <definition name="sprite_name:" extra="string">Pointer sprite name.</definition>
- <definition name="pointer_limit:" extra="integer">Pointer sprite limit value.</definition>
- <definition name="hotspot:" extra="coord expression">Pointer hotspot.</definition>
- <definition name="menu_name:" extra="string">Associated menu object name.</definition>
- <definition name="default_focus:" extra="component reference">Default focus component id.</definition>
- <definition name="show_action:" extra="action bits">Action code sent when the object is shown. A blank value means unset.</definition>
- <definition name="hide_action:" extra="action bits">Action code sent when the object is hidden. A blank value means unset.</definition>
- <definition name="toolbar_ibl:" extra="string">Toolbar internal bottom-left link name.</definition>
- <definition name="toolbar_itl:" extra="string">Toolbar internal top-left link name.</definition>
- <definition name="toolbar_ebl:" extra="string">Toolbar external bottom-left link name.</definition>
- <definition name="toolbar_etl:" extra="string">Toolbar external top-left link name.</definition>
- <definition name="window.visible:" extra="box expression">Initial visible rectangle.</definition>
- <definition name="window.xscroll:" extra="integer">Initial horizontal scroll position.</definition>
- <definition name="window.yscroll:" extra="integer">Initial vertical scroll position.</definition>
- <definition name="window.next:" extra="enumeration">Stacking order such as <userinput>wimp_TOP</userinput>, <userinput>wimp_BOTTOM</userinput>, or <userinput>wimp_HIDDEN</userinput>.</definition>
- <definition name="window.flags:" extra="flags">Wimp window flags, including furniture and scrolling bits.</definition>
- <definition name="window.title_fg:" extra="Wimp colour">Title foreground colour.</definition>
- <definition name="window.title_bg:" extra="Wimp colour">Title background colour.</definition>
- <definition name="window.work_fg:" extra="Wimp colour">Work area foreground colour.</definition>
- <definition name="window.work_bg:" extra="Wimp colour">Work area background colour.</definition>
- <definition name="window.scroll_outer:" extra="Wimp colour">Outer scroll bar colour.</definition>
- <definition name="window.scroll_inner:" extra="Wimp colour">Inner scroll bar colour.</definition>
- <definition name="window.highlight_bg:" extra="Wimp colour">Highlight background colour.</definition>
- <definition name="window.extra_flags:" extra="byte flags">Extended Wimp window flags such as title-validation use and 3D preferences.</definition>
- <definition name="window.extent:" extra="box expression">Work area extent rectangle.</definition>
- <definition name="window.title_flags:" extra="flags">Title icon flags.</definition>
- <definition name="window.work_flags:" extra="flags">Work-area button type bits.</definition>
- <definition name="window.sprite_area:" extra="bits">Sprite area reference, exported as hexadecimal.</definition>
- <definition name="window.xmin:" extra="short integer">Minimum width.</definition>
- <definition name="window.ymin:" extra="short integer">Minimum height.</definition>
- <definition name="window.title_text:" extra="message string">Indirected title text.</definition>
- <definition name="window.title_text_limit:" extra="limit">Allocation for the title text.</definition>
- <definition name="window.title_valid:" extra="string">Title validation string.</definition>
+<definition-table head-name="Field" head-extra="Type" head-value="Meaning">
+ <definition name="cmp:" extra="expression">Component id. Expressions are allowed.</definition>
+ <definition name="bbox:" extra="box: xmin,ymin,xmax,ymax">Bounding box in window work-area coordinates.</definition>
+ <definition name="help_message:" extra="message">Help text for the gadget.</definition>
+ <definition name="help_limit:" extra="number, or *">Allocation for the help text.</definition>
  </definition-table>
 </p>
-
-<p>
-The nested <userinput>keyboardshortcut_object</userinput> blocks use these
-entries:
-</p>
-
-<p>
-<definition-table head-name="Entry" head-extra="Type" head-value="Meaning">
- <definition name="flags:" extra="flags">Shortcut show flags such as <userinput>keyboardshortcut_SHOW_AS_MENU</userinput>, <userinput>keyboardshortcut_SHOW_AT_CENTRE</userinput>, and <userinput>keyboardshortcut_SHOW_AT_POINTER</userinput>.</definition>
- <definition name="key_code:" extra="bits">Key code value.</definition>
- <definition name="key_event:" extra="bits">Action or Toolbox event value associated with the key.</definition>
- <definition name="key_show:" extra="string">Object name to show.</definition>
- </definition-table>
-</p>
+<!-- ccres:notes -->
 </subsubsection>
 
-<subsubsection title="Window gadget blocks">
+<subsubsection title="colourdbox_object">
 <p>
-Every gadget block begins with the same three header entries and then adds
-class-specific entries.
+ColourDbox object.
 </p>
-
+<!-- ccres:generated -->
 <p>
-<definition-table head-name="Common entry" head-extra="Type" head-value="Meaning">
- <definition name="cmp:" extra="expression or component value">Component id. Expressions are allowed.</definition>
- <definition name="bbox:" extra="box expression">Bounding box in window work-area coordinates.</definition>
- <definition name="help_message:" extra="message string">Help text for the gadget.</definition>
- <definition name="help_limit:" extra="limit">Allocation for the help text.</definition>
+It begins with the Common object fields.
+</p>
+<p>
+<definition-table head-name="Field" head-extra="Type" head-value="Meaning">
+ <definition name="colourdbox_flags:" extra="flags"><!-- generated -->Zero or more of the flags below, separated by <userinput>|</userinput>. A value with no name may be given in hexadecimal, as <userinput>0x</userinput><em>value</em>.</definition>
+ <definition name="title:" extra="message"><!-- generated -->Text, held in the message table so that it can be translated.</definition>
+ <definition name="title_limit:" extra="number, or *"><!-- generated -->Size of the buffer for <userinput>title:</userinput>. <userinput>*</userinput> makes it the length of the text given.</definition>
+ <definition name="colour:" extra="OS colour; values in Common values"><!-- generated -->An OS colour, as one of the names below.</definition>
  </definition-table>
 </p>
-
 <p>
-The supported gadget object names are
-<userinput>actionbutton_object</userinput>,
-<userinput>adjuster_object</userinput>,
-<userinput>button_object</userinput>,
-<userinput>displayfield_object</userinput>,
-<userinput>draggable_object</userinput>,
-<userinput>label_object</userinput>,
-<userinput>labelledbox_object</userinput>,
-<userinput>numberrange_object</userinput>,
-<userinput>optionbutton_object</userinput>,
-<userinput>popup_object</userinput>,
-<userinput>radiobutton_object</userinput>,
-<userinput>scrolllist_object</userinput>,
-<userinput>slider_object</userinput>,
-<userinput>stringset_object</userinput>,
-<userinput>tabs_object</userinput>,
-<userinput>textarea_object</userinput>,
-<userinput>treeview_object</userinput>,
-<userinput>toolaction_object</userinput>, and
-<userinput>writablefield_object</userinput>.
+Values for <userinput>colourdbox_flags:</userinput>
 </p>
-
+<!-- ccres:table colourdbox_object/colourdbox_flags: -->
 <p>
-<definition-table head-name="Gadget object" head-extra="Additional entries" head-value="Notes">
- <definition name="actionbutton_object" extra="flags:, text:, text_limit:, click_show:, action:">Action button gadget.</definition>
- <definition name="adjuster_object" extra="flags:, reserved:">Adjuster gadget.</definition>
- <definition name="button_object" extra="flags:, button_flags:, button_esg:, button_fg:, button_bg:, value:, value_limit:, validation:, validation_limit:">Button gadget using Wimp icon flags and colours.</definition>
- <definition name="displayfield_object" extra="flags:, text:, text_limit:">Display field gadget.</definition>
- <definition name="draggable_object" extra="flags:, text:, text_limit:, sprite_name:, sprite_limit:">Draggable gadget with optional text and sprite names.</definition>
- <definition name="label_object" extra="flags:, label:">Static label gadget.</definition>
- <definition name="labelledbox_object" extra="flags:, label:">Labelled box gadget.</definition>
- <definition name="numberrange_object" extra="flags:, lower_bound:, upper_bound:, step_size:, initial_value:, precision:, prev:, next:, display_length:">Number range gadget with writable, adjuster, and slider-style options.</definition>
- <definition name="optionbutton_object" extra="flags:, label:, label_limit:, action:">Option button gadget.</definition>
- <definition name="popup_object" extra="flags:, menu_name:">Pop-up gadget linked to a named menu.</definition>
- <definition name="radiobutton_object" extra="flags:, group:, label:, label_limit:, action:">Radio button gadget.</definition>
- <definition name="scrolllist_object" extra="flags:, event:, foreground:, background:">Scroll list gadget.</definition>
- <definition name="slider_object" extra="flags:, lower_bound:, upper_bound:, step_size:, initial_value:">Slider gadget.</definition>
- <definition name="stringset_object" extra="flags:, string_set:, title:, initial_selected_string:, selected_string_limit:, allowable:, allowable_limit:, prev:, next:">StringSet gadget.</definition>
- <definition name="tabs_object" extra="flags:, foreground:, background:, text:">Tabs gadget.</definition>
- <definition name="textarea_object" extra="flags:, type:, event:, text:, foreground:, background:">TextArea gadget.</definition>
- <definition name="treeview_object" extra="flags:, foreground:, background:">TreeView gadget.</definition>
- <definition name="toolaction_object" extra="flags:, off_text:, off_text_limit:, on_text:, on_text_limit:, click_action:, select_show:, adjust_action:, adjust_show:, fade_text:, fade_text_limit:">ToolAction gadget.</definition>
- <definition name="writablefield_object" extra="flags:, text:, text_limit:, allowable:, allowable_limit:, prev:, next:">Writable field gadget.</definition>
- </definition-table>
+<value-table head-number="Value" head-name="Name" head-value="Meaning">
+ <value number="&amp;1" name="colourdbox_GENERATE_ABOUT_TO_BE_SHOWN"></value>
+ <value number="&amp;2" name="colourdbox_GENERATE_DIALOGUE_COMPLETED"></value>
+ <value number="&amp;4" name="colourdbox_INCLUDE_NONE_BUTTON"></value>
+ <value number="&amp;8" name="colourdbox_SELECT_NONE_BUTTON"></value>
+ </value-table>
 </p>
+<p>
+Example, with every field at its zero value:
+</p>
+<p>
+<extended-example type="format">
+colourdbox_object {<br/>
+  header_flags:<br/>
+  version:100<br/>
+  object_name:&quot;colourdbox&quot;<br/>
+  colourdbox_flags:<br/>
+  title:&quot;&quot;<br/>
+  title_limit:*<br/>
+  colour:os_COLOUR_BLACK<br/>
+}<br/>
+</extended-example>
+</p>
+<!-- ccres:notes -->
 </subsubsection>
 
-<subsubsection title="Menu objects">
+<subsubsection title="colourmenu_object">
+<p>
+ColourMenu object. The <userinput>colour:</userinput> field also accepts the special names <userinput>colourmenu_TRANSPARENT</userinput> and <userinput>colourmenu_NONE</userinput>.
+</p>
+<!-- ccres:generated -->
+<p>
+It begins with the Common object fields.
+</p>
+<p>
+<definition-table head-name="Field" head-extra="Type" head-value="Meaning">
+ <definition name="colourmenu_flags:" extra="flags"><!-- generated -->Zero or more of the flags below, separated by <userinput>|</userinput>. A value with no name may be given in hexadecimal, as <userinput>0x</userinput><em>value</em>.</definition>
+ <definition name="title:" extra="message"><!-- generated -->Text, held in the message table so that it can be translated.</definition>
+ <definition name="title_limit:" extra="number, or *"><!-- generated -->Size of the buffer for <userinput>title:</userinput>. <userinput>*</userinput> makes it the length of the text given.</definition>
+ <definition name="colour:" extra="enumeration"><!-- generated -->One of the names below.</definition>
+ </definition-table>
+</p>
+<p>
+Values for <userinput>colourmenu_flags:</userinput>
+</p>
+<!-- ccres:table colourmenu_object/colourmenu_flags: -->
+<p>
+<value-table head-number="Value" head-name="Name" head-value="Meaning">
+ <value number="&amp;1" name="colourmenu_GENERATE_ABOUT_TO_BE_SHOWN"></value>
+ <value number="&amp;2" name="colourmenu_GENERATE_DIALOGUE_COMPLETED"></value>
+ <value number="&amp;2" name="colourmenu_GENERATE_HAS_BEEN_HIDDEN"></value>
+ <value number="&amp;4" name="colourmenu_NONE_ENTRY"></value>
+ </value-table>
+</p>
+<p>
+Values for <userinput>colour:</userinput>
+</p>
+<!-- ccres:table colourmenu_object/colour: -->
+<p>
+<value-table head-number="Value" head-name="Name" head-value="Meaning">
+ <value number="16" name="colourmenu_TRANSPARENT"></value>
+ <value number="-1" name="colourmenu_NONE"></value>
+ </value-table>
+</p>
+<p>
+Example, with every field at its zero value:
+</p>
+<p>
+<extended-example type="format">
+colourmenu_object {<br/>
+  header_flags:<br/>
+  version:100<br/>
+  object_name:&quot;colourmenu&quot;<br/>
+  colourmenu_flags:<br/>
+  title:&quot;&quot;<br/>
+  title_limit:*<br/>
+  colour:<br/>
+}<br/>
+</extended-example>
+</p>
+<!-- ccres:notes -->
+</subsubsection>
+
+<subsubsection title="dcs_object">
+<p>
+DCS dialogue object.
+</p>
+<!-- ccres:generated -->
+<p>
+It begins with the Common object fields.
+</p>
+<p>
+<definition-table head-name="Field" head-extra="Type" head-value="Meaning">
+ <definition name="dcs_flags:" extra="flags"><!-- generated -->Zero or more of the flags below, separated by <userinput>|</userinput>. A value with no name may be given in hexadecimal, as <userinput>0x</userinput><em>value</em>.</definition>
+ <definition name="title:" extra="message"><!-- generated -->Text, held in the message table so that it can be translated.</definition>
+ <definition name="title_limit:" extra="number, or *"><!-- generated -->Size of the buffer for <userinput>title:</userinput>. <userinput>*</userinput> makes it the length of the text given.</definition>
+ <definition name="message:" extra="message"><!-- generated -->Text, held in the message table so that it can be translated.</definition>
+ <definition name="message_limit:" extra="number, or *"><!-- generated -->Size of the buffer for <userinput>message:</userinput>. <userinput>*</userinput> makes it the length of the text given.</definition>
+ <definition name="alternative_window_name:" extra="string"><!-- generated -->Text.</definition>
+ </definition-table>
+</p>
+<p>
+Values for <userinput>dcs_flags:</userinput>
+</p>
+<!-- ccres:table dcs_object/dcs_flags: -->
+<p>
+<value-table head-number="Value" head-name="Name" head-value="Meaning">
+ <value number="&amp;1" name="dcs_GENERATE_ABOUT_TO_BE_SHOWN"></value>
+ <value number="&amp;2" name="dcs_GENERATE_DIALOGUE_COMPLETED"></value>
+ </value-table>
+</p>
+<p>
+Example, with every field at its zero value:
+</p>
+<p>
+<extended-example type="format">
+dcs_object {<br/>
+  header_flags:<br/>
+  version:100<br/>
+  object_name:&quot;dcs&quot;<br/>
+  dcs_flags:<br/>
+  title:&quot;&quot;<br/>
+  title_limit:*<br/>
+  message:&quot;&quot;<br/>
+  message_limit:*<br/>
+  alternative_window_name:&quot;&quot;<br/>
+}<br/>
+</extended-example>
+</p>
+<!-- ccres:notes -->
+</subsubsection>
+
+<subsubsection title="fileinfo_object">
+<p>
+FileInfo dialogue object.
+</p>
+<!-- ccres:generated -->
+<p>
+It begins with the Common object fields.
+</p>
+<p>
+<definition-table head-name="Field" head-extra="Type" head-value="Meaning">
+ <definition name="fileinfo_flags:" extra="flags"><!-- generated -->Zero or more of the flags below, separated by <userinput>|</userinput>. A value with no name may be given in hexadecimal, as <userinput>0x</userinput><em>value</em>.</definition>
+ <definition name="title:" extra="message"><!-- generated -->Text, held in the message table so that it can be translated.</definition>
+ <definition name="title_limit:" extra="number, or *"><!-- generated -->Size of the buffer for <userinput>title:</userinput>. <userinput>*</userinput> makes it the length of the text given.</definition>
+ <definition name="file_type:" extra="number"><!-- generated -->A number.</definition>
+ <definition name="file_name:" extra="message"><!-- generated -->Text, held in the message table so that it can be translated.</definition>
+ <definition name="alternative_window_name:" extra="string"><!-- generated -->Text.</definition>
+ </definition-table>
+</p>
+<p>
+Values for <userinput>fileinfo_flags:</userinput>
+</p>
+<!-- ccres:table fileinfo_object/fileinfo_flags: -->
+<p>
+<value-table head-number="Value" head-name="Name" head-value="Meaning">
+ <value number="&amp;1" name="fileinfo_GENERATE_ABOUT_TO_BE_SHOWN"></value>
+ <value number="&amp;2" name="fileinfo_GENERATE_DIALOGUE_COMPLETED"></value>
+ </value-table>
+</p>
+<p>
+Example, with every field at its zero value:
+</p>
+<p>
+<extended-example type="format">
+fileinfo_object {<br/>
+  header_flags:<br/>
+  version:100<br/>
+  object_name:&quot;fileinfo&quot;<br/>
+  fileinfo_flags:<br/>
+  title:&quot;&quot;<br/>
+  title_limit:*<br/>
+  file_type:&amp;0<br/>
+  file_name:&quot;&quot;<br/>
+  alternative_window_name:&quot;&quot;<br/>
+}<br/>
+</extended-example>
+</p>
+<!-- ccres:notes -->
+</subsubsection>
+
+<subsubsection title="fontdbox_object">
+<p>
+FontDbox object.
+</p>
+<!-- ccres:generated -->
+<p>
+It begins with the Common object fields.
+</p>
+<p>
+<definition-table head-name="Field" head-extra="Type" head-value="Meaning">
+ <definition name="fontdbox_flags:" extra="flags"><!-- generated -->Zero or more of the flags below, separated by <userinput>|</userinput>. A value with no name may be given in hexadecimal, as <userinput>0x</userinput><em>value</em>.</definition>
+ <definition name="title:" extra="message"><!-- generated -->Text, held in the message table so that it can be translated.</definition>
+ <definition name="title_limit:" extra="number, or *"><!-- generated -->Size of the buffer for <userinput>title:</userinput>. <userinput>*</userinput> makes it the length of the text given.</definition>
+ <definition name="initial_font:" extra="string"><!-- generated -->Text.</definition>
+ <definition name="initial_height:" extra="integer"><!-- generated -->A number.</definition>
+ <definition name="initial_aspect:" extra="integer"><!-- generated -->A number.</definition>
+ <definition name="try_string:" extra="message"><!-- generated -->Text, held in the message table so that it can be translated.</definition>
+ <definition name="alternative_window_name:" extra="string"><!-- generated -->Text.</definition>
+ </definition-table>
+</p>
+<p>
+Values for <userinput>fontdbox_flags:</userinput>
+</p>
+<!-- ccres:table fontdbox_object/fontdbox_flags: -->
+<p>
+<value-table head-number="Value" head-name="Name" head-value="Meaning">
+ <value number="&amp;1" name="fontdbox_GENERATE_ABOUT_TO_BE_SHOWN"></value>
+ <value number="&amp;2" name="fontdbox_GENERATE_DIALOGUE_COMPLETED"></value>
+ <value number="&amp;4" name="fontdbox_INCLUDE_SYSTEM_FONT"></value>
+ </value-table>
+</p>
+<p>
+Example, with every field at its zero value:
+</p>
+<p>
+<extended-example type="format">
+fontdbox_object {<br/>
+  header_flags:<br/>
+  version:100<br/>
+  object_name:&quot;fontdbox&quot;<br/>
+  fontdbox_flags:<br/>
+  title:&quot;&quot;<br/>
+  title_limit:*<br/>
+  initial_font:&quot;&quot;<br/>
+  initial_height:0<br/>
+  initial_aspect:0<br/>
+  try_string:&quot;&quot;<br/>
+  alternative_window_name:&quot;&quot;<br/>
+}<br/>
+</extended-example>
+</p>
+<!-- ccres:notes -->
+</subsubsection>
+
+<subsubsection title="fontmenu_object">
+<p>
+FontMenu object.
+</p>
+<!-- ccres:generated -->
+<p>
+It begins with the Common object fields.
+</p>
+<p>
+<definition-table head-name="Field" head-extra="Type" head-value="Meaning">
+ <definition name="fontmenu_flags:" extra="flags"><!-- generated -->Zero or more of the flags below, separated by <userinput>|</userinput>. A value with no name may be given in hexadecimal, as <userinput>0x</userinput><em>value</em>.</definition>
+ <definition name="ticked_font:" extra="string"><!-- generated -->Text.</definition>
+ </definition-table>
+</p>
+<p>
+Values for <userinput>fontmenu_flags:</userinput>
+</p>
+<!-- ccres:table fontmenu_object/fontmenu_flags: -->
+<p>
+<value-table head-number="Value" head-name="Name" head-value="Meaning">
+ <value number="&amp;1" name="fontmenu_GENERATE_ABOUT_TO_BE_SHOWN"></value>
+ <value number="&amp;2" name="fontmenu_GENERATE_DIALOGUE_COMPLETED"></value>
+ <value number="&amp;2" name="fontmenu_GENERATE_HAS_BEEN_HIDDEN"></value>
+ <value number="&amp;4" name="fontmenu_INCLUDE_SYSTEM_FONT"></value>
+ </value-table>
+</p>
+<p>
+Example, with every field at its zero value:
+</p>
+<p>
+<extended-example type="format">
+fontmenu_object {<br/>
+  header_flags:<br/>
+  version:100<br/>
+  object_name:&quot;fontmenu&quot;<br/>
+  fontmenu_flags:<br/>
+  ticked_font:&quot;&quot;<br/>
+}<br/>
+</extended-example>
+</p>
+<!-- ccres:notes -->
+</subsubsection>
+
+<subsubsection title="iconbar_object">
+<p>
+Iconbar object.
+</p>
+<!-- ccres:generated -->
+<p>
+It begins with the Common object fields.
+</p>
+<p>
+<definition-table head-name="Field" head-extra="Type" head-value="Meaning">
+ <definition name="iconbar_flags:" extra="flags"><!-- generated -->Zero or more of the flags below, separated by <userinput>|</userinput>. A value with no name may be given in hexadecimal, as <userinput>0x</userinput><em>value</em>.</definition>
+ <definition name="position:" extra="enumeration"><!-- generated -->One of the names below.</definition>
+ <definition name="priority:" extra="integer"><!-- generated -->A number.</definition>
+ <definition name="sprite_name:" extra="string"><!-- generated -->Text.</definition>
+ <definition name="sprite_limit:" extra="number, or *"><!-- generated -->Size of the buffer for <userinput>sprite_name:</userinput>. <userinput>*</userinput> makes it the length of the text given.</definition>
+ <definition name="text:" extra="message"><!-- generated -->Text, held in the message table so that it can be translated.</definition>
+ <definition name="text_limit:" extra="number, or *"><!-- generated -->Size of the buffer for <userinput>text:</userinput>. <userinput>*</userinput> makes it the length of the text given.</definition>
+ <definition name="menu:" extra="string"><!-- generated -->Text.</definition>
+ <definition name="select_action:" extra="action number"><!-- generated -->Toolbox event number. Left blank, no event is raised.</definition>
+ <definition name="adjust_action:" extra="action number"><!-- generated -->Toolbox event number. Left blank, no event is raised.</definition>
+ <definition name="select_show:" extra="string"><!-- generated -->Text.</definition>
+ <definition name="adjust_show:" extra="string"><!-- generated -->Text.</definition>
+ <definition name="help_message:" extra="message"><!-- generated -->Text, held in the message table so that it can be translated.</definition>
+ <definition name="help_limit:" extra="number, or *"><!-- generated -->Size of the buffer for <userinput>help_message:</userinput>. <userinput>*</userinput> makes it the length of the text given.</definition>
+ </definition-table>
+</p>
+<p>
+Values for <userinput>iconbar_flags:</userinput>
+</p>
+<!-- ccres:table iconbar_object/iconbar_flags: -->
+<p>
+<value-table head-number="Value" head-name="Name" head-value="Meaning">
+ <value number="&amp;1" name="iconbar_GENERATE_SELECT_ABOUT_TO_BE_SHOWN"></value>
+ <value number="&amp;2" name="iconbar_GENERATE_ADJUST_ABOUT_TO_BE_SHOWN"></value>
+ <value number="&amp;4" name="iconbar_SELECT_IS_MENU"></value>
+ <value number="&amp;8" name="iconbar_ADJUST_IS_MENU"></value>
+ <value number="&amp;10" name="iconbar_HAS_TEXT"></value>
+ <value number="&amp;20" name="iconbar_GENERATE_SELECT_CLICKED"></value>
+ <value number="&amp;40" name="iconbar_GENERATE_ADJUST_CLICKED"></value>
+ <value number="&amp;80" name="iconbar_SHOW_SELECT_CENTERED"></value>
+ <value number="&amp;100" name="iconbar_SHOW_ADJUST_CENTERED"></value>
+ <value number="&amp;200" name="iconbar_SHOW_SELECT_AT_POINTER"></value>
+ <value number="&amp;400" name="iconbar_SHOW_ADJUST_AT_POINTER"></value>
+ </value-table>
+</p>
+<p>
+Values for <userinput>position:</userinput>
+</p>
+<!-- ccres:table iconbar_object/position: -->
+<p>
+<value-table head-number="Value" head-name="Name" head-value="Meaning">
+ <value number="-1" name="wimp_ICON_BAR_RIGHT"></value>
+ <value number="-2" name="wimp_ICON_BAR_LEFT"></value>
+ <value number="-3" name="wimp_ICON_BAR_LEFT_RELATIVE"></value>
+ <value number="-4" name="wimp_ICON_BAR_RIGHT_RELATIVE"></value>
+ <value number="-5" name="wimp_ICON_BAR_LEFT_HIGH_PRIORITY"></value>
+ <value number="-6" name="wimp_ICON_BAR_LEFT_LOW_PRIORITY"></value>
+ <value number="-7" name="wimp_ICON_BAR_RIGHT_LOW_PRIORITY"></value>
+ <value number="-8" name="wimp_ICON_BAR_RIGHT_HIGH_PRIORITY"></value>
+ </value-table>
+</p>
+<p>
+Example, with every field at its zero value:
+</p>
+<p>
+<extended-example type="format">
+iconbar_object {<br/>
+  header_flags:<br/>
+  version:100<br/>
+  object_name:&quot;iconbar&quot;<br/>
+  iconbar_flags:<br/>
+  position:<br/>
+  priority:0<br/>
+  sprite_name:&quot;&quot;<br/>
+  sprite_limit:*<br/>
+  text:&quot;&quot;<br/>
+  text_limit:*<br/>
+  menu:&quot;&quot;<br/>
+  select_action:&amp;0<br/>
+  adjust_action:&amp;0<br/>
+  select_show:&quot;&quot;<br/>
+  adjust_show:&quot;&quot;<br/>
+  help_message:&quot;&quot;<br/>
+  help_limit:*<br/>
+}<br/>
+</extended-example>
+</p>
+<!-- ccres:notes -->
+</subsubsection>
+
+<subsubsection title="menu_object">
 <p>
 A <userinput>menu_object</userinput> contains the menu header followed by one
 or more nested <userinput>Entry</userinput> blocks.
 </p>
-
+<!-- ccres:generated -->
 <p>
-<definition-table head-name="Menu entry" head-extra="Type" head-value="Meaning">
+It begins with the Common object fields.
+</p>
+<p>
+<definition-table head-name="Field" head-extra="Type" head-value="Meaning">
  <definition name="menu_flags:" extra="flags">Menu-level flags such as <userinput>menu_GENERATE_ABOUT_TO_BE_SHOWN</userinput>, <userinput>menu_GENERATE_DIALOGUE_COMPLETED</userinput>, and <userinput>menu_GENERATE_HAS_BEEN_HIDDEN</userinput>.</definition>
- <definition name="title:" extra="message string">Menu title.</definition>
- <definition name="title_limit:" extra="limit">Allocation for the title.</definition>
- <definition name="help:" extra="message string">Menu help text.</definition>
- <definition name="help_limit:" extra="limit">Allocation for the help text.</definition>
- <definition name="show_action:" extra="action bits">Action generated when shown. Blank means unset.</definition>
- <definition name="hide_action:" extra="action bits">Action generated when hidden. Blank means unset.</definition>
+ <definition name="title:" extra="message">Menu title.</definition>
+ <definition name="title_limit:" extra="number, or *">Allocation for the title.</definition>
+ <definition name="help:" extra="message">Menu help text.</definition>
+ <definition name="help_limit:" extra="number, or *">Allocation for the help text.</definition>
+ <definition name="show_action:" extra="action number">Action generated when shown. Blank means unset.</definition>
+ <definition name="hide_action:" extra="action number">Action generated when hidden. Blank means unset.</definition>
  </definition-table>
 </p>
-
 <p>
-Each nested <userinput>Entry</userinput> block uses:
+Values for <userinput>menu_flags:</userinput>
 </p>
-
+<!-- ccres:table menu_object/menu_flags: -->
 <p>
-<definition-table head-name="Entry field" head-extra="Type" head-value="Meaning">
+<value-table head-number="Value" head-name="Name" head-value="Meaning">
+ <value number="&amp;1" name="menu_GENERATE_ABOUT_TO_BE_SHOWN"></value>
+ <value number="&amp;2" name="menu_GENERATE_DIALOGUE_COMPLETED"></value>
+ <value number="&amp;2" name="menu_GENERATE_HAS_BEEN_HIDDEN"></value>
+ </value-table>
+</p>
+<p>
+Example, with every field at its zero value:
+</p>
+<p>
+<extended-example type="format">
+menu_object {<br/>
+  header_flags:<br/>
+  version:102<br/>
+  object_name:&quot;menu&quot;<br/>
+  menu_flags:<br/>
+  title:&quot;&quot;<br/>
+  title_limit:*<br/>
+  help:&quot;&quot;<br/>
+  help_limit:*<br/>
+  show_action:&amp;0<br/>
+  hide_action:&amp;0<br/>
+  Entry {<br/>
+    cmp:0<br/>
+    flags:<br/>
+    cmp:&amp;0<br/>
+    text:&quot;&quot;<br/>
+    text_limit:*<br/>
+    click_object_name:&quot;&quot;<br/>
+    sub_menu_object_name:&quot;&quot;<br/>
+    sub_menu_action:&amp;0<br/>
+    click_action:&amp;0<br/>
+    help:&quot;&quot;<br/>
+    help_limit:*<br/>
+  }<br/>
+}<br/>
+</extended-example>
+</p>
+<!-- ccres:notes -->
+</subsubsection>
+
+<subsubsection title="Entry">
+<p>
+Each item of a <userinput>menu_object</userinput> is an
+<userinput>Entry</userinput> block, in the order the items appear in the
+menu. The <userinput>text:</userinput> field is a message for an ordinary
+item, or the name of a sprite when <userinput>menu_ENTRY_IS_SPRITE</userinput>
+is set in <userinput>flags:</userinput>.
+</p>
+<!-- ccres:generated -->
+<p>
+<definition-table head-name="Field" head-extra="Type" head-value="Meaning">
  <definition name="flags:" extra="flags">Entry flags including ticked, separate, faded, sprite, sub-menu, generated sub-menu action, and menu interpretation bits.</definition>
  <definition name="cmp:" extra="expression">Component id.</definition>
- <definition name="text:" extra="message string or ordinary string">Normal entries use the message table. If <userinput>menu_ENTRY_IS_SPRITE</userinput> is set, the same field is stored as an ordinary string naming the sprite.</definition>
- <definition name="text_limit:" extra="limit">Allocation for <userinput>text:</userinput>.</definition>
+ <definition name="text:" extra="message when without menu_ENTRY_IS_SPRITE; string when menu_ENTRY_IS_SPRITE">Normal entries use the message table. If <userinput>menu_ENTRY_IS_SPRITE</userinput> is set, the same field is stored as an ordinary string naming the sprite.</definition>
+ <definition name="text_limit:" extra="number, or *">Allocation for <userinput>text:</userinput>.</definition>
  <definition name="click_object_name:" extra="string">Object to show or act upon when clicked.</definition>
  <definition name="sub_menu_object_name:" extra="string">Sub-menu object name.</definition>
- <definition name="sub_menu_action:" extra="action bits">Action used for sub-menu display.</definition>
- <definition name="click_action:" extra="action bits">Action generated or invoked on click.</definition>
- <definition name="help:" extra="message string">Entry help string.</definition>
- <definition name="help_limit:" extra="limit">Allocation for the help string.</definition>
+ <definition name="sub_menu_action:" extra="action number">Action used for sub-menu display.</definition>
+ <definition name="click_action:" extra="action number">Action generated or invoked on click.</definition>
+ <definition name="help:" extra="message">Entry help string.</definition>
+ <definition name="help_limit:" extra="number, or *">Allocation for the help string.</definition>
  </definition-table>
+</p>
+<p>
+Values for <userinput>flags:</userinput>
+</p>
+<!-- ccres:table Entry/flags: -->
+<p>
+<value-table head-number="Value" head-name="Name" head-value="Meaning">
+ <value number="&amp;1" name="menu_ENTRY_TICKED"></value>
+ <value number="&amp;2" name="menu_ENTRY_SEPARATE"></value>
+ <value number="&amp;100" name="menu_ENTRY_FADED"></value>
+ <value number="&amp;200" name="menu_ENTRY_IS_SPRITE"></value>
+ <value number="&amp;400" name="menu_ENTRY_SUB_MENU"></value>
+ <value number="&amp;800" name="menu_ENTRY_GENERATE_SUB_MENU_ACTION"></value>
+ <value number="&amp;1000" name="menu_ENTRY_IS_MENU"></value>
+ </value-table>
+</p>
+<p>
+Example, with every field at its zero value:
+</p>
+<p>
+<extended-example type="format">
+Entry {<br/>
+  cmp:0<br/>
+  flags:<br/>
+  cmp:&amp;0<br/>
+  text:&quot;&quot;<br/>
+  text_limit:*<br/>
+  click_object_name:&quot;&quot;<br/>
+  sub_menu_object_name:&quot;&quot;<br/>
+  sub_menu_action:&amp;0<br/>
+  click_action:&amp;0<br/>
+  help:&quot;&quot;<br/>
+  help_limit:*<br/>
+}<br/>
+</extended-example>
+</p>
+<!-- ccres:notes -->
+<p>
+A decoded <userinput>Entry</userinput> block shows <userinput>cmp:</userinput>
+twice: first in decimal, before <userinput>flags:</userinput>, and again in
+hexadecimal after it. Both hold the same value, and only the first is read
+when the text is converted back, so an edited value should be put in the first.
 </p>
 </subsubsection>
 
-<subsubsection title="Standalone Toolbox object classes">
+<subsubsection title="printdbox_object">
 <p>
-The remaining top-level Resource object classes are simple fixed-field objects.
-Their accepted entries are listed below.
+PrintDbox object.
 </p>
-
+<!-- ccres:generated -->
 <p>
-<definition-table head-name="Object" head-extra="Entries" head-value="Notes">
- <definition name="saveas_object" extra="saveas_flags:, file_name:, file_type:, title:, title_limit:, alternative_window_name:">SaveAs dialogue object.</definition>
- <definition name="iconbar_object" extra="iconbar_flags:, position:, priority:, sprite_name:, sprite_limit:, text:, text_limit:, menu:, select_action:, adjust_action:, select_show:, adjust_show:, help_message:, help_limit:">Iconbar object.</definition>
- <definition name="scale_object" extra="scale_flags:, lower_bound:, upper_bound:, step_size:, title:, title_limit:, alternative_window_name:, std_value:">Scale dialogue object.</definition>
- <definition name="colourdbox_object" extra="colourdbox_flags:, title:, title_limit:, colour:">ColourDbox object.</definition>
- <definition name="colourmenu_object" extra="colourmenu_flags:, title:, title_limit:, colour:">ColourMenu object. The <userinput>colour:</userinput> field also accepts the special names <userinput>colourmenu_TRANSPARENT</userinput> and <userinput>colourmenu_NONE</userinput>.</definition>
- <definition name="dcs_object" extra="dcs_flags:, title:, title_limit:, message:, message_limit:, alternative_window_name:">DCS dialogue object.</definition>
- <definition name="fileinfo_object" extra="fileinfo_flags:, title:, title_limit:, file_type:, file_name:, alternative_window_name:">FileInfo dialogue object.</definition>
- <definition name="fontdbox_object" extra="fontdbox_flags:, title:, title_limit:, initial_font:, initial_height:, initial_aspect:, try_string:, alternative_window_name:">FontDbox object.</definition>
- <definition name="fontmenu_object" extra="fontmenu_flags:, ticked_font:">FontMenu object.</definition>
- <definition name="printdbox_object" extra="printdbox_flags:, from:, to:, copies:, scale:, further_options:, alternative_window_name:">PrintDbox object.</definition>
- <definition name="proginfo_object" extra="proginfo_flags:, title:, title_limit:, purpose:, author:, licence_type:, prog_version:, alternative_window_name:">ProgInfo object.</definition>
- <definition name="quit_object" extra="quit_flags:, title:, title_limit:, message:, message_limit:, alternative_window_name:">Quit dialogue object.</definition>
+It begins with the Common object fields.
+</p>
+<p>
+<definition-table head-name="Field" head-extra="Type" head-value="Meaning">
+ <definition name="printdbox_flags:" extra="flags"><!-- generated -->Zero or more of the flags below, separated by <userinput>|</userinput>. A value with no name may be given in hexadecimal, as <userinput>0x</userinput><em>value</em>.</definition>
+ <definition name="from:" extra="integer"><!-- generated -->A number.</definition>
+ <definition name="to:" extra="integer"><!-- generated -->A number.</definition>
+ <definition name="copies:" extra="integer"><!-- generated -->A number.</definition>
+ <definition name="scale:" extra="integer"><!-- generated -->A number.</definition>
+ <definition name="further_options:" extra="string"><!-- generated -->Text.</definition>
+ <definition name="alternative_window_name:" extra="string"><!-- generated -->Text.</definition>
  </definition-table>
 </p>
+<p>
+Values for <userinput>printdbox_flags:</userinput>
+</p>
+<!-- ccres:table printdbox_object/printdbox_flags: -->
+<p>
+<value-table head-number="Value" head-name="Name" head-value="Meaning">
+ <value number="&amp;1" name="printdbox_GENERATE_ABOUT_TO_BE_SHOWN"></value>
+ <value number="&amp;2" name="printdbox_GENERATE_DIALOGUE_COMPLETED"></value>
+ <value number="&amp;4" name="printdbox_GENERATE_SHOW_SETUP_ACTION"></value>
+ <value number="&amp;8" name="printdbox_INCLUDE_ALL_FROM_TO"></value>
+ <value number="&amp;10" name="printdbox_INCLUDE_COPIES"></value>
+ <value number="&amp;20" name="printdbox_INCLUDE_SCALE"></value>
+ <value number="&amp;40" name="printdbox_INCLUDE_ORIENTATION"></value>
+ <value number="&amp;80" name="printdbox_INCLUDE_SAVE"></value>
+ <value number="&amp;100" name="printdbox_INCLUDE_SET_UP"></value>
+ <value number="&amp;200" name="printdbox_INCLUDE_DRAFT"></value>
+ <value number="&amp;400" name="printdbox_SELECT_FROM_TO"></value>
+ <value number="&amp;800" name="printdbox_SELECT_SIDEWAYS"></value>
+ <value number="&amp;1000" name="printdbox_SELECT_DRAFT"></value>
+ </value-table>
+</p>
+<p>
+Example, with every field at its zero value:
+</p>
+<p>
+<extended-example type="format">
+printdbox_object {<br/>
+  header_flags:<br/>
+  version:100<br/>
+  object_name:&quot;printdbox&quot;<br/>
+  printdbox_flags:<br/>
+  from:0<br/>
+  to:0<br/>
+  copies:0<br/>
+  scale:0<br/>
+  further_options:&quot;&quot;<br/>
+  alternative_window_name:&quot;&quot;<br/>
+}<br/>
+</extended-example>
+</p>
+<!-- ccres:notes -->
+</subsubsection>
 
+<subsubsection title="proginfo_object">
+<p>
+ProgInfo object.
+</p>
+<!-- ccres:generated -->
+<p>
+It begins with the Common object fields.
+</p>
+<p>
+<definition-table head-name="Field" head-extra="Type" head-value="Meaning">
+ <definition name="proginfo_flags:" extra="flags"><!-- generated -->Zero or more of the flags below, separated by <userinput>|</userinput>. A value with no name may be given in hexadecimal, as <userinput>0x</userinput><em>value</em>.</definition>
+ <definition name="title:" extra="message"><!-- generated -->Text, held in the message table so that it can be translated.</definition>
+ <definition name="title_limit:" extra="number, or *"><!-- generated -->Size of the buffer for <userinput>title:</userinput>. <userinput>*</userinput> makes it the length of the text given.</definition>
+ <definition name="purpose:" extra="message"><!-- generated -->Text, held in the message table so that it can be translated.</definition>
+ <definition name="author:" extra="message"><!-- generated -->Text, held in the message table so that it can be translated.</definition>
+ <definition name="licence_type:" extra="enumeration">The licence, shown only if <userinput>proginfo_flags:</userinput> includes <userinput>proginfo_INCLUDE_LICENCE_TYPE</userinput>. Like every field it must still be given when the licence is not shown; any of the names below will do, such as <userinput>proginfo_LICENCE_PUBLIC_DOMAIN</userinput>.</definition>
+ <definition name="prog_version:" extra="message"><!-- generated -->Text, held in the message table so that it can be translated.</definition>
+ <definition name="alternative_window_name:" extra="string"><!-- generated -->Text.</definition>
+ <definition name="visit_url:" extra="message"><!-- generated -->Text, held in the message table so that it can be translated.</definition>
+ <definition name="visit_url_event:" extra="number"><!-- generated -->A number.</definition>
+ </definition-table>
+</p>
+<p>
+Values for <userinput>proginfo_flags:</userinput>
+</p>
+<!-- ccres:table proginfo_object/proginfo_flags: -->
+<p>
+<value-table head-number="Value" head-name="Name" head-value="Meaning">
+ <value number="&amp;1" name="proginfo_GENERATE_ABOUT_TO_BE_SHOWN"></value>
+ <value number="&amp;2" name="proginfo_GENERATE_DIALOGUE_COMPLETED"></value>
+ <value number="&amp;4" name="proginfo_INCLUDE_LICENCE_TYPE"></value>
+ <value number="&amp;8" name="proginfo_INCLUDE_WEB_PAGE_BUTTON"></value>
+ <value number="&amp;10" name="proginfo_GENERATE_WEB_PAGE_CLICKED"></value>
+ </value-table>
+</p>
+<p>
+Values for <userinput>licence_type:</userinput>
+</p>
+<!-- ccres:table proginfo_object/licence_type: -->
+<p>
+<value-table head-number="Value" head-name="Name" head-value="Meaning">
+ <value number="-1" name="None"></value>
+ <value number="0" name="proginfo_LICENCE_PUBLIC_DOMAIN"></value>
+ <value number="1" name="proginfo_LICENCE_SINGLE_USER"></value>
+ <value number="2" name="proginfo_LICENCE_SINGLE_MACHINE"></value>
+ <value number="3" name="proginfo_LICENCE_SITE"></value>
+ <value number="4" name="proginfo_LICENCE_NETWORK"></value>
+ <value number="5" name="proginfo_LICENCE_AUTHORITY"></value>
+ </value-table>
+</p>
+<p>
+Example, with every field at its zero value:
+</p>
+<p>
+<extended-example type="format">
+proginfo_object {<br/>
+  header_flags:<br/>
+  version:101<br/>
+  object_name:&quot;proginfo&quot;<br/>
+  proginfo_flags:<br/>
+  title:&quot;&quot;<br/>
+  title_limit:*<br/>
+  purpose:&quot;&quot;<br/>
+  author:&quot;&quot;<br/>
+  licence_type:proginfo_LICENCE_PUBLIC_DOMAIN<br/>
+  prog_version:&quot;&quot;<br/>
+  alternative_window_name:&quot;&quot;<br/>
+  visit_url:&quot;&quot;<br/>
+  visit_url_event:&amp;0<br/>
+}<br/>
+</extended-example>
+</p>
+<!-- ccres:notes -->
 <p>
 For <userinput>proginfo_object</userinput>, a Resource object whose
 <userinput>version:</userinput> field is 101 also accepts
@@ -419,6 +954,2030 @@ For <userinput>proginfo_object</userinput>, a Resource object whose
 Later versions do not carry those fields in the current implementation.
 </p>
 </subsubsection>
+
+<subsubsection title="quit_object">
+<p>
+Quit dialogue object.
+</p>
+<!-- ccres:generated -->
+<p>
+It begins with the Common object fields.
+</p>
+<p>
+<definition-table head-name="Field" head-extra="Type" head-value="Meaning">
+ <definition name="quit_flags:" extra="flags"><!-- generated -->Zero or more of the flags below, separated by <userinput>|</userinput>. A value with no name may be given in hexadecimal, as <userinput>0x</userinput><em>value</em>.</definition>
+ <definition name="title:" extra="message"><!-- generated -->Text, held in the message table so that it can be translated.</definition>
+ <definition name="title_limit:" extra="number, or *"><!-- generated -->Size of the buffer for <userinput>title:</userinput>. <userinput>*</userinput> makes it the length of the text given.</definition>
+ <definition name="message:" extra="message"><!-- generated -->Text, held in the message table so that it can be translated.</definition>
+ <definition name="message_limit:" extra="number, or *"><!-- generated -->Size of the buffer for <userinput>message:</userinput>. <userinput>*</userinput> makes it the length of the text given.</definition>
+ <definition name="alternative_window_name:" extra="string"><!-- generated -->Text.</definition>
+ </definition-table>
+</p>
+<p>
+Values for <userinput>quit_flags:</userinput>
+</p>
+<!-- ccres:table quit_object/quit_flags: -->
+<p>
+<value-table head-number="Value" head-name="Name" head-value="Meaning">
+ <value number="&amp;1" name="quit_GENERATE_ABOUT_TO_BE_SHOWN"></value>
+ <value number="&amp;2" name="quit_GENERATE_DIALOGUE_COMPLETED"></value>
+ </value-table>
+</p>
+<p>
+Example, with every field at its zero value:
+</p>
+<p>
+<extended-example type="format">
+quit_object {<br/>
+  header_flags:<br/>
+  version:100<br/>
+  object_name:&quot;quit&quot;<br/>
+  quit_flags:<br/>
+  title:&quot;&quot;<br/>
+  title_limit:*<br/>
+  message:&quot;&quot;<br/>
+  message_limit:*<br/>
+  alternative_window_name:&quot;&quot;<br/>
+}<br/>
+</extended-example>
+</p>
+<!-- ccres:notes -->
+</subsubsection>
+
+<subsubsection title="saveas_object">
+<p>
+SaveAs dialogue object.
+</p>
+<!-- ccres:generated -->
+<p>
+It begins with the Common object fields.
+</p>
+<p>
+<definition-table head-name="Field" head-extra="Type" head-value="Meaning">
+ <definition name="saveas_flags:" extra="flags"><!-- generated -->Zero or more of the flags below, separated by <userinput>|</userinput>. A value with no name may be given in hexadecimal, as <userinput>0x</userinput><em>value</em>.</definition>
+ <definition name="file_name:" extra="message"><!-- generated -->Text, held in the message table so that it can be translated.</definition>
+ <definition name="file_type:" extra="number"><!-- generated -->A number.</definition>
+ <definition name="title:" extra="message"><!-- generated -->Text, held in the message table so that it can be translated.</definition>
+ <definition name="title_limit:" extra="number, or *"><!-- generated -->Size of the buffer for <userinput>title:</userinput>. <userinput>*</userinput> makes it the length of the text given.</definition>
+ <definition name="alternative_window_name:" extra="string"><!-- generated -->Text.</definition>
+ </definition-table>
+</p>
+<p>
+Values for <userinput>saveas_flags:</userinput>
+</p>
+<!-- ccres:table saveas_object/saveas_flags: -->
+<p>
+<value-table head-number="Value" head-name="Name" head-value="Meaning">
+ <value number="&amp;1" name="saveas_GENERATE_ABOUT_TO_BE_SHOWN"></value>
+ <value number="&amp;2" name="saveas_GENERATE_DIALOGUE_COMPLETED"></value>
+ <value number="&amp;4" name="saveas_NO_SELECTION_BUTTON"></value>
+ <value number="&amp;8" name="saveas_GIVEN_DATA"></value>
+ <value number="&amp;10" name="saveas_CLIENT_SUPPORTS_RAM_TRANSFER"></value>
+ </value-table>
+</p>
+<p>
+Example, with every field at its zero value:
+</p>
+<p>
+<extended-example type="format">
+saveas_object {<br/>
+  header_flags:<br/>
+  version:100<br/>
+  object_name:&quot;saveas&quot;<br/>
+  saveas_flags:<br/>
+  file_name:&quot;&quot;<br/>
+  file_type:&amp;0<br/>
+  title:&quot;&quot;<br/>
+  title_limit:*<br/>
+  alternative_window_name:&quot;&quot;<br/>
+}<br/>
+</extended-example>
+</p>
+<!-- ccres:notes -->
+</subsubsection>
+
+<subsubsection title="scale_object">
+<p>
+Scale dialogue object.
+</p>
+<!-- ccres:generated -->
+<p>
+It begins with the Common object fields.
+</p>
+<p>
+<definition-table head-name="Field" head-extra="Type" head-value="Meaning">
+ <definition name="scale_flags:" extra="flags"><!-- generated -->Zero or more of the flags below, separated by <userinput>|</userinput>. A value with no name may be given in hexadecimal, as <userinput>0x</userinput><em>value</em>.</definition>
+ <definition name="lower_bound:" extra="integer"><!-- generated -->A number.</definition>
+ <definition name="upper_bound:" extra="integer"><!-- generated -->A number.</definition>
+ <definition name="step_size:" extra="integer"><!-- generated -->A number.</definition>
+ <definition name="title:" extra="message"><!-- generated -->Text, held in the message table so that it can be translated.</definition>
+ <definition name="title_limit:" extra="number, or *"><!-- generated -->Size of the buffer for <userinput>title:</userinput>. <userinput>*</userinput> makes it the length of the text given.</definition>
+ <definition name="alternative_window_name:" extra="string"><!-- generated -->Text.</definition>
+ <definition name="std_value:" extra="box: xmin,ymin,xmax,ymax"><!-- generated -->Four numbers or expressions, separated by commas.</definition>
+ </definition-table>
+</p>
+<p>
+Values for <userinput>scale_flags:</userinput>
+</p>
+<!-- ccres:table scale_object/scale_flags: -->
+<p>
+<value-table head-number="Value" head-name="Name" head-value="Meaning">
+ <value number="&amp;1" name="scale_GENERATE_ABOUT_TO_BE_SHOWN"></value>
+ <value number="&amp;2" name="scale_GENERATE_DIALOGUE_COMPLETED"></value>
+ <value number="&amp;4" name="scale_INCLUDE_SCALE_TO_FIT"></value>
+ </value-table>
+</p>
+<p>
+Example, with every field at its zero value:
+</p>
+<p>
+<extended-example type="format">
+scale_object {<br/>
+  header_flags:<br/>
+  version:100<br/>
+  object_name:&quot;scale&quot;<br/>
+  scale_flags:<br/>
+  lower_bound:0<br/>
+  upper_bound:0<br/>
+  step_size:0<br/>
+  title:&quot;&quot;<br/>
+  title_limit:*<br/>
+  alternative_window_name:&quot;&quot;<br/>
+  std_value:0,0,0,0<br/>
+}<br/>
+</extended-example>
+</p>
+<!-- ccres:notes -->
+</subsubsection>
+
+<subsubsection title="window_object">
+<p>
+<userinput>window_object</userinput> is the richest Resource form. It carries
+the Toolbox-level window metadata, the embedded Wimp window definition, zero
+or more <userinput>keyboardshortcut_object</userinput> blocks, and zero or
+more gadget blocks.
+</p>
+<!-- ccres:generated -->
+<p>
+It begins with the Common object fields.
+</p>
+<p>
+<definition-table head-name="Field" head-extra="Type" head-value="Meaning">
+ <definition name="window_flags:" extra="flags">Toolbox window flags such as <userinput>window_AUTO_OPEN</userinput>, <userinput>window_AUTO_CLOSE</userinput>, and <userinput>window_IS_TOOL_BAR</userinput>.</definition>
+ <definition name="help_message:" extra="message">Window help text.</definition>
+ <definition name="help_limit:" extra="number, or *">Allocation for <userinput>help_message:</userinput>.</definition>
+ <definition name="sprite_name:" extra="string">Pointer sprite name.</definition>
+ <definition name="pointer_limit:" extra="integer">Pointer sprite limit value.</definition>
+ <definition name="hotspot:" extra="coordinate: x,y">Pointer hotspot.</definition>
+ <definition name="menu_name:" extra="string">Associated menu object name.</definition>
+ <definition name="default_focus:" extra="component id; values in Common values">Default focus component id.</definition>
+ <definition name="show_action:" extra="action number">Action code sent when the object is shown. A blank value means unset.</definition>
+ <definition name="hide_action:" extra="action number">Action code sent when the object is hidden. A blank value means unset.</definition>
+ <definition name="toolbar_ibl:" extra="string">Toolbar internal bottom-left link name.</definition>
+ <definition name="toolbar_itl:" extra="string">Toolbar internal top-left link name.</definition>
+ <definition name="toolbar_ebl:" extra="string">Toolbar external bottom-left link name.</definition>
+ <definition name="toolbar_etl:" extra="string">Toolbar external top-left link name.</definition>
+ <definition name="window.visible:" extra="box: xmin,ymin,xmax,ymax">Initial visible rectangle.</definition>
+ <definition name="window.xscroll:" extra="integer">Initial horizontal scroll position.</definition>
+ <definition name="window.yscroll:" extra="integer">Initial vertical scroll position.</definition>
+ <definition name="window.next:" extra="enumeration">Stacking order such as <userinput>wimp_TOP</userinput>, <userinput>wimp_BOTTOM</userinput>, or <userinput>wimp_HIDDEN</userinput>.</definition>
+ <definition name="window.flags:" extra="flags">Wimp window flags, including furniture and scrolling bits.</definition>
+ <definition name="window.title_fg:" extra="Wimp colour; values in Common values">Title foreground colour.</definition>
+ <definition name="window.title_bg:" extra="Wimp colour; values in Common values">Title background colour.</definition>
+ <definition name="window.work_fg:" extra="Wimp colour; values in Common values">Work area foreground colour.</definition>
+ <definition name="window.work_bg:" extra="Wimp colour; values in Common values">Work area background colour.</definition>
+ <definition name="window.scroll_outer:" extra="Wimp colour; values in Common values">Outer scroll bar colour.</definition>
+ <definition name="window.scroll_inner:" extra="Wimp colour; values in Common values">Inner scroll bar colour.</definition>
+ <definition name="window.highlight_bg:" extra="Wimp colour; values in Common values">Highlight background colour.</definition>
+ <definition name="window.extra_flags:" extra="8-bit flags">Extended Wimp window flags such as title-validation use and 3D preferences.</definition>
+ <definition name="window.extent:" extra="box: xmin,ymin,xmax,ymax">Work area extent rectangle.</definition>
+ <definition name="window.title_flags:" extra="flags">Title icon flags.</definition>
+ <definition name="window.work_flags:" extra="flags">Work-area button type bits.</definition>
+ <definition name="window.sprite_area:" extra="sprite area">Sprite area reference, exported as hexadecimal.</definition>
+ <definition name="window.xmin:" extra="16-bit integer">Minimum width.</definition>
+ <definition name="window.ymin:" extra="16-bit integer">Minimum height.</definition>
+ <definition name="window.title_text:" extra="message">Indirected title text.</definition>
+ <definition name="window.title_text_limit:" extra="number, or *">Allocation for the title text.</definition>
+ <definition name="window.title_valid:" extra="string">Title validation string.</definition>
+ </definition-table>
+</p>
+<p>
+Values for <userinput>window_flags:</userinput>
+</p>
+<!-- ccres:table window_object/window_flags: -->
+<p>
+<value-table head-number="Value" head-name="Name" head-value="Meaning">
+ <value number="&amp;1" name="window_GENERATE_ABOUT_TO_BE_SHOWN">Raise the Window_AboutToBeShown event (&amp;82880) before the window is shown.</value>
+ <value number="&amp;2" name="window_AUTO_OPEN">The Toolbox handles the Wimp's requests to open the window.</value>
+ <value number="&amp;4" name="window_AUTO_CLOSE">The Toolbox handles the Wimp's requests to close the window.</value>
+ <value number="&amp;8" name="window_GENERATE_DIALOGUE_COMPLETED">Raise an event (&amp;82890) when the window has been hidden. This is bit 3 of the window flags: OSLib names the flag and event "dialogue completed" (<userinput>action_WINDOW_DIALOGUE_COMPLETED</userinput>), while the tboxlibs headers name them <userinput>Window_GenerateHasBeenHidden</userinput> and <userinput>Window_HasBeenHidden</userinput>. Use this name for that flag; the tboxlibs name is not accepted.</value>
+ <value number="&amp;10" name="window_IS_TOOL_BAR">The window is a tool bar.</value>
+ </value-table>
+</p>
+<p>
+Values for <userinput>window.next:</userinput>
+</p>
+<!-- ccres:table window_object/window.next: -->
+<p>
+<value-table head-number="Value" head-name="Name" head-value="Meaning">
+ <value number="-1" name="wimp_TOP"></value>
+ <value number="-2" name="wimp_BOTTOM"></value>
+ <value number="-3" name="wimp_HIDDEN"></value>
+ </value-table>
+</p>
+<p>
+Values for <userinput>window.flags:</userinput>
+</p>
+<!-- ccres:table window_object/window.flags: -->
+<p>
+<value-table head-number="Value" head-name="Name" head-value="Meaning">
+ <value number="&amp;2" name="wimp_WINDOW_MOVEABLE"></value>
+ <value number="&amp;10" name="wimp_WINDOW_AUTO_REDRAW"></value>
+ <value number="&amp;20" name="wimp_WINDOW_PANE"></value>
+ <value number="&amp;40" name="wimp_WINDOW_NO_BOUNDS"></value>
+ <value number="&amp;100" name="wimp_WINDOW_SCROLL_REPEAT"></value>
+ <value number="&amp;200" name="wimp_WINDOW_SCROLL"></value>
+ <value number="&amp;400" name="wimp_WINDOW_REAL_COLOURS"></value>
+ <value number="&amp;800" name="wimp_WINDOW_BACK"></value>
+ <value number="&amp;1000" name="wimp_WINDOW_HOT_KEYS"></value>
+ <value number="&amp;2000" name="wimp_WINDOW_BOUNDED"></value>
+ <value number="&amp;4000" name="wimp_WINDOW_IGNORE_XEXTENT"></value>
+ <value number="&amp;8000" name="wimp_WINDOW_IGNORE_YEXTENT"></value>
+ <value number="&amp;10000" name="wimp_WINDOW_OPEN"></value>
+ <value number="&amp;20000" name="wimp_WINDOW_NOT_COVERED"></value>
+ <value number="&amp;40000" name="wimp_WINDOW_FULL_SIZE"></value>
+ <value number="&amp;80000" name="wimp_WINDOW_TOGGLED"></value>
+ <value number="&amp;100000" name="wimp_WINDOW_HAS_FOCUS"></value>
+ <value number="&amp;200000" name="wimp_WINDOW_BOUNDED_ONCE"></value>
+ <value number="&amp;400000" name="wimp_WINDOW_PARTIAL_SIZE"></value>
+ <value number="&amp;800000" name="wimp_WINDOW_FURNITURE_WINDOW"></value>
+ <value number="&amp;800000" name="wimp_WINDOW_FOREGROUND_WINDOW"></value>
+ <value number="&amp;1000000" name="wimp_WINDOW_BACK_ICON"></value>
+ <value number="&amp;2000000" name="wimp_WINDOW_CLOSE_ICON"></value>
+ <value number="&amp;4000000" name="wimp_WINDOW_TITLE_ICON"></value>
+ <value number="&amp;8000000" name="wimp_WINDOW_TOGGLE_ICON"></value>
+ <value number="&amp;10000000" name="wimp_WINDOW_VSCROLL"></value>
+ <value number="&amp;20000000" name="wimp_WINDOW_SIZE_ICON"></value>
+ <value number="&amp;40000000" name="wimp_WINDOW_HSCROLL"></value>
+ <value number="&amp;80000000" name="wimp_WINDOW_NEW_FORMAT"></value>
+ </value-table>
+</p>
+<p>
+Values for <userinput>window.extra_flags:</userinput>
+</p>
+<!-- ccres:table window_object/window.extra_flags: -->
+<p>
+<value-table head-number="Value" head-name="Name" head-value="Meaning">
+ <value number="&amp;1" name="wimp_WINDOW_USE_TITLE_VALIDATION_COLOURS"></value>
+ <value number="&amp;1" name="wimp_WINDOW_USE_TITLE_VALIDATION_STRING"></value>
+ <value number="&amp;2" name="wimp_WINDOW_USE_EXTENDED_SCROLL_REQUEST"></value>
+ <value number="&amp;4" name="wimp_WINDOW_NEVER3D"></value>
+ <value number="&amp;8" name="wimp_WINDOW_ALWAYS3D"></value>
+ </value-table>
+</p>
+<p>
+Values for <userinput>window.title_flags:</userinput>
+</p>
+<!-- ccres:table window_object/window.title_flags: -->
+<p>
+<value-table head-number="Value" head-name="Name" head-value="Meaning">
+ <value number="&amp;1" name="wimp_ICON_TEXT"></value>
+ <value number="&amp;2" name="wimp_ICON_SPRITE"></value>
+ <value number="&amp;4" name="wimp_ICON_BORDER"></value>
+ <value number="&amp;8" name="wimp_ICON_HCENTRED"></value>
+ <value number="&amp;10" name="wimp_ICON_VCENTRED"></value>
+ <value number="&amp;20" name="wimp_ICON_FILLED"></value>
+ <value number="&amp;40" name="wimp_ICON_ANTI_ALIASED"></value>
+ <value number="&amp;100" name="wimp_ICON_INDIRECTED"></value>
+ <value number="&amp;200" name="wimp_ICON_RJUSTIFIED"></value>
+ <value number="&amp;400" name="wimp_ICON_ALLOW_ADJUST"></value>
+ <value number="&amp;800" name="wimp_ICON_HALF_SIZE"></value>
+ <value number="&amp;200000" name="wimp_ICON_SELECTED"></value>
+ <value number="&amp;400000" name="wimp_ICON_SHADED"></value>
+ </value-table>
+</p>
+<p>
+Values for <userinput>window.work_flags:</userinput>
+</p>
+<!-- ccres:table window_object/window.work_flags: -->
+<p>
+<value-table head-number="Value" head-name="Name" head-value="Meaning">
+ <value number="&amp;1000" name="wimp_BUTTON_ALWAYS"></value>
+ <value number="&amp;2000" name="wimp_BUTTON_REPEAT"></value>
+ <value number="&amp;3000" name="wimp_BUTTON_CLICK"></value>
+ <value number="&amp;4000" name="wimp_BUTTON_RELEASE"></value>
+ <value number="&amp;5000" name="wimp_BUTTON_DOUBLE_CLICK"></value>
+ <value number="&amp;6000" name="wimp_BUTTON_CLICK_DRAG"></value>
+ <value number="&amp;7000" name="wimp_BUTTON_RELEASE_DRAG"></value>
+ <value number="&amp;8000" name="wimp_BUTTON_DOUBLE_DRAG"></value>
+ <value number="&amp;9000" name="wimp_BUTTON_MENU_ICON"></value>
+ <value number="&amp;A000" name="wimp_BUTTON_DOUBLE_CLICK_DRAG"></value>
+ <value number="&amp;B000" name="wimp_BUTTON_RADIO"></value>
+ <value number="&amp;E000" name="wimp_BUTTON_WRITE_CLICK_DRAG"></value>
+ <value number="&amp;F000" name="wimp_BUTTON_WRITABLE"></value>
+ </value-table>
+</p>
+<p>
+Example, with every field at its zero value:
+</p>
+<p>
+<extended-example type="format">
+window_object {<br/>
+  header_flags:<br/>
+  version:102<br/>
+  object_name:&quot;window&quot;<br/>
+  window_flags:<br/>
+  help_message:&quot;&quot;<br/>
+  help_limit:*<br/>
+  sprite_name:&quot;&quot;<br/>
+  pointer_limit:0<br/>
+  hotspot:0,0<br/>
+  menu_name:&quot;&quot;<br/>
+  default_focus:&amp;0<br/>
+  show_action:&amp;0<br/>
+  hide_action:&amp;0<br/>
+  toolbar_ibl:&quot;&quot;<br/>
+  toolbar_itl:&quot;&quot;<br/>
+  toolbar_ebl:&quot;&quot;<br/>
+  toolbar_etl:&quot;&quot;<br/>
+  window.visible:0,0,0,0<br/>
+  window.xscroll:0<br/>
+  window.yscroll:0<br/>
+  window.next:<br/>
+  window.flags:<br/>
+  window.title_fg:wimp_COLOUR_WHITE<br/>
+  window.title_bg:wimp_COLOUR_WHITE<br/>
+  window.work_fg:wimp_COLOUR_WHITE<br/>
+  window.work_bg:wimp_COLOUR_WHITE<br/>
+  window.scroll_outer:wimp_COLOUR_WHITE<br/>
+  window.scroll_inner:wimp_COLOUR_WHITE<br/>
+  window.highlight_bg:wimp_COLOUR_WHITE<br/>
+  window.extra_flags:<br/>
+  window.extent:0,0,0,0<br/>
+  window.title_flags:<br/>
+  window.work_flags:<br/>
+  window.sprite_area:&amp;0<br/>
+  window.xmin:0<br/>
+  window.ymin:0<br/>
+  window.title_text:&quot;&quot;<br/>
+  window.title_text_limit:*<br/>
+  window.title_valid:&quot;&quot;<br/>
+  # nested blocks, each described in its own section<br/>
+}<br/>
+</extended-example>
+</p>
+<!-- ccres:notes -->
+</subsubsection>
+
+<subsubsection title="keyboardshortcut_object">
+<p>
+<!-- generated -->The fields of a <userinput>keyboardshortcut_object</userinput> block, which is nested in a <userinput>window_object</userinput> block.
+</p>
+<!-- ccres:generated -->
+<p>
+<definition-table head-name="Field" head-extra="Type" head-value="Meaning">
+ <definition name="flags:" extra="flags">Shortcut show flags such as <userinput>keyboardshortcut_SHOW_AS_MENU</userinput>, <userinput>keyboardshortcut_SHOW_AT_CENTRE</userinput>, and <userinput>keyboardshortcut_SHOW_AT_POINTER</userinput>.</definition>
+ <definition name="key_code:" extra="number">Key code value.</definition>
+ <definition name="key_event:" extra="number">Action or Toolbox event value associated with the key.</definition>
+ <definition name="key_show:" extra="string">Object name to show.</definition>
+ </definition-table>
+</p>
+<p>
+Values for <userinput>flags:</userinput>
+</p>
+<!-- ccres:table keyboardshortcut_object/flags: -->
+<p>
+<value-table head-number="Value" head-name="Name" head-value="Meaning">
+ <value number="&amp;1" name="keyboardshortcut_SHOW_AS_MENU"></value>
+ <value number="&amp;2" name="keyboardshortcut_SHOW_AT_CENTRE"></value>
+ <value number="&amp;4" name="keyboardshortcut_SHOW_AT_POINTER"></value>
+ </value-table>
+</p>
+<p>
+Example, with every field at its zero value:
+</p>
+<p>
+<extended-example type="format">
+keyboardshortcut_object {<br/>
+  flags:<br/>
+  key_code:&amp;0<br/>
+  key_event:&amp;0<br/>
+  key_show:&quot;&quot;<br/>
+}<br/>
+</extended-example>
+</p>
+<!-- ccres:notes -->
+</subsubsection>
+
+<subsubsection title="actionbutton_object">
+<p>
+Action button gadget.
+</p>
+<!-- ccres:generated -->
+<p>
+It begins with the Common gadget fields.
+</p>
+<p>
+<definition-table head-name="Field" head-extra="Type" head-value="Meaning">
+ <definition name="flags:" extra="flags"><!-- generated -->Zero or more of the flags below, separated by <userinput>|</userinput>. A value with no name may be given in hexadecimal, as <userinput>0x</userinput><em>value</em>.</definition>
+ <definition name="text:" extra="message"><!-- generated -->Text, held in the message table so that it can be translated.</definition>
+ <definition name="text_limit:" extra="number, or *"><!-- generated -->Size of the buffer for <userinput>text:</userinput>. <userinput>*</userinput> makes it the length of the text given.</definition>
+ <definition name="click_show:" extra="string"><!-- generated -->Text.</definition>
+ <definition name="action:" extra="action number"><!-- generated -->Toolbox event number. Left blank, no event is raised.</definition>
+ </definition-table>
+</p>
+<p>
+Values for <userinput>flags:</userinput>
+</p>
+<!-- ccres:table actionbutton_object/flags: -->
+<p>
+<value-table head-number="Value" head-name="Name" head-value="Meaning">
+ <value number="&amp;1" name="actionbutton_IS_DEFAULT"></value>
+ <value number="&amp;2" name="actionbutton_IS_CANCEL"></value>
+ <value number="&amp;4" name="actionbutton_IS_LOCAL"></value>
+ <value number="&amp;8" name="actionbutton_IS_MENU"></value>
+ <value number="&amp;8" name="actionbutton_SHOW_AS_MENU"></value>
+ <value number="&amp;10" name="actionbutton_SHOW_AT_CENTRE"></value>
+ <value number="&amp;20" name="actionbutton_SHOW_AT_POINTER"></value>
+ <value number="&amp;80000000" name="gadget_FADED"></value>
+ <value number="&amp;40000000" name="gadget_AT_BACK"></value>
+ </value-table>
+</p>
+<p>
+Example, with every field at its zero value:
+</p>
+<p>
+<extended-example type="format">
+actionbutton_object {<br/>
+  cmp:&amp;0<br/>
+  bbox:0,0,0,0<br/>
+  help_message:&quot;&quot;<br/>
+  help_limit:*<br/>
+  flags:<br/>
+  text:&quot;&quot;<br/>
+  text_limit:*<br/>
+  click_show:&quot;&quot;<br/>
+  action:&amp;0<br/>
+}<br/>
+</extended-example>
+</p>
+<!-- ccres:notes -->
+</subsubsection>
+
+<subsubsection title="adjuster_object">
+<p>
+Adjuster gadget.
+</p>
+<!-- ccres:generated -->
+<p>
+It begins with the Common gadget fields.
+</p>
+<p>
+<definition-table head-name="Field" head-extra="Type" head-value="Meaning">
+ <definition name="flags:" extra="flags"><!-- generated -->Zero or more of the flags below, separated by <userinput>|</userinput>. A value with no name may be given in hexadecimal, as <userinput>0x</userinput><em>value</em>.</definition>
+ <definition name="reserved:" extra="integer"><!-- generated -->A number.</definition>
+ </definition-table>
+</p>
+<p>
+Values for <userinput>flags:</userinput>
+</p>
+<!-- ccres:table adjuster_object/flags: -->
+<p>
+<value-table head-number="Value" head-name="Name" head-value="Meaning">
+ <value number="&amp;1" name="adjuster_INCREMENT"></value>
+ <value number="&amp;2" name="adjuster_VERTICAL"></value>
+ <value number="&amp;80000000" name="gadget_FADED"></value>
+ <value number="&amp;40000000" name="gadget_AT_BACK"></value>
+ </value-table>
+</p>
+<p>
+Example, with every field at its zero value:
+</p>
+<p>
+<extended-example type="format">
+adjuster_object {<br/>
+  cmp:&amp;0<br/>
+  bbox:0,0,0,0<br/>
+  help_message:&quot;&quot;<br/>
+  help_limit:*<br/>
+  flags:<br/>
+  reserved:0<br/>
+}<br/>
+</extended-example>
+</p>
+<!-- ccres:notes -->
+</subsubsection>
+
+<subsubsection title="button_object">
+<p>
+Button gadget using Wimp icon flags and colours.
+</p>
+<!-- ccres:generated -->
+<p>
+It begins with the Common gadget fields.
+</p>
+<p>
+<definition-table head-name="Field" head-extra="Type" head-value="Meaning">
+ <definition name="flags:" extra="flags"><!-- generated -->Zero or more of the flags below, separated by <userinput>|</userinput>. A value with no name may be given in hexadecimal, as <userinput>0x</userinput><em>value</em>.</definition>
+ <definition name="button_flags:" extra="icon flags"><!-- generated -->Zero or more Wimp icon flags, separated by <userinput>|</userinput>, and at most one button type.</definition>
+ <definition name="button_esg:" extra="ESG number, 0 to 31"><!-- generated -->Exclusive selection group number.</definition>
+ <definition name="button_fg:" extra="Wimp colour; values in Common values"><!-- generated -->A Wimp colour, as one of the names below.</definition>
+ <definition name="button_bg:" extra="Wimp colour; values in Common values"><!-- generated -->A Wimp colour, as one of the names below.</definition>
+ <definition name="value:" extra="message"><!-- generated -->Text, held in the message table so that it can be translated.</definition>
+ <definition name="value_limit:" extra="number, or *"><!-- generated -->Size of the buffer for <userinput>value:</userinput>. <userinput>*</userinput> makes it the length of the text given.</definition>
+ <definition name="validation:" extra="string"><!-- generated -->Text.</definition>
+ <definition name="validation_limit:" extra="number, or *"><!-- generated -->Size of the buffer for <userinput>validation:</userinput>. <userinput>*</userinput> makes it the length of the text given.</definition>
+ </definition-table>
+</p>
+<p>
+Values for <userinput>flags:</userinput>
+</p>
+<!-- ccres:table button_object/flags: -->
+<p>
+<value-table head-number="Value" head-name="Name" head-value="Meaning">
+ <value number="&amp;1" name="button_TASK_SPRITE_AREA"></value>
+ <value number="&amp;2" name="button_ALLOW_MENU_CLICKS"></value>
+ <value number="&amp;80000000" name="gadget_FADED"></value>
+ <value number="&amp;40000000" name="gadget_AT_BACK"></value>
+ </value-table>
+</p>
+<p>
+Values for <userinput>button_flags:</userinput>
+</p>
+<!-- ccres:table button_object/button_flags: -->
+<p>
+<value-table head-number="Value" head-name="Name" head-value="Meaning">
+ <value number="&amp;1" name="wimp_ICON_TEXT"></value>
+ <value number="&amp;2" name="wimp_ICON_SPRITE"></value>
+ <value number="&amp;4" name="wimp_ICON_BORDER"></value>
+ <value number="&amp;8" name="wimp_ICON_HCENTRED"></value>
+ <value number="&amp;10" name="wimp_ICON_VCENTRED"></value>
+ <value number="&amp;20" name="wimp_ICON_FILLED"></value>
+ <value number="&amp;40" name="wimp_ICON_ANTI_ALIASED"></value>
+ <value number="&amp;80" name="wimp_ICON_NEEDS_HELP"></value>
+ <value number="&amp;100" name="wimp_ICON_INDIRECTED"></value>
+ <value number="&amp;200" name="wimp_ICON_RJUSTIFIED"></value>
+ <value number="&amp;400" name="wimp_ICON_ALLOW_ADJUST"></value>
+ <value number="&amp;800" name="wimp_ICON_HALF_SIZE"></value>
+ <value number="&amp;200000" name="wimp_ICON_SELECTED"></value>
+ <value number="&amp;400000" name="wimp_ICON_SHADED"></value>
+ <value number="&amp;800000" name="wimp_ICON_DELETED"></value>
+ </value-table>
+</p>
+<p>
+Values for <userinput>button_flags:</userinput>
+</p>
+<!-- ccres:table button_object/button_flags: -->
+<p>
+<value-table head-number="Value" head-name="Name" head-value="Meaning">
+ <value number="4096" name="wimp_BUTTON_ALWAYS"></value>
+ <value number="8192" name="wimp_BUTTON_REPEAT"></value>
+ <value number="12288" name="wimp_BUTTON_CLICK"></value>
+ <value number="16384" name="wimp_BUTTON_RELEASE"></value>
+ <value number="20480" name="wimp_BUTTON_DOUBLE_CLICK"></value>
+ <value number="24576" name="wimp_BUTTON_CLICK_DRAG"></value>
+ <value number="28672" name="wimp_BUTTON_RELEASE_DRAG"></value>
+ <value number="32768" name="wimp_BUTTON_DOUBLE_DRAG"></value>
+ <value number="36864" name="wimp_BUTTON_MENU_ICON"></value>
+ <value number="40960" name="wimp_BUTTON_DOUBLE_CLICK_DRAG"></value>
+ <value number="45056" name="wimp_BUTTON_RADIO"></value>
+ <value number="57344" name="wimp_BUTTON_WRITE_CLICK_DRAG"></value>
+ <value number="61440" name="wimp_BUTTON_WRITABLE"></value>
+ </value-table>
+</p>
+<p>
+Example, with every field at its zero value:
+</p>
+<p>
+<extended-example type="format">
+button_object {<br/>
+  cmp:&amp;0<br/>
+  bbox:0,0,0,0<br/>
+  help_message:&quot;&quot;<br/>
+  help_limit:*<br/>
+  flags:<br/>
+  button_flags:<br/>
+  button_esg:0<br/>
+  button_fg:wimp_COLOUR_WHITE<br/>
+  button_bg:wimp_COLOUR_WHITE<br/>
+  value:&quot;&quot;<br/>
+  value_limit:*<br/>
+  validation:&quot;&quot;<br/>
+  validation_limit:*<br/>
+}<br/>
+</extended-example>
+</p>
+<!-- ccres:notes -->
+</subsubsection>
+
+<subsubsection title="displayfield_object">
+<p>
+Display field gadget.
+</p>
+<!-- ccres:generated -->
+<p>
+It begins with the Common gadget fields.
+</p>
+<p>
+<definition-table head-name="Field" head-extra="Type" head-value="Meaning">
+ <definition name="flags:" extra="flags"><!-- generated -->Zero or more of the flags below, separated by <userinput>|</userinput>. A value with no name may be given in hexadecimal, as <userinput>0x</userinput><em>value</em>.</definition>
+ <definition name="text:" extra="message"><!-- generated -->Text, held in the message table so that it can be translated.</definition>
+ <definition name="text_limit:" extra="number, or *"><!-- generated -->Size of the buffer for <userinput>text:</userinput>. <userinput>*</userinput> makes it the length of the text given.</definition>
+ </definition-table>
+</p>
+<p>
+Values for <userinput>flags:</userinput>
+</p>
+<!-- ccres:table displayfield_object/flags: -->
+<p>
+<value-table head-number="Value" head-name="Name" head-value="Meaning">
+ <value number="&amp;2" name="displayfield_RJUSTIFIED"></value>
+ <value number="&amp;4" name="displayfield_HCENTRED"></value>
+ <value number="&amp;80000000" name="gadget_FADED"></value>
+ <value number="&amp;40000000" name="gadget_AT_BACK"></value>
+ </value-table>
+</p>
+<p>
+Example, with every field at its zero value:
+</p>
+<p>
+<extended-example type="format">
+displayfield_object {<br/>
+  cmp:&amp;0<br/>
+  bbox:0,0,0,0<br/>
+  help_message:&quot;&quot;<br/>
+  help_limit:*<br/>
+  flags:<br/>
+  text:&quot;&quot;<br/>
+  text_limit:*<br/>
+}<br/>
+</extended-example>
+</p>
+<!-- ccres:notes -->
+</subsubsection>
+
+<subsubsection title="draggable_object">
+<p>
+Draggable gadget with optional text and sprite names.
+</p>
+<!-- ccres:generated -->
+<p>
+It begins with the Common gadget fields.
+</p>
+<p>
+<definition-table head-name="Field" head-extra="Type" head-value="Meaning">
+ <definition name="flags:" extra="flags"><!-- generated -->Zero or more of the flags below, separated by <userinput>|</userinput>. A value with no name may be given in hexadecimal, as <userinput>0x</userinput><em>value</em>.</definition>
+ <definition name="text:" extra="message"><!-- generated -->Text, held in the message table so that it can be translated.</definition>
+ <definition name="text_limit:" extra="number, or *"><!-- generated -->Size of the buffer for <userinput>text:</userinput>. <userinput>*</userinput> makes it the length of the text given.</definition>
+ <definition name="sprite_name:" extra="string"><!-- generated -->Text.</definition>
+ <definition name="sprite_limit:" extra="number, or *"><!-- generated -->Size of the buffer for <userinput>sprite_name:</userinput>. <userinput>*</userinput> makes it the length of the text given.</definition>
+ </definition-table>
+</p>
+<p>
+Values for <userinput>flags:</userinput>
+</p>
+<!-- ccres:table draggable_object/flags: -->
+<p>
+<value-table head-number="Value" head-name="Name" head-value="Meaning">
+ <value number="&amp;1" name="draggable_GENERATE_DRAG_STARTED"></value>
+ <value number="&amp;2" name="draggable_SPRITE"></value>
+ <value number="&amp;4" name="draggable_TEXT"></value>
+ <value number="&amp;8" name="draggable_TYPE_CLICK_DRAG"></value>
+ <value number="&amp;10" name="draggable_TYPE_CLICK_DOUBLE_DRAG"></value>
+ <value number="&amp;40" name="draggable_USE_TOOLBOX_IDS"></value>
+ <value number="&amp;80" name="draggable_DROP_SHADOW"></value>
+ <value number="&amp;100" name="draggable_NO_DITHER"></value>
+ <value number="&amp;80000000" name="gadget_FADED"></value>
+ <value number="&amp;40000000" name="gadget_AT_BACK"></value>
+ </value-table>
+</p>
+<p>
+Example, with every field at its zero value:
+</p>
+<p>
+<extended-example type="format">
+draggable_object {<br/>
+  cmp:&amp;0<br/>
+  bbox:0,0,0,0<br/>
+  help_message:&quot;&quot;<br/>
+  help_limit:*<br/>
+  flags:<br/>
+  text:&quot;&quot;<br/>
+  text_limit:*<br/>
+  sprite_name:&quot;&quot;<br/>
+  sprite_limit:*<br/>
+}<br/>
+</extended-example>
+</p>
+<!-- ccres:notes -->
+</subsubsection>
+
+<subsubsection title="label_object">
+<p>
+Static label gadget.
+</p>
+<!-- ccres:generated -->
+<p>
+It begins with the Common gadget fields.
+</p>
+<p>
+<definition-table head-name="Field" head-extra="Type" head-value="Meaning">
+ <definition name="flags:" extra="flags"><!-- generated -->Zero or more of the flags below, separated by <userinput>|</userinput>. A value with no name may be given in hexadecimal, as <userinput>0x</userinput><em>value</em>.</definition>
+ <definition name="label:" extra="message"><!-- generated -->Text, held in the message table so that it can be translated.</definition>
+ </definition-table>
+</p>
+<p>
+Values for <userinput>flags:</userinput>
+</p>
+<!-- ccres:table label_object/flags: -->
+<p>
+<value-table head-number="Value" head-name="Name" head-value="Meaning">
+ <value number="&amp;1" name="label_NO_BOX"></value>
+ <value number="&amp;2" name="label_RJUSTIFIED"></value>
+ <value number="&amp;4" name="label_HCENTRED"></value>
+ <value number="&amp;80000000" name="gadget_FADED"></value>
+ <value number="&amp;40000000" name="gadget_AT_BACK"></value>
+ </value-table>
+</p>
+<p>
+Example, with every field at its zero value:
+</p>
+<p>
+<extended-example type="format">
+label_object {<br/>
+  cmp:&amp;0<br/>
+  bbox:0,0,0,0<br/>
+  help_message:&quot;&quot;<br/>
+  help_limit:*<br/>
+  flags:<br/>
+  label:&quot;&quot;<br/>
+}<br/>
+</extended-example>
+</p>
+<!-- ccres:notes -->
+</subsubsection>
+
+<subsubsection title="labelledbox_object">
+<p>
+Labelled box gadget.
+</p>
+<!-- ccres:generated -->
+<p>
+It begins with the Common gadget fields.
+</p>
+<p>
+<definition-table head-name="Field" head-extra="Type" head-value="Meaning">
+ <definition name="flags:" extra="flags"><!-- generated -->Zero or more of the flags below, separated by <userinput>|</userinput>. A value with no name may be given in hexadecimal, as <userinput>0x</userinput><em>value</em>.</definition>
+ <definition name="label:" extra="message"><!-- generated -->Text, held in the message table so that it can be translated.</definition>
+ </definition-table>
+</p>
+<p>
+Values for <userinput>flags:</userinput>
+</p>
+<!-- ccres:table labelledbox_object/flags: -->
+<p>
+<value-table head-number="Value" head-name="Name" head-value="Meaning">
+ <value number="&amp;1" name="labelledbox_SPRITE"></value>
+ <value number="&amp;2" name="labelledbox_SPRITE_IS_FILLED"></value>
+ <value number="&amp;80000000" name="gadget_FADED"></value>
+ <value number="&amp;40000000" name="gadget_AT_BACK"></value>
+ </value-table>
+</p>
+<p>
+Example, with every field at its zero value:
+</p>
+<p>
+<extended-example type="format">
+labelledbox_object {<br/>
+  cmp:&amp;0<br/>
+  bbox:0,0,0,0<br/>
+  help_message:&quot;&quot;<br/>
+  help_limit:*<br/>
+  flags:<br/>
+  label:&quot;&quot;<br/>
+}<br/>
+</extended-example>
+</p>
+<!-- ccres:notes -->
+</subsubsection>
+
+<subsubsection title="numberrange_object">
+<p>
+Number range gadget with writable, adjuster, and slider-style options.
+</p>
+<!-- ccres:generated -->
+<p>
+It begins with the Common gadget fields.
+</p>
+<p>
+<definition-table head-name="Field" head-extra="Type" head-value="Meaning">
+ <definition name="flags:" extra="flags"><!-- generated -->Zero or more of the flags below, separated by <userinput>|</userinput>. A value with no name may be given in hexadecimal, as <userinput>0x</userinput><em>value</em>.</definition>
+ <definition name="lower_bound:" extra="integer"><!-- generated -->A number.</definition>
+ <definition name="upper_bound:" extra="integer"><!-- generated -->A number.</definition>
+ <definition name="step_size:" extra="integer"><!-- generated -->A number.</definition>
+ <definition name="initial_value:" extra="integer"><!-- generated -->A number.</definition>
+ <definition name="precision:" extra="integer"><!-- generated -->A number.</definition>
+ <definition name="prev:" extra="component id; values in Common values"><!-- generated -->A component id, as a number or one of the names below.</definition>
+ <definition name="next:" extra="component id; values in Common values"><!-- generated -->A component id, as a number or one of the names below.</definition>
+ <definition name="display_length:" extra="integer"><!-- generated -->A number.</definition>
+ </definition-table>
+</p>
+<p>
+Values for <userinput>flags:</userinput>
+</p>
+<!-- ccres:table numberrange_object/flags: -->
+<p>
+<value-table head-number="Value" head-name="Name" head-value="Meaning">
+ <value number="&amp;1" name="numberrange_GENERATE_VALUE_CHANGED"></value>
+ <value number="&amp;4" name="numberrange_WRITABLE"></value>
+ <value number="&amp;8" name="numberrange_HAS_NUMERICAL_DISPLAY"></value>
+ <value number="&amp;10" name="numberrange_ADJUSTERS"></value>
+ <value number="&amp;20" name="numberrange_SLIDER_TYPE_RIGHT"></value>
+ <value number="&amp;40" name="numberrange_SLIDER_TYPE_LEFT"></value>
+ <value number="&amp;100" name="numberrange_RJUSTIFIED"></value>
+ <value number="&amp;200" name="numberrange_HCENTRED"></value>
+ <value number="&amp;1000" name="numberrange_KNOB_COLOUR_VERY_LIGHT_GREY"></value>
+ <value number="&amp;2000" name="numberrange_KNOB_COLOUR_LIGHT_GREY"></value>
+ <value number="&amp;3000" name="numberrange_KNOB_COLOUR_MID_LIGHT_GREY"></value>
+ <value number="&amp;4000" name="numberrange_KNOB_COLOUR_MID_DARK_GREY"></value>
+ <value number="&amp;5000" name="numberrange_KNOB_COLOUR_DARK_GREY"></value>
+ <value number="&amp;6000" name="numberrange_KNOB_COLOUR_VERY_DARK_GREY"></value>
+ <value number="&amp;7000" name="numberrange_KNOB_COLOUR_BLACK"></value>
+ <value number="&amp;8000" name="numberrange_KNOB_COLOUR_DARK_BLUE"></value>
+ <value number="&amp;9000" name="numberrange_KNOB_COLOUR_YELLOW"></value>
+ <value number="&amp;A000" name="numberrange_KNOB_COLOUR_LIGHT_GREEN"></value>
+ <value number="&amp;B000" name="numberrange_KNOB_COLOUR_RED"></value>
+ <value number="&amp;C000" name="numberrange_KNOB_COLOUR_CREAM"></value>
+ <value number="&amp;D000" name="numberrange_KNOB_COLOUR_DARK_GREEN"></value>
+ <value number="&amp;E000" name="numberrange_KNOB_COLOUR_ORANGE"></value>
+ <value number="&amp;F000" name="numberrange_KNOB_COLOUR_LIGHT_BLUE"></value>
+ <value number="&amp;10000" name="numberrange_WELL_COLOUR_VERY_LIGHT_GREY"></value>
+ <value number="&amp;20000" name="numberrange_WELL_COLOUR_LIGHT_GREY"></value>
+ <value number="&amp;30000" name="numberrange_WELL_COLOUR_MID_LIGHT_GREY"></value>
+ <value number="&amp;40000" name="numberrange_WELL_COLOUR_MID_DARK_GREY"></value>
+ <value number="&amp;50000" name="numberrange_WELL_COLOUR_DARK_GREY"></value>
+ <value number="&amp;60000" name="numberrange_WELL_COLOUR_VERY_DARK_GREY"></value>
+ <value number="&amp;70000" name="numberrange_WELL_COLOUR_BLACK"></value>
+ <value number="&amp;80000" name="numberrange_WELL_COLOUR_DARK_BLUE"></value>
+ <value number="&amp;90000" name="numberrange_WELL_COLOUR_YELLOW"></value>
+ <value number="&amp;A0000" name="numberrange_WELL_COLOUR_LIGHT_GREEN"></value>
+ <value number="&amp;B0000" name="numberrange_WELL_COLOUR_RED"></value>
+ <value number="&amp;C0000" name="numberrange_WELL_COLOUR_CREAM"></value>
+ <value number="&amp;D0000" name="numberrange_WELL_COLOUR_DARK_GREEN"></value>
+ <value number="&amp;E0000" name="numberrange_WELL_COLOUR_ORANGE"></value>
+ <value number="&amp;F0000" name="numberrange_WELL_COLOUR_LIGHT_BLUE"></value>
+ <value number="&amp;80000000" name="gadget_FADED"></value>
+ <value number="&amp;40000000" name="gadget_AT_BACK"></value>
+ </value-table>
+</p>
+<p>
+Example, with every field at its zero value:
+</p>
+<p>
+<extended-example type="format">
+numberrange_object {<br/>
+  cmp:&amp;0<br/>
+  bbox:0,0,0,0<br/>
+  help_message:&quot;&quot;<br/>
+  help_limit:*<br/>
+  flags:<br/>
+  lower_bound:0<br/>
+  upper_bound:0<br/>
+  step_size:0<br/>
+  initial_value:0<br/>
+  precision:0<br/>
+  prev:&amp;0<br/>
+  next:&amp;0<br/>
+  display_length:0<br/>
+}<br/>
+</extended-example>
+</p>
+<!-- ccres:notes -->
+</subsubsection>
+
+<subsubsection title="optionbutton_object">
+<p>
+Option button gadget.
+</p>
+<!-- ccres:generated -->
+<p>
+It begins with the Common gadget fields.
+</p>
+<p>
+<definition-table head-name="Field" head-extra="Type" head-value="Meaning">
+ <definition name="flags:" extra="flags"><!-- generated -->Zero or more of the flags below, separated by <userinput>|</userinput>. A value with no name may be given in hexadecimal, as <userinput>0x</userinput><em>value</em>.</definition>
+ <definition name="label:" extra="message"><!-- generated -->Text, held in the message table so that it can be translated.</definition>
+ <definition name="label_limit:" extra="number, or *"><!-- generated -->Size of the buffer for <userinput>label:</userinput>. <userinput>*</userinput> makes it the length of the text given.</definition>
+ <definition name="action:" extra="action number"><!-- generated -->Toolbox event number. Left blank, no event is raised.</definition>
+ </definition-table>
+</p>
+<p>
+Values for <userinput>flags:</userinput>
+</p>
+<!-- ccres:table optionbutton_object/flags: -->
+<p>
+<value-table head-number="Value" head-name="Name" head-value="Meaning">
+ <value number="&amp;1" name="optionbutton_GENERATE_STATE_CHANGED"></value>
+ <value number="&amp;4" name="optionbutton_ON"></value>
+ <value number="&amp;80000000" name="gadget_FADED"></value>
+ <value number="&amp;40000000" name="gadget_AT_BACK"></value>
+ </value-table>
+</p>
+<p>
+Example, with every field at its zero value:
+</p>
+<p>
+<extended-example type="format">
+optionbutton_object {<br/>
+  cmp:&amp;0<br/>
+  bbox:0,0,0,0<br/>
+  help_message:&quot;&quot;<br/>
+  help_limit:*<br/>
+  flags:<br/>
+  label:&quot;&quot;<br/>
+  label_limit:*<br/>
+  action:&amp;0<br/>
+}<br/>
+</extended-example>
+</p>
+<!-- ccres:notes -->
+</subsubsection>
+
+<subsubsection title="popup_object">
+<p>
+Pop-up gadget linked to a named menu.
+</p>
+<!-- ccres:generated -->
+<p>
+It begins with the Common gadget fields.
+</p>
+<p>
+<definition-table head-name="Field" head-extra="Type" head-value="Meaning">
+ <definition name="flags:" extra="flags"><!-- generated -->Zero or more of the flags below, separated by <userinput>|</userinput>. A value with no name may be given in hexadecimal, as <userinput>0x</userinput><em>value</em>.</definition>
+ <definition name="menu_name:" extra="string"><!-- generated -->Text.</definition>
+ </definition-table>
+</p>
+<p>
+Values for <userinput>flags:</userinput>
+</p>
+<!-- ccres:table popup_object/flags: -->
+<p>
+<value-table head-number="Value" head-name="Name" head-value="Meaning">
+ <value number="&amp;1" name="popup_GENERATE_ABOUT_TO_BE_SHOWN"></value>
+ <value number="&amp;80000000" name="gadget_FADED"></value>
+ <value number="&amp;40000000" name="gadget_AT_BACK"></value>
+ </value-table>
+</p>
+<p>
+Example, with every field at its zero value:
+</p>
+<p>
+<extended-example type="format">
+popup_object {<br/>
+  cmp:&amp;0<br/>
+  bbox:0,0,0,0<br/>
+  help_message:&quot;&quot;<br/>
+  help_limit:*<br/>
+  flags:<br/>
+  menu_name:&quot;&quot;<br/>
+}<br/>
+</extended-example>
+</p>
+<!-- ccres:notes -->
+</subsubsection>
+
+<subsubsection title="radiobutton_object">
+<p>
+Radio button gadget.
+</p>
+<!-- ccres:generated -->
+<p>
+It begins with the Common gadget fields.
+</p>
+<p>
+<definition-table head-name="Field" head-extra="Type" head-value="Meaning">
+ <definition name="flags:" extra="flags"><!-- generated -->Zero or more of the flags below, separated by <userinput>|</userinput>. A value with no name may be given in hexadecimal, as <userinput>0x</userinput><em>value</em>.</definition>
+ <definition name="group:" extra="integer"><!-- generated -->A number.</definition>
+ <definition name="label:" extra="message"><!-- generated -->Text, held in the message table so that it can be translated.</definition>
+ <definition name="label_limit:" extra="number, or *"><!-- generated -->Size of the buffer for <userinput>label:</userinput>. <userinput>*</userinput> makes it the length of the text given.</definition>
+ <definition name="action:" extra="action number"><!-- generated -->Toolbox event number. Left blank, no event is raised.</definition>
+ </definition-table>
+</p>
+<p>
+Values for <userinput>flags:</userinput>
+</p>
+<!-- ccres:table radiobutton_object/flags: -->
+<p>
+<value-table head-number="Value" head-name="Name" head-value="Meaning">
+ <value number="&amp;1" name="radiobutton_GENERATE_STATE_CHANGED"></value>
+ <value number="&amp;2" name="radiobutton_GENERATE_SET_STATE_CHANGED"></value>
+ <value number="&amp;4" name="radiobutton_ON"></value>
+ <value number="&amp;80000000" name="gadget_FADED"></value>
+ <value number="&amp;40000000" name="gadget_AT_BACK"></value>
+ </value-table>
+</p>
+<p>
+Example, with every field at its zero value:
+</p>
+<p>
+<extended-example type="format">
+radiobutton_object {<br/>
+  cmp:&amp;0<br/>
+  bbox:0,0,0,0<br/>
+  help_message:&quot;&quot;<br/>
+  help_limit:*<br/>
+  flags:<br/>
+  group:0<br/>
+  label:&quot;&quot;<br/>
+  label_limit:*<br/>
+  action:&amp;0<br/>
+}<br/>
+</extended-example>
+</p>
+<!-- ccres:notes -->
+</subsubsection>
+
+<subsubsection title="scrolllist_object">
+<p>
+Scroll list gadget.
+</p>
+<!-- ccres:generated -->
+<p>
+It begins with the Common gadget fields.
+</p>
+<p>
+<definition-table head-name="Field" head-extra="Type" head-value="Meaning">
+ <definition name="flags:" extra="flags"><!-- generated -->Zero or more of the flags below, separated by <userinput>|</userinput>. A value with no name may be given in hexadecimal, as <userinput>0x</userinput><em>value</em>.</definition>
+ <definition name="event:" extra="integer"><!-- generated -->A number.</definition>
+ <definition name="foreground:" extra="OS colour; values in Common values"><!-- generated -->An OS colour, as one of the names below.</definition>
+ <definition name="background:" extra="OS colour; values in Common values"><!-- generated -->An OS colour, as one of the names below.</definition>
+ </definition-table>
+</p>
+<p>
+Values for <userinput>flags:</userinput>
+</p>
+<!-- ccres:table scrolllist_object/flags: -->
+<p>
+<value-table head-number="Value" head-name="Name" head-value="Meaning">
+ <value number="&amp;1" name="scrolllist_STATE_ALLOW_MULTIPLE_SELECTIONS"></value>
+ <value number="&amp;80000000" name="gadget_FADED"></value>
+ <value number="&amp;40000000" name="gadget_AT_BACK"></value>
+ </value-table>
+</p>
+<p>
+Example, with every field at its zero value:
+</p>
+<p>
+<extended-example type="format">
+scrolllist_object {<br/>
+  cmp:&amp;0<br/>
+  bbox:0,0,0,0<br/>
+  help_message:&quot;&quot;<br/>
+  help_limit:*<br/>
+  flags:<br/>
+  event:0<br/>
+  foreground:os_COLOUR_BLACK<br/>
+  background:os_COLOUR_BLACK<br/>
+}<br/>
+</extended-example>
+</p>
+<!-- ccres:notes -->
+</subsubsection>
+
+<subsubsection title="slider_object">
+<p>
+Slider gadget.
+</p>
+<!-- ccres:generated -->
+<p>
+It begins with the Common gadget fields.
+</p>
+<p>
+<definition-table head-name="Field" head-extra="Type" head-value="Meaning">
+ <definition name="flags:" extra="flags"><!-- generated -->Zero or more of the flags below, separated by <userinput>|</userinput>. A value with no name may be given in hexadecimal, as <userinput>0x</userinput><em>value</em>.</definition>
+ <definition name="lower_bound:" extra="integer"><!-- generated -->A number.</definition>
+ <definition name="upper_bound:" extra="integer"><!-- generated -->A number.</definition>
+ <definition name="step_size:" extra="integer"><!-- generated -->A number.</definition>
+ <definition name="initial_value:" extra="integer"><!-- generated -->A number.</definition>
+ </definition-table>
+</p>
+<p>
+Values for <userinput>flags:</userinput>
+</p>
+<!-- ccres:table slider_object/flags: -->
+<p>
+<value-table head-number="Value" head-name="Name" head-value="Meaning">
+ <value number="&amp;1" name="slider_GENERATE_VALUE_CHANGED"></value>
+ <value number="&amp;2" name="slider_GENERATE_VALUE_CHANGED_BY_DRAGGING"></value>
+ <value number="&amp;4" name="slider_GENERATE_SET_VALUE_CHANGED"></value>
+ <value number="&amp;8" name="slider_VERTICAL"></value>
+ <value number="&amp;10" name="slider_DRAGGABLE"></value>
+ <value number="&amp;1000" name="slider_KNOB_COLOUR_VERY_LIGHT_GREY"></value>
+ <value number="&amp;2000" name="slider_KNOB_COLOUR_LIGHT_GREY"></value>
+ <value number="&amp;3000" name="slider_KNOB_COLOUR_MID_LIGHT_GREY"></value>
+ <value number="&amp;4000" name="slider_KNOB_COLOUR_MID_DARK_GREY"></value>
+ <value number="&amp;5000" name="slider_KNOB_COLOUR_DARK_GREY"></value>
+ <value number="&amp;6000" name="slider_KNOB_COLOUR_VERY_DARK_GREY"></value>
+ <value number="&amp;7000" name="slider_KNOB_COLOUR_BLACK"></value>
+ <value number="&amp;8000" name="slider_KNOB_COLOUR_DARK_BLUE"></value>
+ <value number="&amp;9000" name="slider_KNOB_COLOUR_YELLOW"></value>
+ <value number="&amp;A000" name="slider_KNOB_COLOUR_LIGHT_GREEN"></value>
+ <value number="&amp;B000" name="slider_KNOB_COLOUR_RED"></value>
+ <value number="&amp;C000" name="slider_KNOB_COLOUR_CREAM"></value>
+ <value number="&amp;D000" name="slider_KNOB_COLOUR_DARK_GREEN"></value>
+ <value number="&amp;E000" name="slider_KNOB_COLOUR_ORANGE"></value>
+ <value number="&amp;F000" name="slider_KNOB_COLOUR_LIGHT_BLUE"></value>
+ <value number="&amp;10000" name="slider_WELL_COLOUR_VERY_LIGHT_GREY"></value>
+ <value number="&amp;20000" name="slider_WELL_COLOUR_LIGHT_GREY"></value>
+ <value number="&amp;30000" name="slider_WELL_COLOUR_MID_LIGHT_GREY"></value>
+ <value number="&amp;40000" name="slider_WELL_COLOUR_MID_DARK_GREY"></value>
+ <value number="&amp;50000" name="slider_WELL_COLOUR_DARK_GREY"></value>
+ <value number="&amp;60000" name="slider_WELL_COLOUR_VERY_DARK_GREY"></value>
+ <value number="&amp;70000" name="slider_WELL_COLOUR_BLACK"></value>
+ <value number="&amp;80000" name="slider_WELL_COLOUR_DARK_BLUE"></value>
+ <value number="&amp;90000" name="slider_WELL_COLOUR_YELLOW"></value>
+ <value number="&amp;A0000" name="slider_WELL_COLOUR_LIGHT_GREEN"></value>
+ <value number="&amp;B0000" name="slider_WELL_COLOUR_RED"></value>
+ <value number="&amp;C0000" name="slider_WELL_COLOUR_CREAM"></value>
+ <value number="&amp;D0000" name="slider_WELL_COLOUR_DARK_GREEN"></value>
+ <value number="&amp;E0000" name="slider_WELL_COLOUR_ORANGE"></value>
+ <value number="&amp;F0000" name="slider_WELL_COLOUR_LIGHT_BLUE"></value>
+ <value number="&amp;80000000" name="gadget_FADED"></value>
+ <value number="&amp;40000000" name="gadget_AT_BACK"></value>
+ </value-table>
+</p>
+<p>
+Example, with every field at its zero value:
+</p>
+<p>
+<extended-example type="format">
+slider_object {<br/>
+  cmp:&amp;0<br/>
+  bbox:0,0,0,0<br/>
+  help_message:&quot;&quot;<br/>
+  help_limit:*<br/>
+  flags:<br/>
+  lower_bound:0<br/>
+  upper_bound:0<br/>
+  step_size:0<br/>
+  initial_value:0<br/>
+}<br/>
+</extended-example>
+</p>
+<!-- ccres:notes -->
+</subsubsection>
+
+<subsubsection title="stringset_object">
+<p>
+StringSet gadget.
+</p>
+<!-- ccres:generated -->
+<p>
+It begins with the Common gadget fields.
+</p>
+<p>
+<definition-table head-name="Field" head-extra="Type" head-value="Meaning">
+ <definition name="flags:" extra="flags"><!-- generated -->Zero or more of the flags below, separated by <userinput>|</userinput>. A value with no name may be given in hexadecimal, as <userinput>0x</userinput><em>value</em>.</definition>
+ <definition name="string_set:" extra="message"><!-- generated -->Text, held in the message table so that it can be translated.</definition>
+ <definition name="title:" extra="message"><!-- generated -->Text, held in the message table so that it can be translated.</definition>
+ <definition name="initial_selected_string:" extra="message"><!-- generated -->Text, held in the message table so that it can be translated.</definition>
+ <definition name="selected_string_limit:" extra="number, or *"><!-- generated -->Size of the buffer for <userinput>initial_selected_string:</userinput>. <userinput>*</userinput> makes it the length of the text given.</definition>
+ <definition name="allowable:" extra="message"><!-- generated -->Text, held in the message table so that it can be translated.</definition>
+ <definition name="allowable_limit:" extra="number, or *"><!-- generated -->Size of the buffer for <userinput>allowable:</userinput>. <userinput>*</userinput> makes it the length of the text given.</definition>
+ <definition name="prev:" extra="component id; values in Common values"><!-- generated -->A component id, as a number or one of the names below.</definition>
+ <definition name="next:" extra="component id; values in Common values"><!-- generated -->A component id, as a number or one of the names below.</definition>
+ </definition-table>
+</p>
+<p>
+Values for <userinput>flags:</userinput>
+</p>
+<!-- ccres:table stringset_object/flags: -->
+<p>
+<value-table head-number="Value" head-name="Name" head-value="Meaning">
+ <value number="&amp;1" name="stringset_GENERATE_USER_VALUE_CHANGED"></value>
+ <value number="&amp;2" name="stringset_GENERATE_SET_VALUE_CHANGED"></value>
+ <value number="&amp;4" name="stringset_WRITABLE"></value>
+ <value number="&amp;8" name="stringset_GENERATE_ABOUT_TO_BE_SHOWN"></value>
+ <value number="&amp;10" name="stringset_NO_DISPLAY"></value>
+ <value number="&amp;20" name="stringset_JUSTIFICATION_RIGHT"></value>
+ <value number="&amp;40" name="stringset_JUSTIFICATION_CENTRED"></value>
+ <value number="&amp;80000000" name="gadget_FADED"></value>
+ <value number="&amp;40000000" name="gadget_AT_BACK"></value>
+ </value-table>
+</p>
+<p>
+Example, with every field at its zero value:
+</p>
+<p>
+<extended-example type="format">
+stringset_object {<br/>
+  cmp:&amp;0<br/>
+  bbox:0,0,0,0<br/>
+  help_message:&quot;&quot;<br/>
+  help_limit:*<br/>
+  flags:<br/>
+  string_set:&quot;&quot;<br/>
+  title:&quot;&quot;<br/>
+  initial_selected_string:&quot;&quot;<br/>
+  selected_string_limit:*<br/>
+  allowable:&quot;&quot;<br/>
+  allowable_limit:*<br/>
+  prev:&amp;0<br/>
+  next:&amp;0<br/>
+}<br/>
+</extended-example>
+</p>
+<!-- ccres:notes -->
+</subsubsection>
+
+<subsubsection title="tabs_object">
+<p>
+Tabs gadget.
+</p>
+<!-- ccres:generated -->
+<p>
+It begins with the Common gadget fields.
+</p>
+<p>
+<definition-table head-name="Field" head-extra="Type" head-value="Meaning">
+ <definition name="flags:" extra="flags"><!-- generated -->Zero or more of the flags below, separated by <userinput>|</userinput>. A value with no name may be given in hexadecimal, as <userinput>0x</userinput><em>value</em>.</definition>
+ <definition name="foreground:" extra="Wimp colour; values in Common values"><!-- generated -->A Wimp colour, as one of the names below.</definition>
+ <definition name="background:" extra="Wimp colour; values in Common values"><!-- generated -->A Wimp colour, as one of the names below.</definition>
+ <definition name="text:" extra="message"><!-- generated -->Text, held in the message table so that it can be translated.</definition>
+ </definition-table>
+</p>
+<p>
+Values for <userinput>flags:</userinput>
+</p>
+<!-- ccres:table tabs_object/flags: -->
+<p>
+<value-table head-number="Value" head-name="Name" head-value="Meaning">
+ <value number="&amp;1" name="tabs_ALLOW_SCROLL_ARROWS"></value>
+ <value number="&amp;80000000" name="gadget_FADED"></value>
+ <value number="&amp;40000000" name="gadget_AT_BACK"></value>
+ </value-table>
+</p>
+<p>
+Example, with every field at its zero value:
+</p>
+<p>
+<extended-example type="format">
+tabs_object {<br/>
+  cmp:&amp;0<br/>
+  bbox:0,0,0,0<br/>
+  help_message:&quot;&quot;<br/>
+  help_limit:*<br/>
+  flags:<br/>
+  foreground:wimp_COLOUR_WHITE<br/>
+  background:wimp_COLOUR_WHITE<br/>
+  text:&quot;&quot;<br/>
+}<br/>
+</extended-example>
+</p>
+<!-- ccres:notes -->
+</subsubsection>
+
+<subsubsection title="textarea_object">
+<p>
+TextArea gadget.
+</p>
+<!-- ccres:generated -->
+<p>
+It begins with the Common gadget fields.
+</p>
+<p>
+<definition-table head-name="Field" head-extra="Type" head-value="Meaning">
+ <definition name="flags:" extra="flags"><!-- generated -->Zero or more of the flags below, separated by <userinput>|</userinput>. A value with no name may be given in hexadecimal, as <userinput>0x</userinput><em>value</em>.</definition>
+ <definition name="type:" extra="integer"><!-- generated -->A number.</definition>
+ <definition name="event:" extra="integer"><!-- generated -->A number.</definition>
+ <definition name="text:" extra="message"><!-- generated -->Text, held in the message table so that it can be translated.</definition>
+ <definition name="foreground:" extra="OS colour; values in Common values"><!-- generated -->An OS colour, as one of the names below.</definition>
+ <definition name="background:" extra="OS colour; values in Common values"><!-- generated -->An OS colour, as one of the names below.</definition>
+ </definition-table>
+</p>
+<p>
+Values for <userinput>flags:</userinput>
+</p>
+<!-- ccres:table textarea_object/flags: -->
+<p>
+<value-table head-number="Value" head-name="Name" head-value="Meaning">
+ <value number="&amp;1" name="textarea_STATE_HAS_VERTICAL_SCROLLBAR"></value>
+ <value number="&amp;2" name="textarea_STATE_HAS_HORIZONTAL_SCROLLBAR"></value>
+ <value number="&amp;4" name="textarea_STATE_WORDWRAPPING_ENABLED"></value>
+ <value number="&amp;8" name="textarea_ALLOW_SELECTION"></value>
+ <value number="&amp;10" name="textarea_ALLOW_SAVE"></value>
+ <value number="&amp;20" name="textarea_ALLOW_LOAD"></value>
+ <value number="&amp;40" name="textarea_CLIPBOARD"></value>
+ <value number="&amp;80" name="textarea_AUTO_SCROLL"></value>
+ <value number="&amp;80000000" name="gadget_FADED"></value>
+ <value number="&amp;40000000" name="gadget_AT_BACK"></value>
+ </value-table>
+</p>
+<p>
+Example, with every field at its zero value:
+</p>
+<p>
+<extended-example type="format">
+textarea_object {<br/>
+  cmp:&amp;0<br/>
+  bbox:0,0,0,0<br/>
+  help_message:&quot;&quot;<br/>
+  help_limit:*<br/>
+  flags:<br/>
+  type:0<br/>
+  event:0<br/>
+  text:&quot;&quot;<br/>
+  foreground:os_COLOUR_BLACK<br/>
+  background:os_COLOUR_BLACK<br/>
+}<br/>
+</extended-example>
+</p>
+<!-- ccres:notes -->
+</subsubsection>
+
+<subsubsection title="treeview_object">
+<p>
+TreeView gadget.
+</p>
+<!-- ccres:generated -->
+<p>
+It begins with the Common gadget fields.
+</p>
+<p>
+<definition-table head-name="Field" head-extra="Type" head-value="Meaning">
+ <definition name="flags:" extra="flags"><!-- generated -->Zero or more of the flags below, separated by <userinput>|</userinput>. A value with no name may be given in hexadecimal, as <userinput>0x</userinput><em>value</em>.</definition>
+ <definition name="foreground:" extra="Wimp colour; values in Common values"><!-- generated -->A Wimp colour, as one of the names below.</definition>
+ <definition name="background:" extra="Wimp colour; values in Common values"><!-- generated -->A Wimp colour, as one of the names below.</definition>
+ </definition-table>
+</p>
+<p>
+Values for <userinput>flags:</userinput>
+</p>
+<!-- ccres:table treeview_object/flags: -->
+<p>
+<value-table head-number="Value" head-name="Name" head-value="Meaning">
+ <value number="&amp;1" name="treeview_ALLOW_VSCROLL"></value>
+ <value number="&amp;2" name="treeview_ALLOW_HSCROLL"></value>
+ <value number="&amp;4" name="treeview_AUTO_UPDATE"></value>
+ <value number="&amp;8" name="treeview_SHOW_CURRENT_NODE"></value>
+ <value number="&amp;10" name="treeview_PLOT_LINES"></value>
+ <value number="&amp;20" name="treeview_ALLOW_SELECTION"></value>
+ <value number="&amp;40" name="treeview_NOTIFY_SELECTION"></value>
+ <value number="&amp;80" name="treeview_SELECT_CHILDREN"></value>
+ <value number="&amp;100" name="treeview_ALLOW_EXPAND"></value>
+ <value number="&amp;200" name="treeview_NOTIFY_EXPANSION"></value>
+ <value number="&amp;400" name="treeview_EXPAND_BY_DEFAULT"></value>
+ <value number="&amp;800" name="treeview_ALLOW_RENAME"></value>
+ <value number="&amp;1000" name="treeview_NOTIFY_RENAME"></value>
+ <value number="&amp;2000" name="treeview_ALLOW_DRAGS"></value>
+ <value number="&amp;4000" name="treeview_NOTIFY_DRAGEND"></value>
+ <value number="&amp;8000" name="treeview_ALL_EVENTS"></value>
+ <value number="&amp;80000000" name="gadget_FADED"></value>
+ <value number="&amp;40000000" name="gadget_AT_BACK"></value>
+ </value-table>
+</p>
+<p>
+Example, with every field at its zero value:
+</p>
+<p>
+<extended-example type="format">
+treeview_object {<br/>
+  cmp:&amp;0<br/>
+  bbox:0,0,0,0<br/>
+  help_message:&quot;&quot;<br/>
+  help_limit:*<br/>
+  flags:<br/>
+  foreground:wimp_COLOUR_WHITE<br/>
+  background:wimp_COLOUR_WHITE<br/>
+}<br/>
+</extended-example>
+</p>
+<!-- ccres:notes -->
+</subsubsection>
+
+<subsubsection title="toolaction_object">
+<p>
+ToolAction gadget.
+</p>
+<!-- ccres:generated -->
+<p>
+It begins with the Common gadget fields.
+</p>
+<p>
+<definition-table head-name="Field" head-extra="Type" head-value="Meaning">
+ <definition name="flags:" extra="flags"><!-- generated -->Zero or more of the flags below, separated by <userinput>|</userinput>. A value with no name may be given in hexadecimal, as <userinput>0x</userinput><em>value</em>.</definition>
+ <definition name="off_text:" extra="string"><!-- generated -->Text.</definition>
+ <definition name="off_text_limit:" extra="number, or *"><!-- generated -->Size of the buffer for <userinput>off_text:</userinput>. <userinput>*</userinput> makes it the length of the text given.</definition>
+ <definition name="on_text:" extra="string"><!-- generated -->Text.</definition>
+ <definition name="on_text_limit:" extra="number, or *"><!-- generated -->Size of the buffer for <userinput>on_text:</userinput>. <userinput>*</userinput> makes it the length of the text given.</definition>
+ <definition name="click_action:" extra="action number"><!-- generated -->Toolbox event number. Left blank, no event is raised.</definition>
+ <definition name="select_show:" extra="string"><!-- generated -->Text.</definition>
+ <definition name="adjust_action:" extra="action number"><!-- generated -->Toolbox event number. Left blank, no event is raised.</definition>
+ <definition name="adjust_show:" extra="string"><!-- generated -->Text.</definition>
+ <definition name="fade_text:" extra="string"><!-- generated -->Text.</definition>
+ <definition name="fade_text_limit:" extra="number, or *"><!-- generated -->Size of the buffer for <userinput>fade_text:</userinput>. <userinput>*</userinput> makes it the length of the text given.</definition>
+ </definition-table>
+</p>
+<p>
+Values for <userinput>flags:</userinput>
+</p>
+<!-- ccres:table toolaction_object/flags: -->
+<p>
+<value-table head-number="Value" head-name="Name" head-value="Meaning">
+ <value number="&amp;1" name="toolaction_GENERATE_SELECT"></value>
+ <value number="&amp;2" name="toolaction_IS_TEXT"></value>
+ <value number="&amp;4" name="toolaction_ON"></value>
+ <value number="&amp;8" name="toolaction_AUTO_TOGGLE"></value>
+ <value number="&amp;10" name="toolaction_NO_PRESSED_SPRITE"></value>
+ <value number="&amp;20" name="toolaction_AUTO_REPEAT"></value>
+ <value number="&amp;40" name="toolaction_SHOW_TRANSIENT"></value>
+ <value number="&amp;80" name="toolaction_SHOW_AS_POP_UP"></value>
+ <value number="&amp;100" name="toolaction_HAS_FADE_SPRITE"></value>
+ <value number="&amp;80000000" name="gadget_FADED"></value>
+ <value number="&amp;40000000" name="gadget_AT_BACK"></value>
+ </value-table>
+</p>
+<p>
+Example, with every field at its zero value:
+</p>
+<p>
+<extended-example type="format">
+toolaction_object {<br/>
+  cmp:&amp;0<br/>
+  bbox:0,0,0,0<br/>
+  help_message:&quot;&quot;<br/>
+  help_limit:*<br/>
+  flags:<br/>
+  off_text:&quot;&quot;<br/>
+  off_text_limit:*<br/>
+  on_text:&quot;&quot;<br/>
+  on_text_limit:*<br/>
+  click_action:&amp;0<br/>
+  select_show:&quot;&quot;<br/>
+  adjust_action:&amp;0<br/>
+  adjust_show:&quot;&quot;<br/>
+  fade_text:&quot;&quot;<br/>
+  fade_text_limit:*<br/>
+}<br/>
+</extended-example>
+</p>
+<!-- ccres:notes -->
+</subsubsection>
+
+<subsubsection title="writablefield_object">
+<p>
+Writable field gadget.
+</p>
+<!-- ccres:generated -->
+<p>
+It begins with the Common gadget fields.
+</p>
+<p>
+<definition-table head-name="Field" head-extra="Type" head-value="Meaning">
+ <definition name="flags:" extra="flags"><!-- generated -->Zero or more of the flags below, separated by <userinput>|</userinput>. A value with no name may be given in hexadecimal, as <userinput>0x</userinput><em>value</em>.</definition>
+ <definition name="text:" extra="message"><!-- generated -->Text, held in the message table so that it can be translated.</definition>
+ <definition name="text_limit:" extra="number, or *"><!-- generated -->Size of the buffer for <userinput>text:</userinput>. <userinput>*</userinput> makes it the length of the text given.</definition>
+ <definition name="allowable:" extra="message"><!-- generated -->Text, held in the message table so that it can be translated.</definition>
+ <definition name="allowable_limit:" extra="number, or *"><!-- generated -->Size of the buffer for <userinput>allowable:</userinput>. <userinput>*</userinput> makes it the length of the text given.</definition>
+ <definition name="prev:" extra="component id; values in Common values"><!-- generated -->A component id, as a number or one of the names below.</definition>
+ <definition name="next:" extra="component id; values in Common values"><!-- generated -->A component id, as a number or one of the names below.</definition>
+ </definition-table>
+</p>
+<p>
+Values for <userinput>flags:</userinput>
+</p>
+<!-- ccres:table writablefield_object/flags: -->
+<p>
+<value-table head-number="Value" head-name="Name" head-value="Meaning">
+ <value number="&amp;1" name="writablefield_GENERATE_USER_VALUE_CHANGED"></value>
+ <value number="&amp;2" name="writablefield_GENERATE_SET_VALUE_CHANGED"></value>
+ <value number="&amp;4" name="writablefield_RJUSTIFIED"></value>
+ <value number="&amp;8" name="writablefield_HCENTRED"></value>
+ <value number="&amp;10" name="writablefield_CONCEAL_TEXT"></value>
+ <value number="&amp;80000000" name="gadget_FADED"></value>
+ <value number="&amp;40000000" name="gadget_AT_BACK"></value>
+ </value-table>
+</p>
+<p>
+Example, with every field at its zero value:
+</p>
+<p>
+<extended-example type="format">
+writablefield_object {<br/>
+  cmp:&amp;0<br/>
+  bbox:0,0,0,0<br/>
+  help_message:&quot;&quot;<br/>
+  help_limit:*<br/>
+  flags:<br/>
+  text:&quot;&quot;<br/>
+  text_limit:*<br/>
+  allowable:&quot;&quot;<br/>
+  allowable_limit:*<br/>
+  prev:&amp;0<br/>
+  next:&amp;0<br/>
+}<br/>
+</extended-example>
+</p>
+<!-- ccres:notes -->
+</subsubsection>
+
+<subsubsection title="scrollbar_object">
+<p>
+<!-- generated -->The fields of a <userinput>scrollbar_object</userinput> block, which is nested in a <userinput>window_object</userinput> block.
+</p>
+<!-- ccres:generated -->
+<p>
+It begins with the Common gadget fields.
+</p>
+<p>
+<definition-table head-name="Field" head-extra="Type" head-value="Meaning">
+ <definition name="flags:" extra="flags; values in Common values"><!-- generated -->Zero or more of the flags below, separated by <userinput>|</userinput>. A value with no name may be given in hexadecimal, as <userinput>0x</userinput><em>value</em>.</definition>
+ <definition name="type:" extra="flags"><!-- generated -->Zero or more of the flags below, separated by <userinput>|</userinput>. A value with no name may be given in hexadecimal, as <userinput>0x</userinput><em>value</em>.</definition>
+ <definition name="event:" extra="integer"><!-- generated -->A number.</definition>
+ <definition name="lower_bound:" extra="integer"><!-- generated -->A number.</definition>
+ <definition name="upper_bound:" extra="integer"><!-- generated -->A number.</definition>
+ <definition name="value:" extra="integer"><!-- generated -->A number.</definition>
+ <definition name="visible_length:" extra="integer"><!-- generated -->A number.</definition>
+ <definition name="line_increment:" extra="integer"><!-- generated -->A number.</definition>
+ <definition name="page_increment:" extra="integer"><!-- generated -->A number.</definition>
+ </definition-table>
+</p>
+<p>
+Values for <userinput>type:</userinput>
+</p>
+<!-- ccres:table scrollbar_object/type: -->
+<p>
+<value-table head-number="Value" head-name="Name" head-value="Meaning">
+ <value number="&amp;1" name="scrollbar_HAS_VERTICAL_SCROLLBAR"></value>
+ <value number="&amp;2" name="scrollbar_HAS_HORIZONTAL_SCROLLBAR"></value>
+ </value-table>
+</p>
+<p>
+Example, with every field at its zero value:
+</p>
+<p>
+<extended-example type="format">
+scrollbar_object {<br/>
+  cmp:&amp;0<br/>
+  bbox:0,0,0,0<br/>
+  help_message:&quot;&quot;<br/>
+  help_limit:*<br/>
+  flags:<br/>
+  type:<br/>
+  event:0<br/>
+  lower_bound:0<br/>
+  upper_bound:0<br/>
+  value:0<br/>
+  visible_length:0<br/>
+  line_increment:0<br/>
+  page_increment:0<br/>
+}<br/>
+</extended-example>
+</p>
+<!-- ccres:notes -->
+</subsubsection>
+
+<subsubsection title="imagefilegadget_object">
+<p>
+<!-- generated -->The fields of an <userinput>imagefilegadget_object</userinput> block, which is nested in a <userinput>window_object</userinput> block.
+</p>
+<!-- ccres:generated -->
+<p>
+It begins with the Common gadget fields.
+</p>
+<p>
+<definition-table head-name="Field" head-extra="Type" head-value="Meaning">
+ <definition name="flags:" extra="flags"><!-- generated -->Zero or more of the flags below, separated by <userinput>|</userinput>. A value with no name may be given in hexadecimal, as <userinput>0x</userinput><em>value</em>.</definition>
+ <definition name="event:" extra="integer"><!-- generated -->A number.</definition>
+ <definition name="unused:" extra="integer"><!-- generated -->A number.</definition>
+ <definition name="background:" extra="OS colour; values in Common values"><!-- generated -->An OS colour, as one of the names below.</definition>
+ </definition-table>
+</p>
+<p>
+Values for <userinput>flags:</userinput>
+</p>
+<!-- ccres:table imagefilegadget_object/flags: -->
+<p>
+<value-table head-number="Value" head-name="Name" head-value="Meaning">
+ <value number="&amp;1" name="imagefilegadget_NO_BORDER"></value>
+ <value number="&amp;2" name="imagefilegadget_COLOUR_MAP_WHOLE"></value>
+ <value number="&amp;80000000" name="gadget_FADED"></value>
+ <value number="&amp;40000000" name="gadget_AT_BACK"></value>
+ </value-table>
+</p>
+<p>
+Example, with every field at its zero value:
+</p>
+<p>
+<extended-example type="format">
+imagefilegadget_object {<br/>
+  cmp:&amp;0<br/>
+  bbox:0,0,0,0<br/>
+  help_message:&quot;&quot;<br/>
+  help_limit:*<br/>
+  flags:<br/>
+  event:0<br/>
+  unused:0<br/>
+  background:os_COLOUR_BLACK<br/>
+}<br/>
+</extended-example>
+</p>
+<!-- ccres:notes -->
+</subsubsection>
+
+<subsubsection title="colourswatch_object">
+<p>
+<!-- generated -->The fields of a <userinput>colourswatch_object</userinput> block, which is nested in a <userinput>window_object</userinput> block.
+</p>
+<!-- ccres:generated -->
+<p>
+It begins with the Common gadget fields.
+</p>
+<p>
+<definition-table head-name="Field" head-extra="Type" head-value="Meaning">
+ <definition name="flags:" extra="flags"><!-- generated -->Zero or more of the flags below, separated by <userinput>|</userinput>. A value with no name may be given in hexadecimal, as <userinput>0x</userinput><em>value</em>.</definition>
+ <definition name="colour:" extra="OS colour; values in Common values"><!-- generated -->An OS colour, as one of the names below.</definition>
+ <definition name="title:" extra="string"><!-- generated -->Text.</definition>
+ </definition-table>
+</p>
+<p>
+Values for <userinput>flags:</userinput>
+</p>
+<!-- ccres:table colourswatch_object/flags: -->
+<p>
+<value-table head-number="Value" head-name="Name" head-value="Meaning">
+ <value number="&amp;4" name="colourswatch_INCLUDE_NONE_BUTTON"></value>
+ <value number="&amp;8" name="colourswatch_SELECT_NONE_BUTTON"></value>
+ <value number="&amp;80000000" name="gadget_FADED"></value>
+ <value number="&amp;40000000" name="gadget_AT_BACK"></value>
+ </value-table>
+</p>
+<p>
+Example, with every field at its zero value:
+</p>
+<p>
+<extended-example type="format">
+colourswatch_object {<br/>
+  cmp:&amp;0<br/>
+  bbox:0,0,0,0<br/>
+  help_message:&quot;&quot;<br/>
+  help_limit:*<br/>
+  flags:<br/>
+  colour:os_COLOUR_BLACK<br/>
+  title:&quot;&quot;<br/>
+}<br/>
+</extended-example>
+</p>
+<!-- ccres:notes -->
+</subsubsection>
+
+<subsubsection title="amplayer_object">
+<p>
+<!-- generated -->The fields of an <userinput>amplayer_object</userinput> block, which is nested in a <userinput>window_object</userinput> block.
+</p>
+<!-- ccres:generated -->
+<p>
+It begins with the Common gadget fields.
+</p>
+<p>
+<definition-table head-name="Field" head-extra="Type" head-value="Meaning">
+ <definition name="flags:" extra="flags; values in Common values"><!-- generated -->Zero or more of the flags below, separated by <userinput>|</userinput>. A value with no name may be given in hexadecimal, as <userinput>0x</userinput><em>value</em>.</definition>
+ <definition name="type:" extra="integer"><!-- generated -->A number.</definition>
+ </definition-table>
+</p>
+<p>
+Example, with every field at its zero value:
+</p>
+<p>
+<extended-example type="format">
+amplayer_object {<br/>
+  cmp:&amp;0<br/>
+  bbox:0,0,0,0<br/>
+  help_message:&quot;&quot;<br/>
+  help_limit:*<br/>
+  flags:<br/>
+  type:0<br/>
+}<br/>
+</extended-example>
+</p>
+<!-- ccres:notes -->
+</subsubsection>
+
+<subsubsection title="mdnsservice_object">
+<p>
+<!-- generated -->The fields of a <userinput>mdnsservice_object</userinput> block, which is nested in a <userinput>window_object</userinput> block.
+</p>
+<!-- ccres:generated -->
+<p>
+It begins with the Common gadget fields.
+</p>
+<p>
+<definition-table head-name="Field" head-extra="Type" head-value="Meaning">
+ <definition name="flags:" extra="flags; values in Common values"><!-- generated -->Zero or more of the flags below, separated by <userinput>|</userinput>. A value with no name may be given in hexadecimal, as <userinput>0x</userinput><em>value</em>.</definition>
+ <definition name="event:" extra="integer"><!-- generated -->A number.</definition>
+ <definition name="background:" extra="OS colour; values in Common values"><!-- generated -->An OS colour, as one of the names below.</definition>
+ <definition name="foreground:" extra="OS colour; values in Common values"><!-- generated -->An OS colour, as one of the names below.</definition>
+ <definition name="service:" extra="string"><!-- generated -->Text.</definition>
+ <definition name="domain:" extra="string"><!-- generated -->Text.</definition>
+ </definition-table>
+</p>
+<p>
+Example, with every field at its zero value:
+</p>
+<p>
+<extended-example type="format">
+mdnsservice_object {<br/>
+  cmp:&amp;0<br/>
+  bbox:0,0,0,0<br/>
+  help_message:&quot;&quot;<br/>
+  help_limit:*<br/>
+  flags:<br/>
+  event:0<br/>
+  background:os_COLOUR_BLACK<br/>
+  foreground:os_COLOUR_BLACK<br/>
+  service:&quot;&quot;<br/>
+  domain:&quot;&quot;<br/>
+}<br/>
+</extended-example>
+</p>
+<!-- ccres:notes -->
+</subsubsection>
+
+<subsubsection title="urlimage_object">
+<p>
+<!-- generated -->The fields of an <userinput>urlimage_object</userinput> block, which is nested in a <userinput>window_object</userinput> block.
+</p>
+<!-- ccres:generated -->
+<p>
+It begins with the Common gadget fields.
+</p>
+<p>
+<definition-table head-name="Field" head-extra="Type" head-value="Meaning">
+ <definition name="flags:" extra="flags"><!-- generated -->Zero or more of the flags below, separated by <userinput>|</userinput>. A value with no name may be given in hexadecimal, as <userinput>0x</userinput><em>value</em>.</definition>
+ <definition name="url:" extra="string"><!-- generated -->Text.</definition>
+ <definition name="event_click:" extra="integer"><!-- generated -->A number.</definition>
+ <definition name="foreground:" extra="OS colour; values in Common values"><!-- generated -->An OS colour, as one of the names below.</definition>
+ <definition name="background:" extra="OS colour; values in Common values"><!-- generated -->An OS colour, as one of the names below.</definition>
+ </definition-table>
+</p>
+<p>
+Values for <userinput>flags:</userinput>
+</p>
+<!-- ccres:table urlimage_object/flags: -->
+<p>
+<value-table head-number="Value" head-name="Name" head-value="Meaning">
+ <value number="&amp;1" name="urlimage_RETAIN_SOURCE_IMAGE"></value>
+ <value number="&amp;2" name="urlimage_DIRECT_RENDER"></value>
+ <value number="&amp;4" name="urlimage_BORDER"></value>
+ <value number="&amp;8" name="urlimage_DELIVER_CLICK"></value>
+ <value number="&amp;10" name="urlimage_DELIVER_COMPLETE"></value>
+ <value number="&amp;20" name="urlimage_PROGRESS_PERCENTAGE"></value>
+ <value number="&amp;80000000" name="gadget_FADED"></value>
+ <value number="&amp;40000000" name="gadget_AT_BACK"></value>
+ </value-table>
+</p>
+<p>
+Example, with every field at its zero value:
+</p>
+<p>
+<extended-example type="format">
+urlimage_object {<br/>
+  cmp:&amp;0<br/>
+  bbox:0,0,0,0<br/>
+  help_message:&quot;&quot;<br/>
+  help_limit:*<br/>
+  flags:<br/>
+  url:&quot;&quot;<br/>
+  event_click:0<br/>
+  foreground:os_COLOUR_BLACK<br/>
+  background:os_COLOUR_BLACK<br/>
+}<br/>
+</extended-example>
+</p>
+<!-- ccres:notes -->
+</subsubsection>
+
+<subsubsection title="divider_object">
+<p>
+<!-- generated -->The fields of a <userinput>divider_object</userinput> block, which is nested in a <userinput>window_object</userinput> block.
+</p>
+<!-- ccres:generated -->
+<p>
+It begins with the Common gadget fields.
+</p>
+<p>
+<definition-table head-name="Field" head-extra="Type" head-value="Meaning">
+ <definition name="flags:" extra="flags"><!-- generated -->Zero or more of the flags below, separated by <userinput>|</userinput>. A value with no name may be given in hexadecimal, as <userinput>0x</userinput><em>value</em>.</definition>
+ </definition-table>
+</p>
+<p>
+Values for <userinput>flags:</userinput>
+</p>
+<!-- ccres:table divider_object/flags: -->
+<p>
+<value-table head-number="Value" head-name="Name" head-value="Meaning">
+ <value number="&amp;1" name="divider_VERTICAL"></value>
+ <value number="&amp;80000000" name="gadget_FADED"></value>
+ <value number="&amp;40000000" name="gadget_AT_BACK"></value>
+ </value-table>
+</p>
+<p>
+Example, with every field at its zero value:
+</p>
+<p>
+<extended-example type="format">
+divider_object {<br/>
+  cmp:&amp;0<br/>
+  bbox:0,0,0,0<br/>
+  help_message:&quot;&quot;<br/>
+  help_limit:*<br/>
+  flags:<br/>
+}<br/>
+</extended-example>
+</p>
+<!-- ccres:notes -->
+</subsubsection>
+
+<subsubsection title="optionswindow_object">
+<p>
+<!-- generated -->The fields of an <userinput>optionswindow_object</userinput> block.
+</p>
+<!-- ccres:generated -->
+<p>
+It begins with the Common object fields.
+</p>
+<p>
+<definition-table head-name="Field" head-extra="Type" head-value="Meaning">
+ <definition name="optionswindow_flags:" extra="flags"><!-- generated -->Zero or more of the flags below, separated by <userinput>|</userinput>. A value with no name may be given in hexadecimal, as <userinput>0x</userinput><em>value</em>.</definition>
+ <definition name="title:" extra="string"><!-- generated -->Text.</definition>
+ <definition name="windowlist:" extra="string"><!-- generated -->Text.</definition>
+ </definition-table>
+</p>
+<p>
+Values for <userinput>optionswindow_flags:</userinput>
+</p>
+<!-- ccres:table optionswindow_object/optionswindow_flags: -->
+<p>
+<value-table head-number="Value" head-name="Name" head-value="Meaning">
+ <value number="&amp;1" name="optionswindow_NO_AUTO_MODIFIED"></value>
+ <value number="&amp;2" name="optionswindow_HAS_SET_BUTTON"></value>
+ <value number="&amp;4" name="optionswindow_HAS_CANCEL_BUTTON"></value>
+ <value number="&amp;8" name="optionswindow_HAS_SAVE_BUTTON"></value>
+ <value number="&amp;10" name="optionswindow_HAS_DEFAULT_BUTTON"></value>
+ </value-table>
+</p>
+<p>
+Example, with every field at its zero value:
+</p>
+<p>
+<extended-example type="format">
+optionswindow_object {<br/>
+  header_flags:<br/>
+  version:100<br/>
+  object_name:&quot;optionswind&quot;<br/>
+  optionswindow_flags:<br/>
+  title:&quot;&quot;<br/>
+  windowlist:&quot;&quot;<br/>
+}<br/>
+</extended-example>
+</p>
+<!-- ccres:notes -->
+</subsubsection>
+
+<subsubsection title="updatecheck_object">
+<p>
+<!-- generated -->The fields of an <userinput>updatecheck_object</userinput> block.
+</p>
+<!-- ccres:generated -->
+<p>
+It begins with the Common object fields.
+</p>
+<p>
+<definition-table head-name="Field" head-extra="Type" head-value="Meaning">
+ <definition name="updatecheck_flags:" extra="flags"><!-- generated -->Zero or more of the flags below, separated by <userinput>|</userinput>. A value with no name may be given in hexadecimal, as <userinput>0x</userinput><em>value</em>.</definition>
+ <definition name="program_name:" extra="string"><!-- generated -->Text.</definition>
+ <definition name="current_version:" extra="integer"><!-- generated -->A number.</definition>
+ <definition name="url:" extra="string"><!-- generated -->Text.</definition>
+ </definition-table>
+</p>
+<p>
+Values for <userinput>updatecheck_flags:</userinput>
+</p>
+<!-- ccres:table updatecheck_object/updatecheck_flags: -->
+<p>
+<value-table head-number="Value" head-name="Name" head-value="Meaning">
+ <value number="&amp;1" name="updatecheck_GENERATE_ABOUT_TO_BE_SHOWN"></value>
+ <value number="&amp;2" name="updatecheck_FILENAME_AUTO"></value>
+ <value number="&amp;4" name="updatecheck_FILENAME_REQUEST"></value>
+ <value number="&amp;8" name="updatecheck_DOWNLOAD_RUN"></value>
+ <value number="&amp;10" name="updatecheck_DOWNLOAD_NOTIFY"></value>
+ </value-table>
+</p>
+<p>
+Example, with every field at its zero value:
+</p>
+<p>
+<extended-example type="format">
+updatecheck_object {<br/>
+  header_flags:<br/>
+  version:100<br/>
+  object_name:&quot;updatecheck&quot;<br/>
+  updatecheck_flags:<br/>
+  program_name:&quot;&quot;<br/>
+  current_version:0<br/>
+  url:&quot;&quot;<br/>
+}<br/>
+</extended-example>
+</p>
+<!-- ccres:notes -->
+</subsubsection>
+
+<subsubsection title="Common values">
+<!-- ccres:key common-values -->
+<p>
+<!-- generated -->Values accepted by fields of more than one kind of block.
+</p>
+<!-- ccres:generated -->
+<p>
+Values for <userinput>colour:</userinput> (and other fields)
+</p>
+<!-- ccres:table colourdbox_object/colour: -->
+<p>
+<value-table head-number="Value" head-name="Name" head-value="Meaning">
+ <value number="-1" name="os_COLOUR_TRANSPARENT"></value>
+ <value number="65280" name="os_COLOUR_RED"></value>
+ <value number="&amp;FF0000" name="os_COLOUR_GREEN"></value>
+ <value number="-16777216" name="os_COLOUR_BLUE"></value>
+ <value number="-65536" name="os_COLOUR_CYAN"></value>
+ <value number="-16711936" name="os_COLOUR_MAGENTA"></value>
+ <value number="&amp;FFFF00" name="os_COLOUR_YELLOW"></value>
+ <value number="-256" name="os_COLOUR_WHITE"></value>
+ <value number="-572662528" name="os_COLOUR_VERY_LIGHT_GREY"></value>
+ <value number="-1145324800" name="os_COLOUR_LIGHT_GREY"></value>
+ <value number="-1717987072" name="os_COLOUR_MID_LIGHT_GREY"></value>
+ <value number="&amp;77777700" name="os_COLOUR_MID_DARK_GREY"></value>
+ <value number="&amp;55555500" name="os_COLOUR_DARK_GREY"></value>
+ <value number="&amp;33333300" name="os_COLOUR_VERY_DARK_GREY"></value>
+ <value number="0" name="os_COLOUR_BLACK"></value>
+ <value number="-1723596800" name="os_COLOUR_DARK_BLUE"></value>
+ <value number="&amp;EEEE00" name="os_COLOUR_LIGHT_YELLOW"></value>
+ <value number="&amp;CC0000" name="os_COLOUR_LIGHT_GREEN"></value>
+ <value number="56576" name="os_COLOUR_LIGHT_RED"></value>
+ <value number="-1141969408" name="os_COLOUR_CREAM"></value>
+ <value number="&amp;885500" name="os_COLOUR_DARK_GREEN"></value>
+ <value number="&amp;BBFF00" name="os_COLOUR_ORANGE"></value>
+ <value number="-4521984" name="os_COLOUR_LIGHT_BLUE"></value>
+ </value-table>
+</p>
+<p>
+Values for <userinput>default_focus:</userinput> (and other fields)
+</p>
+<!-- ccres:table window_object/default_focus: -->
+<p>
+<value-table head-number="Value" head-name="Name" head-value="Meaning">
+ <value number="-1" name="toolbox_NULL_COMPONENT"></value>
+ <value number="-2" name="toolbox_WINDOW_FOCUS"></value>
+ </value-table>
+</p>
+<p>
+Values for <userinput>window.title_fg:</userinput> (and other fields)
+</p>
+<!-- ccres:table window_object/window.title_fg: -->
+<p>
+<value-table head-number="Value" head-name="Name" head-value="Meaning">
+ <value number="0" name="wimp_COLOUR_WHITE"></value>
+ <value number="1" name="wimp_COLOUR_VERY_LIGHT_GREY"></value>
+ <value number="2" name="wimp_COLOUR_LIGHT_GREY"></value>
+ <value number="3" name="wimp_COLOUR_MID_LIGHT_GREY"></value>
+ <value number="4" name="wimp_COLOUR_MID_DARK_GREY"></value>
+ <value number="5" name="wimp_COLOUR_DARK_GREY"></value>
+ <value number="6" name="wimp_COLOUR_VERY_DARK_GREY"></value>
+ <value number="7" name="wimp_COLOUR_BLACK"></value>
+ <value number="8" name="wimp_COLOUR_DARK_BLUE"></value>
+ <value number="9" name="wimp_COLOUR_YELLOW"></value>
+ <value number="10" name="wimp_COLOUR_LIGHT_GREEN"></value>
+ <value number="11" name="wimp_COLOUR_RED"></value>
+ <value number="12" name="wimp_COLOUR_CREAM"></value>
+ <value number="13" name="wimp_COLOUR_DARK_GREEN"></value>
+ <value number="14" name="wimp_COLOUR_ORANGE"></value>
+ <value number="15" name="wimp_COLOUR_LIGHT_BLUE"></value>
+ <value number="255" name="wimp_COLOUR_TRANSPARENT"></value>
+ </value-table>
+</p>
+<p>
+Values for <userinput>flags:</userinput> (and other fields)
+</p>
+<!-- ccres:table scrollbar_object/flags: -->
+<p>
+<value-table head-number="Value" head-name="Name" head-value="Meaning">
+ <value number="&amp;80000000" name="gadget_FADED"></value>
+ <value number="&amp;40000000" name="gadget_AT_BACK"></value>
+ </value-table>
+</p>
+<!-- ccres:notes -->
+</subsubsection>
+
+<!-- ccres-region-end: resource -->
 
 </subsection>
 
@@ -443,38 +3002,168 @@ For that reason, Template text should keep all window blocks before any
 top-level object names in the file.
 </p>
 
-<subsubsection title="Template window fields">
+<p>
+The fields of each kind of Template block follow, in the same form as those of
+the Resource blocks.
+</p>
+
+<!-- ccres-region: template -->
+<subsubsection title="wimp_window">
 <p>
 Each <userinput>wimp_window</userinput> block begins with
 <userinput>template_name:</userinput> and then carries the embedded Wimp
 window definition.
 </p>
-
+<!-- ccres:generated -->
 <p>
-<definition-table head-name="Entry" head-extra="Type" head-value="Meaning">
- <definition name="template_name:" extra="fixed-size string">Template name. The binary field is twelve bytes including the terminator, so names longer than eleven visible characters are truncated with a warning.</definition>
- <definition name="visible:" extra="box expression">Visible rectangle.</definition>
+<definition-table head-name="Field" head-extra="Type" head-value="Meaning">
+ <definition name="template_name:" extra="string of at most 11 characters">Template name. The binary field is twelve bytes including the terminator, so names longer than eleven visible characters are truncated with a warning.</definition>
+ <definition name="visible:" extra="box: xmin,ymin,xmax,ymax">Visible rectangle.</definition>
  <definition name="xscroll:" extra="integer">Horizontal scroll position.</definition>
  <definition name="yscroll:" extra="integer">Vertical scroll position.</definition>
  <definition name="next:" extra="enumeration">Window stacking order.</definition>
  <definition name="window_flags:" extra="flags">Wimp window flags.</definition>
- <definition name="title_fg:" extra="Wimp colour">Title foreground colour.</definition>
- <definition name="title_bg:" extra="Wimp colour">Title background colour.</definition>
- <definition name="work_fg:" extra="Wimp colour">Work-area foreground colour.</definition>
- <definition name="work_bg:" extra="Wimp colour">Work-area background colour.</definition>
- <definition name="scroll_outer:" extra="Wimp colour">Outer scroll colour.</definition>
- <definition name="scroll_inner:" extra="Wimp colour">Inner scroll colour.</definition>
- <definition name="highlight_bg:" extra="Wimp colour">Highlight background colour.</definition>
- <definition name="extra_flags:" extra="byte flags">Extended Wimp window flags.</definition>
- <definition name="extent:" extra="box expression">Work area extent.</definition>
+ <definition name="title_fg:" extra="Wimp colour; values in Common values">Title foreground colour.</definition>
+ <definition name="title_bg:" extra="Wimp colour; values in Common values">Title background colour.</definition>
+ <definition name="work_fg:" extra="Wimp colour; values in Common values">Work-area foreground colour.</definition>
+ <definition name="work_bg:" extra="Wimp colour; values in Common values">Work-area background colour.</definition>
+ <definition name="scroll_outer:" extra="Wimp colour; values in Common values">Outer scroll colour.</definition>
+ <definition name="scroll_inner:" extra="Wimp colour; values in Common values">Inner scroll colour.</definition>
+ <definition name="highlight_bg:" extra="Wimp colour; values in Common values">Highlight background colour.</definition>
+ <definition name="extra_flags:" extra="8-bit flags">Extended Wimp window flags.</definition>
+ <definition name="extent:" extra="box: xmin,ymin,xmax,ymax">Work area extent.</definition>
  <definition name="title_flags:" extra="flags">Title icon flags. These determine which title text entries are legal.</definition>
- <definition name="work_flags:" extra="enumeration">Wimp button-type flags for the work area.</definition>
- <definition name="sprite_area:" extra="bits">Sprite area reference.</definition>
- <definition name="xmin:" extra="short integer">Minimum width.</definition>
- <definition name="ymin:" extra="short integer">Minimum height.</definition>
+ <definition name="work_flags:" extra="enumeration; values in Common values">Wimp button-type flags for the work area.</definition>
+ <definition name="sprite_area:" extra="number">Sprite area reference.</definition>
+ <definition name="xmin:" extra="16-bit integer">Minimum width.</definition>
+ <definition name="ymin:" extra="16-bit integer">Minimum height.</definition>
+ <definition name="text.text:" extra="indirected string; only in the indirected-text form (wimp_ICON_INDIRECTED|wimp_ICON_TEXT)"><!-- generated -->Text, held in an indirected buffer.</definition>
+ <definition name="text.size:" extra="number, or *; only in the indirected-text form (wimp_ICON_INDIRECTED|wimp_ICON_TEXT)"><!-- generated -->Size of the buffer for <userinput>text.text:</userinput>. <userinput>*</userinput> makes it the length of the text given.</definition>
+ <definition name="text.validation:" extra="indirected string; only in the indirected-text form (wimp_ICON_INDIRECTED|wimp_ICON_TEXT)"><!-- generated -->Text, held in an indirected buffer.</definition>
  </definition-table>
 </p>
-
+<p>
+Values for <userinput>next:</userinput>
+</p>
+<!-- ccres:table wimp_window/next: -->
+<p>
+<value-table head-number="Value" head-name="Name" head-value="Meaning">
+ <value number="-1" name="wimp_TOP"></value>
+ <value number="-2" name="wimp_BOTTOM"></value>
+ <value number="-3" name="wimp_HIDDEN"></value>
+ </value-table>
+</p>
+<p>
+Values for <userinput>window_flags:</userinput>
+</p>
+<!-- ccres:table wimp_window/window_flags: -->
+<p>
+<value-table head-number="Value" head-name="Name" head-value="Meaning">
+ <value number="&amp;2" name="wimp_WINDOW_MOVEABLE"></value>
+ <value number="&amp;10" name="wimp_WINDOW_AUTO_REDRAW"></value>
+ <value number="&amp;20" name="wimp_WINDOW_PANE"></value>
+ <value number="&amp;40" name="wimp_WINDOW_NO_BOUNDS"></value>
+ <value number="&amp;100" name="wimp_WINDOW_SCROLL_REPEAT"></value>
+ <value number="&amp;200" name="wimp_WINDOW_SCROLL"></value>
+ <value number="&amp;400" name="wimp_WINDOW_REAL_COLOURS"></value>
+ <value number="&amp;800" name="wimp_WINDOW_BACK"></value>
+ <value number="&amp;1000" name="wimp_WINDOW_HOT_KEYS"></value>
+ <value number="&amp;2000" name="wimp_WINDOW_BOUNDED"></value>
+ <value number="&amp;4000" name="wimp_WINDOW_IGNORE_XEXTENT"></value>
+ <value number="&amp;8000" name="wimp_WINDOW_IGNORE_YEXTENT"></value>
+ <value number="&amp;10000" name="wimp_WINDOW_OPEN"></value>
+ <value number="&amp;20000" name="wimp_WINDOW_NOT_COVERED"></value>
+ <value number="&amp;40000" name="wimp_WINDOW_FULL_SIZE"></value>
+ <value number="&amp;80000" name="wimp_WINDOW_TOGGLED"></value>
+ <value number="&amp;100000" name="wimp_WINDOW_HAS_FOCUS"></value>
+ <value number="&amp;200000" name="wimp_WINDOW_BOUNDED_ONCE"></value>
+ <value number="&amp;400000" name="wimp_WINDOW_PARTIAL_SIZE"></value>
+ <value number="&amp;800000" name="wimp_WINDOW_FURNITURE_WINDOW"></value>
+ <value number="&amp;800000" name="wimp_WINDOW_FOREGROUND_WINDOW"></value>
+ <value number="&amp;1000000" name="wimp_WINDOW_BACK_ICON"></value>
+ <value number="&amp;2000000" name="wimp_WINDOW_CLOSE_ICON"></value>
+ <value number="&amp;4000000" name="wimp_WINDOW_TITLE_ICON"></value>
+ <value number="&amp;8000000" name="wimp_WINDOW_TOGGLE_ICON"></value>
+ <value number="&amp;10000000" name="wimp_WINDOW_VSCROLL"></value>
+ <value number="&amp;20000000" name="wimp_WINDOW_SIZE_ICON"></value>
+ <value number="&amp;40000000" name="wimp_WINDOW_HSCROLL"></value>
+ <value number="&amp;80000000" name="wimp_WINDOW_NEW_FORMAT"></value>
+ </value-table>
+</p>
+<p>
+Values for <userinput>extra_flags:</userinput>
+</p>
+<!-- ccres:table wimp_window/extra_flags: -->
+<p>
+<value-table head-number="Value" head-name="Name" head-value="Meaning">
+ <value number="&amp;1" name="wimp_WINDOW_USE_TITLE_VALIDATION_COLOURS"></value>
+ <value number="&amp;1" name="wimp_WINDOW_USE_TITLE_VALIDATION_STRING"></value>
+ <value number="&amp;2" name="wimp_WINDOW_USE_EXTENDED_SCROLL_REQUEST"></value>
+ <value number="&amp;4" name="wimp_WINDOW_NEVER3D"></value>
+ <value number="&amp;8" name="wimp_WINDOW_ALWAYS3D"></value>
+ </value-table>
+</p>
+<p>
+Values for <userinput>title_flags:</userinput>
+</p>
+<!-- ccres:table wimp_window/title_flags: -->
+<p>
+<value-table head-number="Value" head-name="Name" head-value="Meaning">
+ <value number="&amp;1" name="wimp_ICON_TEXT"></value>
+ <value number="&amp;2" name="wimp_ICON_SPRITE"></value>
+ <value number="&amp;4" name="wimp_ICON_BORDER"></value>
+ <value number="&amp;8" name="wimp_ICON_HCENTRED"></value>
+ <value number="&amp;10" name="wimp_ICON_VCENTRED"></value>
+ <value number="&amp;20" name="wimp_ICON_FILLED"></value>
+ <value number="&amp;40" name="wimp_ICON_ANTI_ALIASED"></value>
+ <value number="&amp;100" name="wimp_ICON_INDIRECTED"></value>
+ <value number="&amp;200" name="wimp_ICON_RJUSTIFIED"></value>
+ <value number="&amp;400" name="wimp_ICON_ALLOW_ADJUST"></value>
+ <value number="&amp;800" name="wimp_ICON_HALF_SIZE"></value>
+ <value number="&amp;200000" name="wimp_ICON_SELECTED"></value>
+ <value number="&amp;400000" name="wimp_ICON_SHADED"></value>
+ </value-table>
+</p>
+<p>
+Example, with every field at its zero value:
+</p>
+<p>
+<extended-example type="format">
+wimp_window {<br/>
+  template_name:&quot;skeleton&quot;<br/>
+  visible:0,0,0,0<br/>
+  xscroll:0<br/>
+  yscroll:0<br/>
+  next:wimp_TOP<br/>
+  window_flags:<br/>
+  title_fg:wimp_COLOUR_WHITE<br/>
+  title_bg:wimp_COLOUR_WHITE<br/>
+  work_fg:wimp_COLOUR_WHITE<br/>
+  work_bg:wimp_COLOUR_WHITE<br/>
+  scroll_outer:wimp_COLOUR_WHITE<br/>
+  scroll_inner:wimp_COLOUR_WHITE<br/>
+  highlight_bg:wimp_COLOUR_WHITE<br/>
+  extra_flags:<br/>
+  extent:0,0,0,0<br/>
+  title_flags:wimp_ICON_TEXT | wimp_ICON_INDIRECTED<br/>
+  work_flags:<br/>
+  sprite_area:&amp;1<br/>
+  xmin:0<br/>
+  ymin:0<br/>
+  text.text:&quot;&quot;<br/>
+  text.size:1<br/>
+  text.validation:&quot;&quot;<br/>
+  wimp_icon {<br/>
+    extent:0,0,0,0<br/>
+    icon_flags:<br/>
+    icon_esg:0<br/>
+    icon_fg:wimp_COLOUR_WHITE<br/>
+    icon_bg:wimp_COLOUR_WHITE<br/>
+  }<br/>
+}<br/>
+</extended-example>
+</p>
+<!-- ccres:notes -->
 <p>
 The title text or sprite payload is encoded through the same icon-data rules
 that ordinary <userinput>wimp_icon</userinput> blocks use. Depending on the
@@ -494,23 +3183,72 @@ one of the following entry sets:
 </p>
 </subsubsection>
 
-<subsubsection title="Template icon blocks">
+<subsubsection title="wimp_icon">
 <p>
 Each nested <userinput>wimp_icon</userinput> block inside a window uses the
 common entries below before any icon-data payload entries.
 </p>
-
+<!-- ccres:generated -->
 <p>
-<definition-table head-name="Entry" head-extra="Type" head-value="Meaning">
- <definition name="extent:" extra="box expression">Icon extent rectangle.</definition>
- <definition name="icon_flags:" extra="flags">Wimp icon flags plus the encoded Wimp button type. Symbolic button types such as <userinput>wimp_BUTTON_CLICK</userinput> are accepted in the same field.</definition>
- <definition name="icon_esg:" extra="integer">Exclusive selection group number.</definition>
- <definition name="icon_fg:" extra="Wimp colour">Foreground colour for normal icons.</definition>
- <definition name="icon_bg:" extra="Wimp colour">Background colour for normal icons and anti-aliased icons.</definition>
- <definition name="font_handle:" extra="byte">Anti-aliased icon font handle. This is used instead of <userinput>icon_fg:</userinput> when <userinput>wimp_ICON_ANTI_ALIASED</userinput> is set.</definition>
+<definition-table head-name="Field" head-extra="Type" head-value="Meaning">
+ <definition name="extent:" extra="box: xmin,ymin,xmax,ymax">Icon extent rectangle.</definition>
+ <definition name="icon_flags:" extra="icon flags; values in Common values">Wimp icon flags plus the encoded Wimp button type. Symbolic button types such as <userinput>wimp_BUTTON_CLICK</userinput> are accepted in the same field.</definition>
+ <definition name="icon_esg:" extra="ESG number, 0 to 31">Exclusive selection group number.</definition>
+ <definition name="icon_fg:" extra="Wimp colour; values in Common values; only in the colours form (without wimp_ICON_ANTI_ALIASED)">Foreground colour for normal icons.</definition>
+ <definition name="icon_bg:" extra="Wimp colour; values in Common values; only in the colours form (without wimp_ICON_ANTI_ALIASED)">Background colour for normal icons and anti-aliased icons.</definition>
+ <definition name="text_only:" extra="string of at most 12 characters; only in the text form (wimp_ICON_TEXT)"><!-- generated -->Text, stored in the object itself.</definition>
+ <definition name="sprite_only:" extra="string of at most 12 characters; only in the sprite form (wimp_ICON_SPRITE)"><!-- generated -->Text, stored in the object itself.</definition>
+ <definition name="text_and_sprite:" extra="string of at most 12 characters; only in the text-and-sprite form (wimp_ICON_TEXT|wimp_ICON_SPRITE)"><!-- generated -->Text, stored in the object itself.</definition>
+ <definition name="text.text:" extra="indirected string; only in the indirected-text form (wimp_ICON_INDIRECTED|wimp_ICON_TEXT)"><!-- generated -->Text, held in an indirected buffer.</definition>
+ <definition name="text.size:" extra="number, or *; only in the indirected-text form (wimp_ICON_INDIRECTED|wimp_ICON_TEXT)"><!-- generated -->Size of the buffer for <userinput>text.text:</userinput>. <userinput>*</userinput> makes it the length of the text given.</definition>
+ <definition name="text.validation:" extra="indirected string; only in the indirected-text form (wimp_ICON_INDIRECTED|wimp_ICON_TEXT)"><!-- generated -->Text, held in an indirected buffer.</definition>
+ <definition name="sprite.id:" extra="indirected string; only in the indirected-sprite form (wimp_ICON_INDIRECTED|wimp_ICON_SPRITE)"><!-- generated -->Text, held in an indirected buffer.</definition>
+ <definition name="sprite.size:" extra="number, or *; only in the indirected-sprite form (wimp_ICON_INDIRECTED|wimp_ICON_SPRITE)"><!-- generated -->Size of the buffer for <userinput>sprite.id:</userinput>. <userinput>*</userinput> makes it the length of the text given.</definition>
+ <definition name="sprite.area:" extra="number; only in the indirected-sprite form (wimp_ICON_INDIRECTED|wimp_ICON_SPRITE)"><!-- generated -->A number.</definition>
+ <definition name="text_and_sprite.text:" extra="indirected string; only in the indirected-text-and-sprite form (wimp_ICON_INDIRECTED|wimp_ICON_TEXT|wimp_ICON_SPRITE)"><!-- generated -->Text, held in an indirected buffer.</definition>
+ <definition name="text_and_sprite.size:" extra="number, or *; only in the indirected-text-and-sprite form (wimp_ICON_INDIRECTED|wimp_ICON_TEXT|wimp_ICON_SPRITE)"><!-- generated -->Size of the buffer for <userinput>text_and_sprite.text:</userinput>. <userinput>*</userinput> makes it the length of the text given.</definition>
+ <definition name="text_and_sprite.validation:" extra="indirected string; only in the indirected-text-and-sprite form (wimp_ICON_INDIRECTED|wimp_ICON_TEXT|wimp_ICON_SPRITE)"><!-- generated -->Text, held in an indirected buffer.</definition>
+ <definition name="font_handle:" extra="8-bit integer; only in the anti-aliased form (wimp_ICON_ANTI_ALIASED)">Anti-aliased icon font handle. This is used instead of <userinput>icon_fg:</userinput> when <userinput>wimp_ICON_ANTI_ALIASED</userinput> is set.</definition>
  </definition-table>
 </p>
-
+<p>
+Values for <userinput>icon_flags:</userinput>
+</p>
+<!-- ccres:table wimp_icon/icon_flags: -->
+<p>
+<value-table head-number="Value" head-name="Name" head-value="Meaning">
+ <value number="&amp;1" name="wimp_ICON_TEXT">The icon contains text.</value>
+ <value number="&amp;2" name="wimp_ICON_SPRITE">The icon contains a sprite.</value>
+ <value number="&amp;4" name="wimp_ICON_BORDER">The icon has a border.</value>
+ <value number="&amp;8" name="wimp_ICON_HCENTRED">Centred horizontally. For an icon with text and a sprite, see <em>Text and sprite layout</em> below.</value>
+ <value number="&amp;10" name="wimp_ICON_VCENTRED">Centred vertically. Text alone is centred vertically whether or not this is set. For an icon with text and a sprite, see <em>Text and sprite layout</em> below.</value>
+ <value number="&amp;20" name="wimp_ICON_FILLED">The icon has a filled background, in <userinput>icon_bg:</userinput>. An icon with an anti-aliased text and a sprite should not be filled, as the text background would hide the sprite.</value>
+ <value number="&amp;40" name="wimp_ICON_ANTI_ALIASED">The text is in an anti-aliased font, given by <userinput>font_handle:</userinput>, which replaces <userinput>icon_fg:</userinput>.</value>
+ <value number="&amp;80" name="wimp_ICON_NEEDS_HELP">The task must help to redraw the icon.</value>
+ <value number="&amp;100" name="wimp_ICON_INDIRECTED">The icon data is indirected: the <userinput>text.</userinput>, <userinput>sprite.</userinput> or <userinput>text_and_sprite.</userinput> fields are used, with a buffer size and, for text, a validation string.</value>
+ <value number="&amp;200" name="wimp_ICON_RJUSTIFIED">Right justified. For an icon with text and a sprite, see <em>Text and sprite layout</em> below.</value>
+ <value number="&amp;400" name="wimp_ICON_ALLOW_ADJUST">Selecting with Adjust does not deselect the other icons in the same exclusive selection group.</value>
+ <value number="&amp;800" name="wimp_ICON_HALF_SIZE">The sprite is shown at half size.</value>
+ <value number="&amp;200000" name="wimp_ICON_SELECTED">The icon is selected.</value>
+ <value number="&amp;400000" name="wimp_ICON_SHADED">The icon is shaded, and cannot be selected.</value>
+ <value number="&amp;800000" name="wimp_ICON_DELETED">The icon has been deleted.</value>
+ </value-table>
+</p>
+<p>
+Example, with every field at its zero value:
+</p>
+<p>
+<extended-example type="format">
+wimp_icon {<br/>
+  extent:0,0,0,0<br/>
+  icon_flags:<br/>
+  icon_esg:0<br/>
+  icon_fg:wimp_COLOUR_WHITE<br/>
+  icon_bg:wimp_COLOUR_WHITE<br/>
+}<br/>
+</extended-example>
+</p>
+<!-- ccres:notes -->
 <p>
 The icon payload entries follow the same six-way selection described for
 window titles:
@@ -526,22 +3264,124 @@ window titles:
  <definition name="Indirected text and sprite" extra="wimp_ICON_INDIRECTED | wimp_ICON_TEXT | wimp_ICON_SPRITE">text_and_sprite.text:, text_and_sprite.size:, text_and_sprite.validation:</definition>
  </definition-table>
 </p>
+<p>
+<strong>Text and sprite layout.</strong> For an icon with both text and a
+sprite, the <userinput>wimp_ICON_HCENTRED</userinput> (H),
+<userinput>wimp_ICON_VCENTRED</userinput> (V) and
+<userinput>wimp_ICON_RJUSTIFIED</userinput> (R) flags place the two within
+the icon's extent as follows:
+</p>
+
+<p>
+<definition-table head-name="H V R" head-extra="Horizontally" head-value="Vertically">
+ <definition name="0 0 0" extra="text and sprite left justified">text at bottom, sprite at top</definition>
+ <definition name="0 0 1" extra="text and sprite right justified">text at bottom, sprite at top</definition>
+ <definition name="0 1 0" extra="sprite at left, text 12 units to its right">text and sprite centred</definition>
+ <definition name="0 1 1" extra="text at left, sprite at right">text and sprite centred</definition>
+ <definition name="1 0 0" extra="text and sprite centred">text at bottom, sprite at top</definition>
+ <definition name="1 0 1" extra="text and sprite centred">text at top, sprite at bottom</definition>
+ <definition name="1 1 0" extra="text and sprite centred, text on top">text and sprite centred</definition>
+ <definition name="1 1 1" extra="text at right, sprite at left">text and sprite centred</definition>
+ </definition-table>
+</p>
+
+<p>
+To show a sprite whose name differs from the text, the icon must be
+indirected, so that its validation string can name the sprite with the
+<userinput>S</userinput> command; a second name, after a comma, is used while
+the icon is selected. The text part always
+has its background filled, so an anti-aliased text and sprite icon should not
+also be filled. This table is from the RISC OS Programmer's Reference Manual
+(Wimp_CreateIcon). Pyromaniac's icon plotting, which follows RISC OS Classic,
+also centres text alone vertically whatever the V flag, while a sprite alone
+is placed at the bottom unless V is set.
+</p>
 </subsubsection>
 
-<subsubsection title="Template font blocks">
+<subsubsection title="template_font_data">
 <p>
 Optional <userinput>template_font_data</userinput> blocks represent entries
 from the Template font table. Each block accepts exactly these entries:
 </p>
-
+<!-- ccres:generated -->
 <p>
-<definition-table head-name="Entry" head-extra="Type" head-value="Meaning">
- <definition name="x_point_size:" extra="bits">Horizontal point size.</definition>
- <definition name="y_point_size:" extra="bits">Vertical point size.</definition>
- <definition name="font_name:" extra="fixed-size string">Font name stored in the forty-byte binary field.</definition>
+<definition-table head-name="Field" head-extra="Type" head-value="Meaning">
+ <definition name="x_point_size:" extra="number">Horizontal point size.</definition>
+ <definition name="y_point_size:" extra="number">Vertical point size.</definition>
+ <definition name="font_name:" extra="string of at most 40 characters">Font name stored in the forty-byte binary field.</definition>
  </definition-table>
 </p>
+<p>
+Example, with every field at its zero value:
+</p>
+<p>
+<extended-example type="format">
+template_font_data {<br/>
+  x_point_size:&amp;c0<br/>
+  y_point_size:&amp;c0<br/>
+  font_name:&quot;Homerton.Medium&quot;<br/>
+}<br/>
+</extended-example>
+</p>
+<!-- ccres:notes -->
 </subsubsection>
+
+<subsubsection title="Common values">
+<!-- ccres:key common-values -->
+<p>
+<!-- generated -->Values accepted by fields of more than one kind of block.
+</p>
+<!-- ccres:generated -->
+<p>
+Values for <userinput>title_fg:</userinput> (and other fields)
+</p>
+<!-- ccres:table wimp_window/title_fg: -->
+<p>
+<value-table head-number="Value" head-name="Name" head-value="Meaning">
+ <value number="0" name="wimp_COLOUR_WHITE"></value>
+ <value number="1" name="wimp_COLOUR_VERY_LIGHT_GREY"></value>
+ <value number="2" name="wimp_COLOUR_LIGHT_GREY"></value>
+ <value number="3" name="wimp_COLOUR_MID_LIGHT_GREY"></value>
+ <value number="4" name="wimp_COLOUR_MID_DARK_GREY"></value>
+ <value number="5" name="wimp_COLOUR_DARK_GREY"></value>
+ <value number="6" name="wimp_COLOUR_VERY_DARK_GREY"></value>
+ <value number="7" name="wimp_COLOUR_BLACK"></value>
+ <value number="8" name="wimp_COLOUR_DARK_BLUE"></value>
+ <value number="9" name="wimp_COLOUR_YELLOW"></value>
+ <value number="10" name="wimp_COLOUR_LIGHT_GREEN"></value>
+ <value number="11" name="wimp_COLOUR_RED"></value>
+ <value number="12" name="wimp_COLOUR_CREAM"></value>
+ <value number="13" name="wimp_COLOUR_DARK_GREEN"></value>
+ <value number="14" name="wimp_COLOUR_ORANGE"></value>
+ <value number="15" name="wimp_COLOUR_LIGHT_BLUE"></value>
+ <value number="255" name="wimp_COLOUR_TRANSPARENT"></value>
+ </value-table>
+</p>
+<p>
+Values for <userinput>work_flags:</userinput> (and other fields)
+</p>
+<!-- ccres:table wimp_window/work_flags: -->
+<p>
+<value-table head-number="Value" head-name="Name" head-value="Meaning">
+ <value number="4096" name="wimp_BUTTON_ALWAYS"></value>
+ <value number="8192" name="wimp_BUTTON_REPEAT"></value>
+ <value number="12288" name="wimp_BUTTON_CLICK"></value>
+ <value number="16384" name="wimp_BUTTON_RELEASE"></value>
+ <value number="20480" name="wimp_BUTTON_DOUBLE_CLICK"></value>
+ <value number="24576" name="wimp_BUTTON_CLICK_DRAG"></value>
+ <value number="28672" name="wimp_BUTTON_RELEASE_DRAG"></value>
+ <value number="32768" name="wimp_BUTTON_DOUBLE_DRAG"></value>
+ <value number="36864" name="wimp_BUTTON_MENU_ICON"></value>
+ <value number="40960" name="wimp_BUTTON_DOUBLE_CLICK_DRAG"></value>
+ <value number="45056" name="wimp_BUTTON_RADIO"></value>
+ <value number="57344" name="wimp_BUTTON_WRITE_CLICK_DRAG"></value>
+ <value number="61440" name="wimp_BUTTON_WRITABLE"></value>
+ </value-table>
+</p>
+<!-- ccres:notes -->
+</subsubsection>
+
+<!-- ccres-region-end: template -->
 </subsection>
 
 <subsection title="Round-tripping and canonical output">
@@ -596,9 +3436,34 @@ Text files are converted back into binary using their first line as the format
 selector.
 </p>
 <p>
-The current implementation requires exactly two positional arguments and
-provides no option switches. If the argument count is wrong, the tool exits
-with an error after printing a short usage summary.
+A skeleton of the text format, holding one of every kind of block with every
+field, can be written with:
+</p>
+<p>
+<extended-example type="shell">
+<userinput>ccres --skeleton resource|template outfile</userinput><br/>
+<userinput>ccres --describe resource|template outfile</userinput>
+</extended-example>
+</p>
+<p>
+<userinput>--skeleton resource</userinput> writes a Resource text file with one
+object of every class, each at its usual version; its window holds a keyboard
+shortcut and one gadget of every class, and its menu a text entry and a sprite
+entry. <userinput>--skeleton template</userinput> writes a Template text file
+with one window holding an icon for each kind of icon data, and a font entry.
+Every field is at its zero value, and the file converts to a binary file and
+back unchanged, so it is a starting point for writing a new file.
+</p>
+<p>
+<userinput>--describe</userinput> writes the same text with comment lines,
+beginning <userinput>#@</userinput>, after each field. These give the field's
+type, its limit or size field, and the names and values of its flags or
+enumeration; they are ignored when the file is converted. The field reference
+in this manual is generated from them.
+</p>
+<p>
+With any other arguments, the program prints a short usage summary and exits
+with a failure status.
 </p>
 </section>
 
@@ -759,6 +3624,12 @@ wimp_window {<br/>
    <change>Corrected heap corruption when converting Template text whose indirected title or icon buffers were larger than a fixed estimate, such as a window title buffer of 32 bytes or more in a window without icons.</change>
    <change>Corrected string table overflow for very long strings and large buffers.</change>
    <change>Made the warning for a too-small Template size value a warning only, so it no longer makes the conversion fail.</change>
+  </revision>
+  <revision number="10" author="Gerph" date="25 Nov 2026" title="Version 1.15 released">
+   <change>Made errors in a text file make the conversion fail, with the field named in flag and value errors; white space around flags and values is now accepted, and over-long names are truncated with a warning.</change>
+   <change>Added the --skeleton and --describe options.</change>
+   <change>Added the field reference for every Resource and Template block, generated from the converter, with the flag and enumeration values each field accepts.</change>
+   <change>Described the layout of icons with text and a sprite, the window flag raising an event when the window is hidden, and the order in which fields must be given.</change>
   </revision>
  </history>
 </meta>
