@@ -296,7 +296,8 @@ function test_case() {
     local errors_encode="${workdir}/case.encode.err"
     local expect_rc=0
     local contains=()
-    local keyword value rc
+    local bytes=()
+    local keyword value rc offset want got
 
     if [[ -f "$expect" ]] ; then
         while IFS= read -r line || [[ -n "$line" ]] ; do
@@ -309,6 +310,9 @@ function test_case() {
                     ;;
                 stderr-contains)
                     contains+=("$value")
+                    ;;
+                binary-bytes)
+                    bytes+=("$value")
                     ;;
                 *)
                     fail_because "Unknown keyword '$keyword' in $(basename "$expect")"
@@ -350,6 +354,17 @@ function test_case() {
     if [[ "$expect_rc" != 0 ]] ; then
         return 0
     fi
+    for value in "${bytes[@]}" ; do
+        offset="${value%% *}"
+        want="${value#* }"
+        want="${want// /}"
+        got="$(od -An -v -tx1 -j "$offset" -N "$(( ${#want} / 2 ))" "$binary1" | tr -d ' \n')"
+        echo "Bytes at ${offset}: ${got}"
+        if [[ "$got" != "$want" ]] ; then
+            fail_because "Bytes at offset ${offset} were '${got}', expected '${want}'"
+            return 1
+        fi
+    done
 
     convert "$binary1" "$text" "$errors" || { check_no_asan "$errors" || return 1 ; fail_because "Decoding failed" ; return 1 ; }
     check_no_asan "$errors" || return 1

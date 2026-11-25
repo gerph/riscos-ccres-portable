@@ -311,6 +311,7 @@ static bool put_tstring(DATA *data, char *pszIn, int nOffset, char *object, STRI
 	int * pInt;
 	char *pszEntry, *pszLimit, *pszLimitLine, *pstr = NULL;
 	int cbEntry, cbLimit, cbShown;
+	bool fNone = false;
 
 	pTable = &data->StringTable;
 
@@ -351,11 +352,19 @@ static bool put_tstring(DATA *data, char *pszIn, int nOffset, char *object, STRI
 			}
 		}
 	}
+	else if (StringList->pszLimit == NULL && cbEntry <= 1) {
+		/* An empty string with no size (a validation string) is stored
+		   as -1, meaning that there is none, which is how template
+		   editors write it, rather than as a "\r" string. */
+		cbEntry = 0;
+		cbLimit = 0;
+		fNone = true;
+	}
 	else
 		cbLimit = cbEntry; /* No limit/size, we do NOT optimize string "\r" to a 0 offset.  */
 
 	pInt = (int *) &object[StringList->nEntry];
-	*pInt = (cbLimit > 0) ? (pTable->ref - nOffset) : 0;
+	*pInt = (cbLimit > 0) ? (pTable->ref - nOffset) : (fNone ? -1 : 0);
 	if (StringList->pszLimit != NULL) {
 		pInt = (int *) &object[StringList->nLimit];
 		*pInt = cbLimit;

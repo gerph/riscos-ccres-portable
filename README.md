@@ -1,6 +1,6 @@
 # CCRes Portable
 
-This repository is a portable Unix build of CCRes 1.15, the RISC OS resource
+This repository is a portable Unix build of CCRes 1.16, the RISC OS resource
 converter for Toolbox Resource files and Wimp Template files. It converts
 between binary resources and a searchable, C-like text representation.
 

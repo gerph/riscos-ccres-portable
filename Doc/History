@@ -1,3 +1,18 @@
+v1.16 25 Nov 2026
+~~~~~~~~~~~~~~~~~
+
+Changes by Gerph, from a patch to an earlier version by David Thomas:
+
+- Convert.c(text2template): the buffer each window is built in is reused
+  for the next, and was not cleared, so a window's short text was
+  followed by the rest of an earlier window's longer text, after its
+  terminator.  The buffer is now cleared for each window.
+- _Object.c(put_tstring): an empty validation string is stored as -1,
+  meaning that there is none, which is how template editors write it,
+  rather than as a pointer to a string holding only a terminator.
+- tests/run-tests.sh: test cases can check bytes of the binary file
+  (binary-bytes), which the cases for these changes use.
+
 v1.15 25 Nov 2026
 ~~~~~~~~~~~~~~~~~
 

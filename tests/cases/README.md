@@ -21,3 +21,4 @@ lines starting with `#` are ignored. Each other line is a keyword and a value:
 | --- | --- |
 | `encode-rc <n>` | The first conversion must exit with status `<n>`. When it is not 0, the conversion back is not attempted. |
 | `stderr-contains <text>` | stderr from the first conversion must contain `<text>`. Other messages are then allowed. |
+| `binary-bytes <offset> <hex>` | The bytes of the first binary file at decimal `<offset>` must be `<hex>`, written as pairs of lower case hex digits (spaces between them are ignored). |

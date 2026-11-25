@@ -36,7 +36,7 @@
 #include <oslib/toolbox.h>
 #include <oslib/wimp.h>
 
-#define VERSION "1.15 (25-Nov-2026)"
+#define VERSION "1.16 (25-Nov-2026)"
 #define APPNAME	"CCres"
 
 #define RESF	0x46534552

@@ -442,6 +442,9 @@ static bool text2template(DATA *data, char *pszOutFile)
 						}
 						cbBuff = cbFixed;
 					}
+					/* The buffer is reused for each window; clear it so that
+					   bytes after a short string are not left from the last. */
+					memset(pszBuff, 0, cbFixed);
 					cb = window_text2template(data, pszIn, -cbFixed, (wimp_window_base *) pszBuff);
 					if (cb != cbFixed) {
 						/* The indirected data offsets assumed cbFixed */

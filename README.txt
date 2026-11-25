@@ -1,4 +1,4 @@
-CCRes 1.15 Portable
+CCRes 1.16 Portable
 ~~~~~~~~~~~~~~~~~~~
 
 This is a version of CCres 1.13 and OSLib which have been modified to build on

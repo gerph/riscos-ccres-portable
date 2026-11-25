@@ -1,0 +1,8 @@
+# Two windows are converted through the same buffer. The second window's
+# short title and icon text must be followed by zeros, not by the rest of
+# the first window's longer text.
+# Second window: 16 (header) + 2 * 24 (index) + 4 + 120 (first window) = 188
+# Title data at 188 + 72
+binary-bytes 260 78 0d 00 00 00 00 00 00 00 00 00 00
+# Icon data at 188 + 88 + 20
+binary-bytes 296 78 0d 00 00 00 00 00 00 00 00 00 00

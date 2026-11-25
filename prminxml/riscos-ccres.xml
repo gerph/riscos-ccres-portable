@@ -3039,7 +3039,7 @@ window definition.
  <definition name="ymin:" extra="16-bit integer">Minimum height.</definition>
  <definition name="text.text:" extra="indirected string; only in the indirected-text form (wimp_ICON_INDIRECTED|wimp_ICON_TEXT)"><!-- generated -->Text, held in an indirected buffer.</definition>
  <definition name="text.size:" extra="number, or *; only in the indirected-text form (wimp_ICON_INDIRECTED|wimp_ICON_TEXT)"><!-- generated -->Size of the buffer for <userinput>text.text:</userinput>. <userinput>*</userinput> makes it the length of the text given.</definition>
- <definition name="text.validation:" extra="indirected string; only in the indirected-text form (wimp_ICON_INDIRECTED|wimp_ICON_TEXT)"><!-- generated -->Text, held in an indirected buffer.</definition>
+ <definition name="text.validation:" extra="indirected string; only in the indirected-text form (wimp_ICON_INDIRECTED|wimp_ICON_TEXT)">The validation string, held in an indirected buffer. An empty string, <userinput>""</userinput>, is stored as -1, meaning that the icon has no validation string, as template editors write it.</definition>
  </definition-table>
 </p>
 <p>
@@ -3201,13 +3201,13 @@ common entries below before any icon-data payload entries.
  <definition name="text_and_sprite:" extra="string of at most 12 characters; only in the text-and-sprite form (wimp_ICON_TEXT|wimp_ICON_SPRITE)"><!-- generated -->Text, stored in the object itself.</definition>
  <definition name="text.text:" extra="indirected string; only in the indirected-text form (wimp_ICON_INDIRECTED|wimp_ICON_TEXT)"><!-- generated -->Text, held in an indirected buffer.</definition>
  <definition name="text.size:" extra="number, or *; only in the indirected-text form (wimp_ICON_INDIRECTED|wimp_ICON_TEXT)"><!-- generated -->Size of the buffer for <userinput>text.text:</userinput>. <userinput>*</userinput> makes it the length of the text given.</definition>
- <definition name="text.validation:" extra="indirected string; only in the indirected-text form (wimp_ICON_INDIRECTED|wimp_ICON_TEXT)"><!-- generated -->Text, held in an indirected buffer.</definition>
+ <definition name="text.validation:" extra="indirected string; only in the indirected-text form (wimp_ICON_INDIRECTED|wimp_ICON_TEXT)">The validation string, held in an indirected buffer. An empty string, <userinput>""</userinput>, is stored as -1, meaning that the icon has no validation string, as template editors write it.</definition>
  <definition name="sprite.id:" extra="indirected string; only in the indirected-sprite form (wimp_ICON_INDIRECTED|wimp_ICON_SPRITE)"><!-- generated -->Text, held in an indirected buffer.</definition>
  <definition name="sprite.size:" extra="number, or *; only in the indirected-sprite form (wimp_ICON_INDIRECTED|wimp_ICON_SPRITE)"><!-- generated -->Size of the buffer for <userinput>sprite.id:</userinput>. <userinput>*</userinput> makes it the length of the text given.</definition>
  <definition name="sprite.area:" extra="number; only in the indirected-sprite form (wimp_ICON_INDIRECTED|wimp_ICON_SPRITE)"><!-- generated -->A number.</definition>
  <definition name="text_and_sprite.text:" extra="indirected string; only in the indirected-text-and-sprite form (wimp_ICON_INDIRECTED|wimp_ICON_TEXT|wimp_ICON_SPRITE)"><!-- generated -->Text, held in an indirected buffer.</definition>
  <definition name="text_and_sprite.size:" extra="number, or *; only in the indirected-text-and-sprite form (wimp_ICON_INDIRECTED|wimp_ICON_TEXT|wimp_ICON_SPRITE)"><!-- generated -->Size of the buffer for <userinput>text_and_sprite.text:</userinput>. <userinput>*</userinput> makes it the length of the text given.</definition>
- <definition name="text_and_sprite.validation:" extra="indirected string; only in the indirected-text-and-sprite form (wimp_ICON_INDIRECTED|wimp_ICON_TEXT|wimp_ICON_SPRITE)"><!-- generated -->Text, held in an indirected buffer.</definition>
+ <definition name="text_and_sprite.validation:" extra="indirected string; only in the indirected-text-and-sprite form (wimp_ICON_INDIRECTED|wimp_ICON_TEXT|wimp_ICON_SPRITE)">The validation string, held in an indirected buffer. An empty string, <userinput>""</userinput>, is stored as -1, meaning that the icon has no validation string, as template editors write it.</definition>
  <definition name="font_handle:" extra="8-bit integer; only in the anti-aliased form (wimp_ICON_ANTI_ALIASED)">Anti-aliased icon font handle. This is used instead of <userinput>icon_fg:</userinput> when <userinput>wimp_ICON_ANTI_ALIASED</userinput> is set.</definition>
  </definition-table>
 </p>
@@ -3630,6 +3630,9 @@ wimp_window {<br/>
    <change>Added the --skeleton and --describe options.</change>
    <change>Added the field reference for every Resource and Template block, generated from the converter, with the flag and enumeration values each field accepts.</change>
    <change>Described the layout of icons with text and a sprite, the window flag raising an event when the window is hidden, and the order in which fields must be given.</change>
+  </revision>
+  <revision number="11" author="Gerph" date="25 Nov 2026" title="Version 1.16 released">
+   <change>Described the storing of an empty validation string as -1.</change>
   </revision>
  </history>
 </meta>

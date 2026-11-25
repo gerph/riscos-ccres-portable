@@ -1,0 +1,7 @@
+# An empty validation string is stored as -1, meaning there is none, as
+# template editors write it.
+# Window at 16 (header) + 24 (index) + 4 = 44
+# Title validation at 44 + 72 + 4
+binary-bytes 120 ff ff ff ff
+# First icon's validation at 44 + 88 + 20 + 4
+binary-bytes 156 ff ff ff ff
