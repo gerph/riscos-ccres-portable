@@ -2,3 +2,4 @@
 ccres
 ccres-asan
 test-results/
+__pycache__/

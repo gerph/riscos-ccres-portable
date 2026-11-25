@@ -38,6 +38,12 @@ Changes by Gerph:
   check.  The class and gadget tables now hold each structure's size, and
   each class's usual version.
 - Template.h: the Templates file structures, moved from Convert.c.
+- tools/formatdocs.py: generates the field reference of the manual from
+  'ccres --describe', into marked regions.  Field types, limit fields,
+  conditions and value tables are refreshed on every run; text written by
+  an author (each block's introduction and notes, and the meaning of each
+  field and value) is kept, and text which no longer has a place is
+  reported rather than lost.  Its unit tests run with 'make tests'.
 
 v1.14 25 Nov 2026
 ~~~~~~~~~~~~~~~~~

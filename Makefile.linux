@@ -8,6 +8,9 @@
 # Run the tests (JUnitXML report in test-results/):
 #   - `make -f Makefile.linux tests`
 #
+# Run only the unit tests of the documentation generator:
+#   - `make -f Makefile.linux tests-tools`
+#
 # Run the tests against an AddressSanitizer build, to find memory errors:
 #   - `make -f Makefile.linux tests-asan`
 #
@@ -54,9 +57,13 @@ clean:
 	rm -f $(OBJS) $(TARGET) $(ASAN_TARGET)
 	rm -rf $(TEST_RESULTS)
 
-# Reference decodes, round trips of TestQueue, and the cases in tests/cases
-tests: $(TARGET)
+# Reference decodes, round trips of TestQueue, skeletons, the cases in
+# tests/cases, and the unit tests of the documentation generator
+tests: $(TARGET) tests-tools
 	bash $(TEST_RUNNER) --ccres ./$(TARGET)
+
+tests-tools:
+	python3 -P -m unittest discover -s tools -p 'test_*.py'
 
 # Retained for those used to the earlier name
 test: tests
@@ -69,4 +76,4 @@ tests-asan: $(ASAN_TARGET)
 help:
 	@sed -E '/^$$/q ; /^([^#]|#[#!])/ d ; s/^#+ ?//' < $(firstword $(MAKEFILE_LIST))
 
-.PHONY: all clean test tests tests-asan help
+.PHONY: all clean test tests tests-tools tests-asan help
