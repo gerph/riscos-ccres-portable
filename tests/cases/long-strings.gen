@@ -1,0 +1,61 @@
+#!/bin/bash
+##
+# Generate a Template text file with strings far longer than the initial
+# string table (128 KB), so that it must be enlarged before a string is
+# copied into it, rather than afterwards.
+#
+# Writes the text to stdout.
+
+set -e
+set -o pipefail
+
+##
+# Print a character repeated a number of times.
+#
+# @param $1     Character to repeat
+# @param $2     Number of times
+function repeat() {
+    local char="$1"
+    local count="$2"
+    head -c "$count" /dev/zero | tr '\0' "$char"
+}
+
+cat <<EOF
+Template:
+
+wimp_window {
+  template_name:"long"
+  visible:0,0,400,400
+  xscroll:0
+  yscroll:0
+  next:wimp_TOP
+  window_flags:wimp_WINDOW_NEW_FORMAT | wimp_WINDOW_TITLE_ICON
+  title_fg:wimp_COLOUR_BLACK
+  title_bg:wimp_COLOUR_LIGHT_GREY
+  work_fg:wimp_COLOUR_BLACK
+  work_bg:wimp_COLOUR_VERY_LIGHT_GREY
+  scroll_outer:wimp_COLOUR_MID_LIGHT_GREY
+  scroll_inner:wimp_COLOUR_VERY_LIGHT_GREY
+  highlight_bg:wimp_COLOUR_CREAM
+  extra_flags:
+  extent:0,-400,400,0
+  title_flags:wimp_ICON_TEXT | wimp_ICON_INDIRECTED
+  work_flags:
+  sprite_area:&1
+  xmin:0
+  ymin:0
+  text.text:"$(repeat X 5000)"
+  text.size:6000
+  text.validation:""
+  wimp_icon {
+    extent:68,-208,544,-88
+    icon_flags:wimp_ICON_TEXT | wimp_ICON_BORDER | wimp_ICON_INDIRECTED | wimp_BUTTON_CLICK_DRAG
+    icon_esg:0
+    icon_fg:wimp_COLOUR_BLACK
+    icon_bg:wimp_COLOUR_DARK_BLUE
+    text.text:"$(repeat Y 200000)"
+    text.size:200001
+    text.validation:"$(repeat V 300)"
+  }
+}
+EOF

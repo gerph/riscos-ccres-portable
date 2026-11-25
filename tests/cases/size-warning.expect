@@ -1,0 +1,4 @@
+# The title is 30 characters but its buffer is 24 bytes: ccres enlarges the
+# buffer and warns, but the conversion must still succeed.
+encode-rc 0
+stderr-contains Warning: increased size value for text.text: from 24 to 31

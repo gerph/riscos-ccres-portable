@@ -1,11 +1,34 @@
+##
 # CCRes - Linux/Unix Makefile
 # Builds the command-line converter only (no GUI)
+#
+# Build the tool:
+#   - `make -f Makefile.linux`
+#
+# Run the tests (JUnitXML report in test-results/):
+#   - `make -f Makefile.linux tests`
+#
+# Run the tests against an AddressSanitizer build, to find memory errors:
+#   - `make -f Makefile.linux tests-asan`
+#
+# Remove generated files:
+#   - `make -f Makefile.linux clean`
 
 CC = gcc
 CFLAGS = -I. -DHAVE_STRCASECMP -DHAVE_STRNCASECMP -Wall -Wno-parentheses -O2
 LDFLAGS =
 
 TARGET = ccres
+
+# AddressSanitizer build of the tool, for tests-asan
+ASAN_TARGET = ccres-asan
+ASAN_CFLAGS = -I. -DHAVE_STRCASECMP -DHAVE_STRNCASECMP -Wall -Wno-parentheses -O1 -g \
+              -fsanitize=address -fno-omit-frame-pointer
+# Leaks are not checked: the tool frees little before it exits.
+ASAN_OPTIONS_TESTS = detect_leaks=0
+
+TEST_RUNNER = tests/run-tests.sh
+TEST_RESULTS = test-results
 
 SRCS = CMD.c Convert.c Error.c Utils.c Library.c Eval.c \
        _Object.c _Window.c _Menu.c _SaveAs.c _Iconbar.c \
@@ -24,35 +47,26 @@ $(TARGET): $(OBJS)
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
+$(ASAN_TARGET): $(SRCS) $(wildcard *.h)
+	$(CC) $(ASAN_CFLAGS) -o $@ $(SRCS)
+
 clean:
-	rm -f $(OBJS) $(TARGET)
+	rm -f $(OBJS) $(TARGET) $(ASAN_TARGET)
+	rm -rf $(TEST_RESULTS)
 
-test: $(TARGET)
-	@echo "=== Resource file round-trip tests ==="
-	@pass=0; fail=0; \
-	for f in TestQueue/Res01/*; do \
-		name=$$(basename "$$f"); \
-		./$(TARGET) "$$f" "/tmp/ccres_t1_$$name.txt" 2>/dev/null && \
-		./$(TARGET) "/tmp/ccres_t1_$$name.txt" "/tmp/ccres_t2_$$name.bin" 2>/dev/null && \
-		./$(TARGET) "/tmp/ccres_t2_$$name.bin" "/tmp/ccres_t3_$$name.txt" 2>/dev/null && \
-		if diff -q "/tmp/ccres_t1_$$name.txt" "/tmp/ccres_t3_$$name.txt" > /dev/null 2>&1; then \
-			echo "  PASS: $$name"; pass=$$((pass+1)); \
-		else \
-			echo "  FAIL: $$name"; fail=$$((fail+1)); \
-		fi; \
-	done; \
-	echo "=== Template file round-trip tests ==="; \
-	for f in TestQueue/Tem01/*; do \
-		name=$$(basename "$$f"); \
-		./$(TARGET) "$$f" "/tmp/ccres_t1_$$name.txt" 2>/dev/null && \
-		./$(TARGET) "/tmp/ccres_t1_$$name.txt" "/tmp/ccres_t2_$$name.bin" 2>/dev/null && \
-		./$(TARGET) "/tmp/ccres_t2_$$name.bin" "/tmp/ccres_t3_$$name.txt" 2>/dev/null && \
-		if diff -q "/tmp/ccres_t1_$$name.txt" "/tmp/ccres_t3_$$name.txt" > /dev/null 2>&1; then \
-			echo "  PASS: $$name"; pass=$$((pass+1)); \
-		else \
-			echo "  FAIL: $$name"; fail=$$((fail+1)); \
-		fi; \
-	done; \
-	echo "=== Results: $$pass passed, $$fail failed ==="
+# Reference decodes, round trips of TestQueue, and the cases in tests/cases
+tests: $(TARGET)
+	bash $(TEST_RUNNER) --ccres ./$(TARGET)
 
-.PHONY: all clean test
+# Retained for those used to the earlier name
+test: tests
+
+tests-asan: $(ASAN_TARGET)
+	ASAN_OPTIONS=$(ASAN_OPTIONS_TESTS) JUNITXML_SUITE=ccres-asan JUNITXML_NAME=Test-ccres-asan.xml \
+		bash $(TEST_RUNNER) --ccres ./$(ASAN_TARGET)
+
+# `make help` generates its message from the comment at the top of the file
+help:
+	@sed -E '/^$$/q ; /^([^#]|#[#!])/ d ; s/^#+ ?//' < $(firstword $(MAKEFILE_LIST))
+
+.PHONY: all clean test tests tests-asan help

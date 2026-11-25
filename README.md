@@ -10,5 +10,11 @@ Build the command-line converter with:
 make -f Makefile.linux
 ```
 
+Run the tests (a JUnitXML report is written to `test-results/`) with:
+
+```sh
+make -f Makefile.linux tests
+```
+
 The original documentation and licensing information are retained in
 [`README.txt`](README.txt).

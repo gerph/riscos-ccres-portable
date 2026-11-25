@@ -59,7 +59,14 @@ Changes by Gerph (June to November 2026):
   for its string is now reported as a warning, with its line number, and no
   longer makes the conversion fail.  Long strings are shortened in the
   message.
-- Added LargeIndirect and SizeWarning Template regression tests.
+- Added the LargeIndirect Template regression test.
+- Added a test runner (tests/run-tests.sh) which writes a JUnitXML report.
+  It checks TestQueue decodes against their references, round trips them,
+  and converts the text cases in tests/cases, which cover large indirected
+  buffers, the size warning and very long strings.  Makefile.linux has
+  'tests' and 'tests-asan' targets (the latter with AddressSanitizer), and
+  the GitHub workflow runs both.  Previously 'make test' reported failures
+  but still succeeded.
 
 v1.13 03 Jun 2007
 ~~~~~~~~~~~~~~~~~

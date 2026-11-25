@@ -1,2 +1,4 @@
 *.o
 ccres
+ccres-asan
+test-results/
