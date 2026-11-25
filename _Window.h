@@ -28,6 +28,24 @@
 
 int window_t2g(DATA *data, char *pszIn, toolbox_relocatable_object_base * object);
 void window_g2t(DATA *data, FILE * hf, toolbox_resource_file_object_base * object, char *pszStringTable, char *pszMessageTable, int cbObject);
+/*******************************************************************
+ Function:      window_text2template
+ Description:   Encode the text form of a wimp_window and its icons
+                into the fixed part of a Template window definition.
+                The indirected data is not copied; it is left in
+                data->StringTable, with offsets in the icon data
+                relative to the window base, so the caller must place
+                data->StringTable.ref bytes from the table immediately
+                after the icons, then reset the table.
+ Parameters:    data = conversion session
+                pszIn = text of the window object
+                nOffset = negated size of the fixed part (window base
+                          plus all icons), used to make the indirected
+                          data offsets relative to the window base
+                object = buffer to receive the window, with room for
+                         the window base and every icon
+ Returns:       size of the fixed part written, in bytes
+ ******************************************************************/
 int window_text2template(DATA *data, char *pszIn, int nOffset, wimp_window_base * object);
 void window_template2text(DATA *data, FILE * hf, char *pszBuff);
 

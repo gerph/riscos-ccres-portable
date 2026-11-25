@@ -33,6 +33,13 @@
 #include "Utils.h"
 #include "_Object.h"
 
+/* Spare bytes kept at the end of a string table when it is enlarged */
+#define STRINGTABLE_HEADROOM 256
+
+/* Most characters of a string to include in a warning message, so that
+   the message fits the buffer used by report() */
+#define WARNING_STRING_MAX 200
+
 static const FLAGS ObjectHeaderFlags[] = {
 	{toolbox_OBJECT_CREATE_ON_LOAD, "toolbox_OBJECT_CREATE_ON_LOAD"},
 	{toolbox_OBJECT_SHOW_ON_CREATE, "toolbox_OBJECT_SHOW_ON_CREATE"},
@@ -210,12 +217,47 @@ static char *remove_quotes(DATA *data, char *pszEntry)
 }
 
 
+/*******************************************************************
+ Function:      ensure_string_table
+ Description:   Make sure that a string table has room for a further
+                number of bytes beyond its current reference, keeping
+                some headroom, by enlarging the table if necessary.
+                The table is zero filled when it is enlarged.
+ Parameters:    pTable = the string table to check
+                cbNeeded = number of bytes which will be written at
+                           the current reference
+ Returns:       true if the room is available, false if the memory
+                could not be allocated
+ ******************************************************************/
+static bool ensure_string_table(STRINGTABLE *pTable, int cbNeeded)
+{
+	char *pstr;
+	int cb;
+
+	if (pTable->ref + cbNeeded <= pTable->max - STRINGTABLE_HEADROOM) {
+		return true;
+	}
+	cb = pTable->max * 3 / 2;
+	if (cb < pTable->ref + cbNeeded + STRINGTABLE_HEADROOM) {
+		cb = pTable->ref + cbNeeded + STRINGTABLE_HEADROOM;
+	}
+	if ((pstr = MyAlloc(cb)) == NULL) {
+		return false;
+	}
+	memcpy(pstr, pTable->pstr, pTable->max);
+	MyFree(pTable->pstr);
+	pTable->pstr = pstr;
+	pTable->max = cb;
+	return true;
+}
+
+
 static bool put_string(DATA *data, char *pszIn, int nOffset, char *object, STRINGLIST *StringList)
 {
 	STRINGTABLE *pTable;
 	int * pInt;
-	char *pszEntry, *pszLimit, *pstr;
-	int cb, cbEntry, cbLimit, nTable;
+	char *pszEntry, *pszLimit;
+	int cbEntry, cbLimit, nTable;
 
 	if (StringList->nTable == iol_STRING) {
 		pTable = &data->StringTable;
@@ -229,7 +271,13 @@ static bool put_string(DATA *data, char *pszIn, int nOffset, char *object, STRIN
 	}
 	cbEntry = 0;
 	if ((pszEntry = parse(data, pszIn, StringList->pszEntry)) != NULL) {
-		cbEntry = my_strcpy(&pTable->pstr[pTable->ref], remove_quotes(data, pszEntry));
+		pszEntry = remove_quotes(data, pszEntry);
+		/* Room for the string and its terminator */
+		if (!ensure_string_table(pTable, strlen(pszEntry) + 1)) {
+			error(data, "Unable to allocate memory for string table");
+			return false;
+		}
+		cbEntry = my_strcpy(&pTable->pstr[pTable->ref], pszEntry);
 	}
 	cbLimit = 0;
 	if (StringList->pszLimit != NULL && (pszLimit = parse(data, pszIn, StringList->pszLimit)) != NULL) {
@@ -249,16 +297,6 @@ static bool put_string(DATA *data, char *pszIn, int nOffset, char *object, STRIN
 	}
 	if (cbEntry > 0 || cbLimit > 0) {
 		pTable->ref += cbEntry + 1;
-		if (pTable->ref > (pTable->max - 256)) {
-			cb = pTable->max * 3 / 2;
-			if ((pstr = MyAlloc(cb)) == NULL) {
-				return false;
-			}
-			memcpy(pstr, pTable->pstr, pTable->max);
-			MyFree(pTable->pstr);
-			pTable->pstr = pstr;
-			pTable->max = cb;
-		}
 	}
 	return true;
 }
@@ -268,15 +306,21 @@ static bool put_tstring(DATA *data, char *pszIn, int nOffset, char *object, STRI
 {
 	STRINGTABLE *pTable;
 	int * pInt;
-	char *pszEntry, *pszLimit, *pstr = NULL;
-	int cbEntry, cbLimit;
+	char *pszEntry, *pszLimit, *pszLimitLine, *pstr = NULL;
+	int cbEntry, cbLimit, cbShown;
 
 	pTable = &data->StringTable;
 
 	/* A template string is terminated with "\r". */
 	if ((pszEntry = parse(data, pszIn, StringList->pszEntry)) != NULL) {
+		pszEntry = remove_quotes(data, pszEntry);
+		/* Room for the string and its "\r" terminator */
+		if (!ensure_string_table(pTable, strlen(pszEntry) + 1)) {
+			error(data, "Unable to allocate memory for string table");
+			return false;
+		}
 		pstr = &pTable->pstr[pTable->ref];
-		cbEntry = my_strcpy(pstr, remove_quotes(data, pszEntry));
+		cbEntry = my_strcpy(pstr, pszEntry);
 		pstr[cbEntry++] = '\r';
 	}
 	else
@@ -289,11 +333,17 @@ static bool put_tstring(DATA *data, char *pszIn, int nOffset, char *object, STRI
 			/* The limit is as long as the cbEntry is atm.  */
 			cbLimit = cbEntry == 1 ? 0 : cbEntry;
 		} else {
+			pszLimitLine = pszLimit;
 			cbLimit = my_atoi(&pszLimit);
 			if (cbLimit == 0 && cbEntry == 1)
 				cbEntry = 0;
 			else if (cbLimit < cbEntry) {
-				error(data, "Warning: increased size value for %s from %d to %d to fully include string <%.*s>", StringList->pszEntry, cbLimit, cbEntry, cbEntry ? cbEntry - 1 : cbEntry, pstr);
+				/* Only a warning: the output is still valid, so this
+				   must not make the conversion fail. */
+				cbShown = cbEntry ? cbEntry - 1 : 0;
+				if (cbShown > WARNING_STRING_MAX)
+					cbShown = WARNING_STRING_MAX;
+				report(data, pszLimitLine, "Warning: increased size value for %s from %d to %d to fully include string <%.*s%s>", StringList->pszEntry, cbLimit, cbEntry, cbShown, pstr ? pstr : "", (cbShown < cbEntry - 1) ? "..." : "");
 				cbLimit = cbEntry;
 			}
 		}
@@ -308,17 +358,16 @@ static bool put_tstring(DATA *data, char *pszIn, int nOffset, char *object, STRI
 		*pInt = cbLimit;
 	}
 	if (cbEntry > 0) {
-		pTable->ref += cbLimit;
-		if (pTable->ref > pTable->max - 256) {
-			int cb = pTable->max * 3 / 2;
-			if ((pstr = MyAlloc(cb)) == NULL) {
-				return false;
-			}
-			memcpy(pstr, pTable->pstr, pTable->max);
-			MyFree(pTable->pstr);
-			pTable->pstr = pstr;
-			pTable->max = cb;
+		/* The buffer is the full stated size, which may be longer than
+		   the string; clear the unused part so the output does not hold
+		   stale data from earlier objects. */
+		if (!ensure_string_table(pTable, cbLimit)) {
+			error(data, "Unable to allocate memory for string table");
+			return false;
 		}
+		if (cbLimit > cbEntry)
+			memset(&pTable->pstr[pTable->ref + cbEntry], 0, cbLimit - cbEntry);
+		pTable->ref += cbLimit;
 	}
 	return true;
 }

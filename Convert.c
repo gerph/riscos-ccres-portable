@@ -378,23 +378,62 @@ static const OBJECTLIST TemplateHeaderList[] = {
 	{iol_CHARPTR,  "template_name:",  offsetof(template_index, name), NULL, 12}
 };
 
+/*******************************************************************
+ Function:      ensure_template_space
+ Description:   Make sure that the Template file buffer is at least a
+                given size, enlarging it if necessary. The buffer is
+                zero filled when it is enlarged. Pointers into the old
+                buffer are no longer valid if it is enlarged.
+ Parameters:    ppszTemplate = pointer to the buffer pointer, updated
+                               if the buffer is enlarged
+                pcbTemplate = pointer to the buffer size, updated if
+                              the buffer is enlarged
+                cbNeeded = size required, in bytes
+ Returns:       true if the buffer is large enough, false if the
+                memory could not be allocated
+ ******************************************************************/
+static bool ensure_template_space(char **ppszTemplate, int *pcbTemplate, int cbNeeded)
+{
+	char *pszNew;
+	int cb;
+
+	if (cbNeeded <= *pcbTemplate) {
+		return true;
+	}
+	cb = *pcbTemplate * 2;
+	if (cb < cbNeeded) {
+		cb = cbNeeded;
+	}
+	if ((pszNew = MyAlloc(cb)) == NULL) {
+		return false;
+	}
+	memcpy(pszNew, *ppszTemplate, *pcbTemplate);
+	MyFree(*ppszTemplate);
+	*ppszTemplate = pszNew;
+	*pcbTemplate = cb;
+	return true;
+}
+
+
 static bool text2template(DATA *data, char *pszOutFile)
 {
 	template_font_data font_data;
-	template_header * header;
-	template_index * index, * i;
+	template_index * i;
 	FILE * hf;
-	int * pTerm;
-	char *pszIn, *pszTemplate, *pszOut, *pszEnd, *pszObject, *pszBuff;
-	int cb, cbBuff, nWindows, nIcons;
+	char *pszIn, *pszTemplate, *pszEnd, *pszObject, *pszBuff;
+	int cb, cbFixed, cbBuff, cbStrings, cbTemplate, nOut, nIndex, nWindows, nIcons;
 	bool fConverted;
 
 	pszIn = data->pszIn;
 	pszEnd = data->pszIn + data->cbIn;
 	fConverted = false;
 	if ((nWindows = window_count(pszIn, pszEnd, &nIcons)) > 0) {
-		if ((pszTemplate = MyAlloc(sizeof(template_header) + sizeof(int) +
-							   nWindows * (sizeof(template_index) + sizeof(wimp_window) + (nIcons * (256 + sizeof(wimp_icon)))))) == NULL ||
+		/* Start with room for the header, index, index terminator and the
+		   fixed part of each window; the buffer is enlarged as each
+		   window's indirected data is added. */
+		cbTemplate = sizeof(template_header) + sizeof(int) +
+		             nWindows * (sizeof(template_index) + sizeof(wimp_window_base) + nIcons * sizeof(wimp_icon));
+		if ((pszTemplate = MyAlloc(cbTemplate)) == NULL ||
 			!alloc_string_table(&data->StringTable)) {      // this is only required so that we can share put_string with Res files
 			error(data, "Unable to allocate necessary memory");
 		} else {
@@ -402,32 +441,44 @@ static bool text2template(DATA *data, char *pszOutFile)
 				error(data, "Unable to create output file '%s'", pszOutFile);
 			} else {
 				data->fThrowback = false;
-				header = (template_header *) pszTemplate;
-				header->font_offset = template_NO_FONTS;
-				index = (template_index *) (header + 1);
-				pTerm = (int *) (index + nWindows);
-				pszOut = (char *) (pTerm + 1);
+				((template_header *) pszTemplate)->font_offset = template_NO_FONTS;
+				/* The buffer may move, so the index and output are tracked as
+				   offsets. The index terminator is zero from the allocation. */
+				nOut = sizeof(template_header) + nWindows * sizeof(template_index) + sizeof(int);
+				nIndex = 0;
 				pszBuff = NULL;
 				cbBuff = 0;
-				i = index;
 				while ((pszObject = next_object(&pszIn, pszEnd)) != NULL && strcasecmp(pszObject, "wimp_window") == 0) {
 					nIcons = icon_count(pszIn, pszEnd);
-					cb = sizeof(wimp_window) + (nIcons * (256 + sizeof(wimp_icon)));
-					if (cbBuff < cb) {
+					cbFixed = sizeof(wimp_window_base) + nIcons * sizeof(wimp_icon);
+					if (cbBuff < cbFixed) {
 						if (pszBuff != NULL) {
 							MyFree(pszBuff);
 						}
-						if ((pszBuff = MyAlloc(cb)) == NULL) {
-							error(data, "Unable to allocate %d bytes", cb);
+						if ((pszBuff = MyAlloc(cbFixed)) == NULL) {
+							error(data, "Unable to allocate %d bytes", cbFixed);
 							break;
 						}
-						cbBuff = cb;
+						cbBuff = cbFixed;
 					}
-					cb = window_text2template(data, pszIn, -(sizeof(wimp_window_base) + nIcons * sizeof(wimp_icon)), (wimp_window_base *) pszBuff);
-					memcpy(pszOut, pszBuff, cb);
-					i->size = cb;
-					i->offset = (int) (pszOut - pszTemplate);
-					pszOut += cb;
+					cb = window_text2template(data, pszIn, -cbFixed, (wimp_window_base *) pszBuff);
+					if (cb != cbFixed) {
+						/* The indirected data offsets assumed cbFixed */
+						error(data, "Window '%s' has %d bytes of window and icon blocks, but %d were expected", pszObject, cb, cbFixed);
+						break;
+					}
+					cbStrings = data->StringTable.ref;
+					if (!ensure_template_space(&pszTemplate, &cbTemplate, nOut + cbFixed + cbStrings)) {
+						error(data, "Unable to allocate %d bytes", nOut + cbFixed + cbStrings);
+						break;
+					}
+					memcpy(pszTemplate + nOut, pszBuff, cbFixed);
+					memcpy(pszTemplate + nOut + cbFixed, data->StringTable.pstr, cbStrings);
+					reset_string_table(&data->StringTable);
+					i = (template_index *) (pszTemplate + sizeof(template_header)) + nIndex;
+					i->size = cbFixed + cbStrings;
+					i->offset = nOut;
+					nOut += cbFixed + cbStrings;
 					i->type = template_TYPE_WINDOW;
 					put_objects(data, pszIn, 0, (char *) i, TemplateHeaderList, ELEMENTS(TemplateHeaderList));
 // template name is different to icon name because it always needs a terminator, which restricts it to 11 chars
@@ -437,7 +488,7 @@ static bool text2template(DATA *data, char *pszOutFile)
 						report(data, pszObject, "Template name truncated to '%s'", i->name);
 						i->name[11] = '\r';
 					}
-					i++;
+					nIndex++;
 					if ((pszIn = object_end(data, pszIn, pszEnd)) == NULL) {
 						break;
 					}
@@ -445,21 +496,25 @@ static bool text2template(DATA *data, char *pszOutFile)
 				pszIn = data->pszIn;
 				while ((pszObject = next_object(&pszIn, pszEnd)) != NULL) {
 					if (strcasecmp(pszObject, "template_font_data") == 0) {
-						if (header->font_offset == template_NO_FONTS) {
-							header->font_offset = (bits) (pszOut - pszTemplate);
+						if (!ensure_template_space(&pszTemplate, &cbTemplate, nOut + sizeof(template_font_data))) {
+							error(data, "Unable to allocate %d bytes", nOut + (int) sizeof(template_font_data));
+							break;
+						}
+						if (((template_header *) pszTemplate)->font_offset == template_NO_FONTS) {
+							((template_header *) pszTemplate)->font_offset = (bits) nOut;
 						}
 // make sure we're writing to a word-aligned structure...
 						memset(&font_data, 0, sizeof(font_data));
 						put_objects(data, pszIn, 0, (char *) &font_data, TemplateFontDataList, ELEMENTS(TemplateFontDataList));
-						memcpy(pszOut, &font_data, sizeof(font_data));
-						pszOut += sizeof(template_font_data);
+						memcpy(pszTemplate + nOut, &font_data, sizeof(font_data));
+						nOut += sizeof(template_font_data);
 					}
 					if ((pszIn = object_end(data, pszIn, pszEnd)) == NULL) {
 						break;
 					}
 
 				}
-				fwrite(pszTemplate, (int) (pszOut - pszTemplate), 1, hf);
+				fwrite(pszTemplate, nOut, 1, hf);
 				fclose(hf);
 #ifdef __riscos__
 				osfile_set_type(pszOutFile, osfile_TYPE_TEMPLATE);

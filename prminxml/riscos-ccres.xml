@@ -177,7 +177,9 @@ For Template strings, the exported size is the allocated byte count in the
 Template string area. A limit of <userinput>*</userinput> means "use the
 current string length including its carriage-return terminator". If a supplied
 size is smaller than the string actually needs, CCres increases it and emits a
-warning rather than silently truncating the data.
+warning rather than silently truncating the data. The warning does not make
+the conversion fail. There is no fixed limit on the size of an indirected
+buffer.
 </p>
 </subsection>
 
@@ -742,6 +744,11 @@ wimp_window {<br/>
   </revision>
   <revision number="7" author="Gerph" date="26 Jun 2026" title="Initial canonical CCres reference">
    <change>Created the canonical PRM-in-XML documentation for CCres, covering the standalone command-line tool, file recognition, the common text grammar, the Toolbox Resource textual format, and the Wimp Template textual format from the current implementation.</change>
+  </revision>
+  <revision number="8" author="Gerph" date="25 Nov 2026" title="Version 1.14 released">
+   <change>Corrected heap corruption when converting Template text whose indirected title or icon buffers were larger than a fixed estimate, such as a window title buffer of 32 bytes or more in a window without icons.</change>
+   <change>Corrected string table overflow for very long strings and large buffers.</change>
+   <change>Made the warning for a too-small Template size value a warning only, so it no longer makes the conversion fail.</change>
   </revision>
  </history>
 </meta>

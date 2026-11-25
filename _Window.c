@@ -387,8 +387,7 @@ static const OBJECTLIST WimpWindowObjectList[] = {
 //      ========================================================================================
 {
 wimp_icon * icon;
-char *pszObject, *pszEnd, *strings;
-int ref;
+char *pszObject, *pszEnd;
 
 put_objects(data, pszIn, 0, (char *) window, WimpWindowObjectList, ELEMENTS(WimpWindowObjectList));
 put_icon_data(data, pszIn, nOffset, (wimp_icon_data *) &window->title_data, window->title_flags);
@@ -404,14 +403,9 @@ while ((pszObject = next_object(&pszIn, pszEnd)) != NULL)
   }
 window->icon_count = (int) ((char *) icon - (char *) (window + 1)) / sizeof(wimp_icon);
 
-strings = (char *) icon;
-if ((ref = data->StringTable.ref) > 0)
-  {
-  memcpy(strings, data->StringTable.pstr, ref);
-  strings += ref;
-  reset_string_table(&data->StringTable);
-  }
-return (int) (strings - (char *) window);
+/* The indirected data is left in data->StringTable for the caller to
+   place after the icons, as only it knows how much space it has. */
+return (int) ((char *) icon - (char *) window);
 }
 
 

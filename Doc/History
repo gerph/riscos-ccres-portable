@@ -1,3 +1,24 @@
+v1.14 25 Nov 2026
+~~~~~~~~~~~~~~~~~
+
+- Convert.c(text2template): the Template output buffers were sized from a
+  fixed estimate (32 bytes of indirected data for a window without icons,
+  plus 256 bytes per icon), so larger indirected title or icon buffers
+  overflowed the heap and aborted the conversion.  The buffers are now sized
+  from the data actually produced, and enlarged as needed.
+- _Window.c(window_text2template): no longer copies the indirected data
+  itself; the caller places it, having made room for it.
+- _Object.c(put_string, put_tstring): the string table is now enlarged
+  before a string or buffer is written to it, rather than afterwards, so
+  that strings longer than the 256 byte headroom, and buffers larger than
+  the table, no longer overflow it.  The unused part of a Template buffer
+  is cleared, rather than holding data left over from earlier windows.
+- _Object.c(put_tstring): the warning for a size value which is too small
+  for its string is now reported as a warning, with its line number, and no
+  longer makes the conversion fail.  Long strings are shortened in the
+  message.
+- Added LargeIndirect and SizeWarning Template regression tests.
+
 v1.13 03 Jun 2007
 ~~~~~~~~~~~~~~~~~
 
