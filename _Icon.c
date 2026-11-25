@@ -148,22 +148,34 @@ switch (flags & (wimp_ICON_INDIRECTED | wimp_ICON_TEXT | wimp_ICON_SPRITE))
     break;
 
   case wimp_ICON_TEXT:
+    if (data->fDescribe)
+      describe_variant(hf, (nIndent == 1) ? "  " : "    ", "text", "wimp_ICON_TEXT");
     get_objects(data, hf, pszStringTable, NULL, (char *) icon_data, IconTextObjectList, ELEMENTS(IconTextObjectList), nIndent, sizeof(wimp_icon_data));
     break;
   case wimp_ICON_SPRITE:
+    if (data->fDescribe)
+      describe_variant(hf, (nIndent == 1) ? "  " : "    ", "sprite", "wimp_ICON_SPRITE");
     get_objects(data, hf, pszStringTable, NULL, (char *) icon_data, IconSpriteObjectList, ELEMENTS(IconSpriteObjectList), nIndent, sizeof(wimp_icon_data));
     break;
   case (wimp_ICON_TEXT | wimp_ICON_SPRITE):
+    if (data->fDescribe)
+      describe_variant(hf, (nIndent == 1) ? "  " : "    ", "text-and-sprite", "wimp_ICON_TEXT|wimp_ICON_SPRITE");
     get_objects(data, hf, pszStringTable, NULL, (char *) icon_data, IconTextAndSpriteObjectList, ELEMENTS(IconTextAndSpriteObjectList), nIndent, sizeof(wimp_icon_data));
     break;
 
   case (wimp_ICON_INDIRECTED | wimp_ICON_TEXT):
+    if (data->fDescribe)
+      describe_variant(hf, (nIndent == 1) ? "  " : "    ", "indirected-text", "wimp_ICON_INDIRECTED|wimp_ICON_TEXT");
     get_objects(data, hf, pszStringTable, NULL, (char *) icon_data, IconIndirectTextObjectList, ELEMENTS(IconIndirectTextObjectList), nIndent, sizeof(wimp_icon_data));
     break;
   case (wimp_ICON_INDIRECTED | wimp_ICON_SPRITE):
+    if (data->fDescribe)
+      describe_variant(hf, (nIndent == 1) ? "  " : "    ", "indirected-sprite", "wimp_ICON_INDIRECTED|wimp_ICON_SPRITE");
     get_objects(data, hf, pszStringTable, NULL, (char *) icon_data, IconIndirectSpriteObjectList, ELEMENTS(IconIndirectSpriteObjectList), nIndent, sizeof(wimp_icon_data));
     break;
   case (wimp_ICON_INDIRECTED | wimp_ICON_TEXT | wimp_ICON_SPRITE):
+    if (data->fDescribe)
+      describe_variant(hf, (nIndent == 1) ? "  " : "    ", "indirected-text-and-sprite", "wimp_ICON_INDIRECTED|wimp_ICON_TEXT|wimp_ICON_SPRITE");
     get_objects(data, hf, pszStringTable, NULL, (char *) icon_data, IconIndirectTextAndSpriteObjectList, ELEMENTS(IconIndirectTextAndSpriteObjectList), nIndent, sizeof(wimp_icon_data));
     break;
   }
@@ -188,9 +200,17 @@ put_icon_data(data, pszIn, nOffset, (wimp_icon_data *) &icon->data, icon->flags)
 {
 get_objects(data, hf, pszStringTable, NULL, (char *) icon, IconObjectList, ELEMENTS(IconObjectList), 2, sizeof(wimp_icon));
 if (icon->flags & wimp_ICON_ANTI_ALIASED)
+  {
+  if (data->fDescribe)
+    describe_variant(hf, "    ", "anti-aliased", "wimp_ICON_ANTI_ALIASED");
   get_objects(data, hf, pszStringTable, NULL, (char *) icon, IconFontHandleObjectList, ELEMENTS(IconFontHandleObjectList), 2, sizeof(wimp_icon));
+  }
 else
+  {
+  if (data->fDescribe)
+    describe_variant(hf, "    ", "colours", "not-wimp_ICON_ANTI_ALIASED");
   get_objects(data, hf, pszStringTable, NULL, (char *) icon, IconColorsObjectList, ELEMENTS(IconColorsObjectList), 2, sizeof(wimp_icon));
+  }
 
 get_icon_data(data, hf, pszStringTable, (wimp_icon_data *) &icon->data, icon->flags, 2);
 }

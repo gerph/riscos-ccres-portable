@@ -2,13 +2,16 @@
 ##
 # Run the ccres conversion tests, writing a JUnitXML report.
 #
-# Three groups of tests are run:
+# Four groups of tests are run:
 #
 #   reference - each binary file in TestQueue/Res01 and TestQueue/Tem01
 #               which has a reference text in TestQueue/<dir>.ref must
 #               decode to exactly that text.
 #   roundtrip - each binary file in those directories is decoded, encoded
 #               and decoded again; both decoded texts must be identical.
+#   skeleton  - the --skeleton and --describe outputs for resources and
+#               templates encode without messages and decode back to the
+#               plain skeleton.
 #   case      - each case in tests/cases (see tests/cases/README.md) is
 #               encoded, decoded and encoded again, checking the exit
 #               status, the messages and that both binaries are identical.
@@ -359,6 +362,64 @@ function test_case() {
     return 0
 }
 
+
+##
+# Test that a skeleton (plain or annotated) converts to binary and back to
+# the plain skeleton, with no messages.
+#
+# @param $1     Option: --skeleton or --describe
+# @param $2     Kind: resource or template
+function test_skeleton() {
+    local option="$1"
+    local kind="$2"
+    local plain="${workdir}/skeleton-plain.txt"
+    local text="${workdir}/skeleton.txt"
+    local binary="${workdir}/skeleton.bin"
+    local decoded="${workdir}/skeleton.decoded.txt"
+    local errors="${workdir}/skeleton.err"
+    local rc=0
+
+    echo "\$ ccres --skeleton $kind"
+    "$ccres" --skeleton "$kind" "$plain" 2> "$errors" || rc=$?
+    check_no_asan "$errors" || return 1
+    if [[ "$rc" != 0 || -s "$errors" ]] ; then
+        cat "$errors"
+        fail_because "Writing the plain skeleton failed"
+        return 1
+    fi
+    echo "\$ ccres $option $kind"
+    "$ccres" "$option" "$kind" "$text" 2> "$errors" || rc=$?
+    check_no_asan "$errors" || return 1
+    if [[ "$rc" != 0 || -s "$errors" ]] ; then
+        cat "$errors"
+        fail_because "Writing the skeleton failed"
+        return 1
+    fi
+    echo "    $(grep -c '{' "$text") blocks, $(grep -c '^ *#@ field' "$text" || true) field descriptions"
+
+    convert "$text" "$binary" "$errors" || { check_no_asan "$errors" || return 1 ; fail_because "Encoding the skeleton failed" ; return 1 ; }
+    check_no_asan "$errors" || return 1
+    if [[ -s "$errors" ]] ; then
+        fail_because "Encoding the skeleton wrote messages to stderr"
+        return 1
+    fi
+    convert "$binary" "$decoded" "$errors" || { check_no_asan "$errors" || return 1 ; fail_because "Decoding the skeleton failed" ; return 1 ; }
+    check_no_asan "$errors" || return 1
+    if ! diff -u "$plain" "$decoded" | head -40 ; then
+        fail_because "Skeleton differs after a round trip"
+        return 1
+    fi
+    return 0
+}
+
+
+for option in --skeleton --describe ; do
+    for kind in resource template ; do
+        echo
+        start "skeleton" "${option#--} ${kind}"
+        run_test test_skeleton "$option" "$kind"
+    done
+done
 
 for dir in Res01 Tem01 ; do
     for input in "${testqueue}/${dir}"/* ; do

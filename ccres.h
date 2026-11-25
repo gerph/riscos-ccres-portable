@@ -124,6 +124,7 @@ typedef struct {
 	bool fRunning;			// see check_quit()
 	bool fThrowback;
 	bool fUnsafeLoad;
+	bool fDescribe;			// annotate decoded text with field descriptions (see Skeleton.h)
 	int returnStatus;
 	wimp_t task;
 	char *pszIn;
@@ -154,6 +155,8 @@ typedef struct {
 	object2text o2t;
 	text2object t2o;
 	char *name;
+	int size;		// size of the object body, as written by t2o (for the skeleton)
+	int version;		// object version to use in the skeleton
 } CLASSES;
 
 typedef struct {
@@ -161,6 +164,7 @@ typedef struct {
 	gadget2text g2t;
 	text2gadget t2g;
 	char *name;
+	int size;		// size of the gadget, as written by t2g (for the skeleton)
 } GADGETS;
 
 typedef struct {

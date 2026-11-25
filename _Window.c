@@ -65,33 +65,39 @@
 #include "_Window.h"
 
 static const GADGETS Gadgets[] = {
-	{class_ACTION_BUTTON,  actionbutton_g2t,  actionbutton_t2g,  "actionbutton_object" },
-	{class_ADJUSTER,       adjuster_g2t,      adjuster_t2g,      "adjuster_object"     },
-	{class_BUTTON,         button_g2t,        button_t2g,        "button_object"       },
-	{class_DISPLAY_FIELD,  displayfield_g2t,  displayfield_t2g,  "displayfield_object" },
-	{class_DRAGGABLE,      draggable_g2t,     draggable_t2g,     "draggable_object"    },
-	{class_LABEL,          label_g2t,         label_t2g,         "label_object"        },
-	{class_LABELLED_BOX,   labelledbox_g2t,   labelledbox_t2g,   "labelledbox_object"  },
-	{class_NUMBER_RANGE,   numberrange_g2t,   numberrange_t2g,   "numberrange_object"  },
-	{class_OPTION_BUTTON,  optionbutton_g2t,  optionbutton_t2g,  "optionbutton_object" },
-	{class_POP_UP,         popup_g2t,         popup_t2g,         "popup_object"        },
-	{class_RADIO_BUTTON,   radiobutton_g2t,   radiobutton_t2g,   "radiobutton_object"  },
-	{class_SCROLL_LIST,    scrolllist_g2t,    scrolllist_t2g,    "scrolllist_object"   },
-	{class_SLIDER,         slider_g2t,        slider_t2g,        "slider_object"       },
-	{class_STRING_SET,     stringset_g2t,     stringset_t2g,     "stringset_object"    },
-	{class_TABS,           tabs_g2t,          tabs_t2g,          "tabs_object"         },
-	{class_TEXT_AREA,      textarea_g2t,      textarea_t2g,      "textarea_object"     },
-	{class_TREE_VIEW,      treeview_g2t,      treeview_t2g,      "treeview_object",    },
-	{class_TOOL_ACTION,    toolaction_g2t,    toolaction_t2g,    "toolaction_object"   },
-	{class_WRITABLE_FIELD, writablefield_g2t, writablefield_t2g, "writablefield_object"},
-	{class_SCROLLBAR,       scrollbar_g2t,       scrollbar_t2g,       "scrollbar_object"      },
-	{class_IMAGEFILEGADGET, imagefilegadget_g2t, imagefilegadget_t2g, "imagefilegadget_object"},
-	{class_COLOURSWATCH,    colourswatch_g2t,    colourswatch_t2g,    "colourswatch_object"   },
-	{class_AMPLAYER,        amplayer_g2t,        amplayer_t2g,        "amplayer_object"       },
-	{class_MDNSSERVICE,     mdnsservice_g2t,     mdnsservice_t2g,     "mdnsservice_object"    },
-	{class_URLIMAGE,        urlimage_g2t,        urlimage_t2g,        "urlimage_object"       },
-	{class_DIVIDER,         divider_g2t,         divider_t2g,         "divider_object"        }
+	{class_ACTION_BUTTON,  actionbutton_g2t,  actionbutton_t2g,  "actionbutton_object", sizeof(actionbutton_object)},
+	{class_ADJUSTER,       adjuster_g2t,      adjuster_t2g,      "adjuster_object", sizeof(adjuster_object)},
+	{class_BUTTON,         button_g2t,        button_t2g,        "button_object", sizeof(button_object)},
+	{class_DISPLAY_FIELD,  displayfield_g2t,  displayfield_t2g,  "displayfield_object", sizeof(displayfield_object)},
+	{class_DRAGGABLE,      draggable_g2t,     draggable_t2g,     "draggable_object", sizeof(draggable_object)},
+	{class_LABEL,          label_g2t,         label_t2g,         "label_object", sizeof(label_object)},
+	{class_LABELLED_BOX,   labelledbox_g2t,   labelledbox_t2g,   "labelledbox_object", sizeof(labelledbox_object)},
+	{class_NUMBER_RANGE,   numberrange_g2t,   numberrange_t2g,   "numberrange_object", sizeof(numberrange_object)},
+	{class_OPTION_BUTTON,  optionbutton_g2t,  optionbutton_t2g,  "optionbutton_object", sizeof(optionbutton_object)},
+	{class_POP_UP,         popup_g2t,         popup_t2g,         "popup_object", sizeof(popup_object)},
+	{class_RADIO_BUTTON,   radiobutton_g2t,   radiobutton_t2g,   "radiobutton_object", sizeof(radiobutton_object)},
+	{class_SCROLL_LIST,    scrolllist_g2t,    scrolllist_t2g,    "scrolllist_object", sizeof(scrolllist_object)},
+	{class_SLIDER,         slider_g2t,        slider_t2g,        "slider_object", sizeof(slider_object)},
+	{class_STRING_SET,     stringset_g2t,     stringset_t2g,     "stringset_object", sizeof(stringset_object)},
+	{class_TABS,           tabs_g2t,          tabs_t2g,          "tabs_object", sizeof(tabs_object)},
+	{class_TEXT_AREA,      textarea_g2t,      textarea_t2g,      "textarea_object", sizeof(textarea_object)},
+	{class_TREE_VIEW,      treeview_g2t,      treeview_t2g,      "treeview_object", sizeof(treeview_object)},
+	{class_TOOL_ACTION,    toolaction_g2t,    toolaction_t2g,    "toolaction_object", sizeof(toolaction_object)},
+	{class_WRITABLE_FIELD, writablefield_g2t, writablefield_t2g, "writablefield_object", sizeof(writablefield_object)},
+	{class_SCROLLBAR,       scrollbar_g2t,       scrollbar_t2g,       "scrollbar_object", sizeof(scrollbar_object)},
+	{class_IMAGEFILEGADGET, imagefilegadget_g2t, imagefilegadget_t2g, "imagefilegadget_object", sizeof(imagefilegadget_object)},
+	{class_COLOURSWATCH,    colourswatch_g2t,    colourswatch_t2g,    "colourswatch_object", sizeof(colourswatch_object)},
+	{class_AMPLAYER,        amplayer_g2t,        amplayer_t2g,        "amplayer_object", sizeof(amplayer_object)},
+	{class_MDNSSERVICE,     mdnsservice_g2t,     mdnsservice_t2g,     "mdnsservice_object", sizeof(mdnsservice_object)},
+	{class_URLIMAGE,        urlimage_g2t,        urlimage_t2g,        "urlimage_object", sizeof(urlimage_object)},
+	{class_DIVIDER,         divider_g2t,         divider_t2g,         "divider_object", sizeof(divider_object)}
 };
+
+const GADGETS *window_gadgets(int *pnGadgets)
+{
+	*pnGadgets = ELEMENTS(Gadgets);
+	return Gadgets;
+}
 
 static const FLAGS WindowFlags[] = {
 	{window_GENERATE_ABOUT_TO_BE_SHOWN , "window_GENERATE_ABOUT_TO_BE_SHOWN" },

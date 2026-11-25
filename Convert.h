@@ -31,4 +31,20 @@ int ccres_finish(void);
 // Returns 0 for error, 1 otherwise.
 bool ccres_convert(DATA *data, char *pszOutFile);
 
+/*******************************************************************
+ Function:      ccres_skeleton
+ Description:   Write a text file holding one of every kind of object
+                (with every gadget) for a Resource file, or a window
+                with every kind of icon for a Templates file, with each
+                field at its zero value. With data->fDescribe set, each
+                field is annotated with '#@' comment lines describing it
+                (see describe_field in _Object.h). The text can be
+                converted back to a binary file.
+ Parameters:    data = conversion session
+                nFiletype = osfile_TYPE_RESOURCE or osfile_TYPE_TEMPLATE
+                pszOutFile = text file to write
+ Returns:       true if written, false on error (reported)
+ ******************************************************************/
+bool ccres_skeleton(DATA *data, bits nFiletype, char *pszOutFile);
+
 #endif

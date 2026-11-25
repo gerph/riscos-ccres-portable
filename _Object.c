@@ -929,6 +929,130 @@ for (n = 0; n < nObjects; n++, ObjectList++)
 }
 
 
+/* Most flag and enumeration tables described in one skeleton */
+#define DESCRIBE_TABLES_MAX 128
+
+/* Tables already described, in the order they were first used, so each
+   is written once and then referred to by its number */
+static const FLAGS *DescribedTables[DESCRIBE_TABLES_MAX];
+static int nDescribedTables;
+
+
+/*******************************************************************
+ Function:      describe_table
+ Description:   Write the '#@ values' and '#@ value' lines for a flag
+                or enumeration table, the first time it is used.
+ Parameters:    hf = file to write to
+                pszIndent = indent for the lines
+                pFlags = the table
+                nFlags = number of entries in the table
+                pszKind = "flags" or "enum"
+ Returns:       number of the table, for '#@ field ... values=<n>'
+ ******************************************************************/
+static int describe_table(FILE *hf, const char *pszIndent, const FLAGS *pFlags, int nFlags, const char *pszKind)
+{
+int n;
+
+for (n = 0; n < nDescribedTables; n++)
+  {
+  if (DescribedTables[n] == pFlags)
+    return n + 1;
+  }
+if (nDescribedTables == DESCRIBE_TABLES_MAX)
+  return 0;
+DescribedTables[nDescribedTables++] = pFlags;
+fprintf(hf, "%s#@ values %d kind=%s\n", pszIndent, nDescribedTables, pszKind);
+for (n = 0; n < nFlags; n++)
+  fprintf(hf, "%s#@ value %d 0x%x %s\n", pszIndent, nDescribedTables, (unsigned int) pFlags[n].flag, pFlags[n].pstr);
+return nDescribedTables;
+}
+
+
+void describe_variant(FILE *hf, const char *pszIndent, const char *pszName, const char *pszWhen)
+{
+fprintf(hf, "%s#@ variant %s when=%s\n", pszIndent, pszName, pszWhen);
+}
+
+
+void describe_field(FILE *hf, const char *pszIndent, const OBJECTLIST *ObjectList)
+{
+const char *pszName = ObjectList->pszEntry;
+int nValues, nButtons;
+
+switch (ObjectList->nTable)
+  {
+  case iol_MSG:
+  case iol_STRING:
+  case iol_TSTRING:
+    fprintf(hf, "%s#@ field %s type=%s", pszIndent, pszName,
+            (ObjectList->nTable == iol_MSG) ? "message" : (ObjectList->nTable == iol_STRING) ? "string" : "template-string");
+    if (((const STRINGLIST *) ObjectList)->pszLimit != NULL)
+      fprintf(hf, " limit=%s", ((const STRINGLIST *) ObjectList)->pszLimit);
+    fputs("\n", hf);
+    break;
+  case iol_FLAGS:
+  case iol_BFLAGS:
+    nValues = describe_table(hf, pszIndent, (const FLAGS *) ObjectList->pData, ObjectList->nData, "flags");
+    fprintf(hf, "%s#@ field %s type=flags bits=%d values=%d\n", pszIndent, pszName, (ObjectList->nTable == iol_FLAGS) ? 32 : 8, nValues);
+    break;
+  case iol_IFLAGS:
+    nValues = describe_table(hf, pszIndent, WimpIconFlags, ELEMENTS(WimpIconFlags), "flags");
+    nButtons = describe_table(hf, pszIndent, WimpIconType, ELEMENTS(WimpIconType), "enum");
+    fprintf(hf, "%s#@ field %s type=icon-flags values=%d buttons=%d\n", pszIndent, pszName, nValues, nButtons);
+    break;
+  case iol_ENUM:
+    nValues = describe_table(hf, pszIndent, (const FLAGS *) ObjectList->pData, ObjectList->nData, "enum");
+    fprintf(hf, "%s#@ field %s type=enum values=%d\n", pszIndent, pszName, nValues);
+    break;
+  case iol_CMP:
+    nValues = describe_table(hf, pszIndent, CmpFlags, ELEMENTS(CmpFlags), "enum");
+    fprintf(hf, "%s#@ field %s type=component values=%d\n", pszIndent, pszName, nValues);
+    break;
+  case iol_OSCOL:
+    nValues = describe_table(hf, pszIndent, OsColours, ELEMENTS(OsColours), "enum");
+    fprintf(hf, "%s#@ field %s type=os-colour values=%d\n", pszIndent, pszName, nValues);
+    break;
+  case iol_WCOL:
+  case iol_BCOLS:
+    nValues = describe_table(hf, pszIndent, WimpColour, ELEMENTS(WimpColour), "enum");
+    fprintf(hf, "%s#@ field %s type=wimp-colour values=%d\n", pszIndent, pszName, nValues);
+    if (ObjectList->nTable == iol_BCOLS)
+      fprintf(hf, "%s#@ field %s type=wimp-colour values=%d\n", pszIndent, (const char *) ObjectList->pData, nValues);
+    break;
+  case iol_BOX:
+    fprintf(hf, "%s#@ field %s type=box\n", pszIndent, pszName);
+    break;
+  case iol_COORD:
+    fprintf(hf, "%s#@ field %s type=coord\n", pszIndent, pszName);
+    break;
+  case iol_BITS:
+    fprintf(hf, "%s#@ field %s type=%s\n", pszIndent, pszName,
+            (ObjectList->nData == bits_ACTION) ? "action" : (ObjectList->nData == bits_EVAL) ? "expression" : "bits");
+    break;
+  case iol_INT:
+    fprintf(hf, "%s#@ field %s type=int\n", pszIndent, pszName);
+    break;
+  case iol_SHORT:
+    fprintf(hf, "%s#@ field %s type=short\n", pszIndent, pszName);
+    break;
+  case iol_BYTE:
+    fprintf(hf, "%s#@ field %s type=byte\n", pszIndent, pszName);
+    break;
+  case iol_SPRITE:
+    fprintf(hf, "%s#@ field %s type=sprite-area\n", pszIndent, pszName);
+    break;
+  case iol_CHARPTR:
+    fprintf(hf, "%s#@ field %s type=fixed-string size=%d%s\n", pszIndent, pszName,
+            (ObjectList->nData < 0) ? -ObjectList->nData - 1 : ObjectList->nData,
+            (ObjectList->nData < 0) ? " terminated" : "");
+    break;
+  case iol_ESG:
+    fprintf(hf, "%s#@ field %s type=esg\n", pszIndent, pszName);
+    break;
+  }
+}
+
+
 void get_objects(DATA *data, FILE * hf, char *pszStringTable, char *pszMessageTable, const char *objectP, const OBJECTLIST *ObjectList, int nObjects, int nIndent, int cbObject)
 {
 char *pszIndent;
@@ -1076,6 +1200,8 @@ for (n = 0; n < nObjects; n++, ++ObjectList)
         error(data, "Unknown iol_ value (%d)", ObjectList->nTable);
         break;
       }
+    if (data->fDescribe)
+      describe_field(hf, pszIndent, ObjectList);
     }
   }
 }

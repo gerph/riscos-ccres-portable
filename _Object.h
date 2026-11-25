@@ -28,6 +28,39 @@
 
 void put_objects(DATA *data, char *pszIn, int nOffset, char *object, const OBJECTLIST *Objectlist, int nObjects);
 void get_objects(DATA *data, FILE * hf, char *pszStringTable, char *pszMessageTable, const char *objectP, const OBJECTLIST *ObjectList, int nObjects, int nIndent, int cbObject);
+
+/*******************************************************************
+ Function:      describe_field
+ Description:   Write '#@' comment lines describing a field which has
+                just been written, for --describe. The lines are:
+                  #@ values <n> kind=flags|enum
+                  #@ value <n> <hex value> <name>
+                for each flag or enumeration table the first time it
+                is used, followed by:
+                  #@ field <name> type=<type> [key=value ...]
+                where the keys are limit= (the limit or size field of a
+                string), bits= (width of flags), values= and buttons=
+                (table numbers), size= (characters in a fixed string)
+                and the word 'terminated'.
+ Parameters:    hf = file to write to
+                pszIndent = indent of the field
+                ObjectList = the field's entry in its object list
+ Returns:       none
+ ******************************************************************/
+void describe_field(FILE *hf, const char *pszIndent, const OBJECTLIST *ObjectList);
+
+/*******************************************************************
+ Function:      describe_variant
+ Description:   Write a '#@ variant <name> when=<condition>' comment
+                line, for --describe, saying which form of a block the
+                fields that follow belong to.
+ Parameters:    hf = file to write to
+                pszIndent = indent of the block's fields
+                pszName = short name of the variant (no spaces)
+                pszWhen = condition for the variant (no spaces)
+ Returns:       none
+ ******************************************************************/
+void describe_variant(FILE *hf, const char *pszIndent, const char *pszName, const char *pszWhen);
 char *next_object(char ** pszIn, char *pszEnd);
 char *object_end(DATA *data, char *pszIn, char *pszEnd);
 void object_text2resource(DATA *data, FILE * hf, char *pszIn, char *pszOut, const CLASSES *pClass);

@@ -45,6 +45,8 @@
 #include "Error.h"
 #include "Library.h"
 #include "Utils.h"
+#include "Template.h"
+#include "Skeleton.h"
 
 #include "_ColourDbox.h"
 #include "_ColourMenu.h"
@@ -65,22 +67,22 @@
 #include "_UpdateCheck.h"
 
 static const CLASSES Classes[] = {
-	{ColourDbox_ClassSWI, colourdbox_g2t, colourdbox_t2g, "colourdbox_object"},
-	{ColourMenu_ClassSWI, colourmenu_g2t, colourmenu_t2g, "colourmenu_object"},
-	{DCS_ClassSWI       , dcs_g2t       , dcs_t2g       , "dcs_object"       },
-	{FileInfo_ClassSWI  , fileinfo_g2t  , fileinfo_t2g  , "fileinfo_object"  },
-	{FontDbox_ClassSWI  , fontdbox_g2t  , fontdbox_t2g  , "fontdbox_object"  },
-	{FontMenu_ClassSWI  , fontmenu_g2t  , fontmenu_t2g  , "fontmenu_object"  },
-	{Iconbar_ClassSWI   , iconbar_g2t   , iconbar_t2g   , "iconbar_object"   },
-	{Menu_ClassSWI      , menu_g2t      , menu_t2g      , "menu_object"      },
-	{PrintDbox_ClassSWI , printdbox_g2t , printdbox_t2g , "printdbox_object" },
-	{ProgInfo_ClassSWI  , proginfo_g2t  , proginfo_t2g  , "proginfo_object"  },
-	{Quit_ClassSWI      , quit_g2t      , quit_t2g      , "quit_object"      },
-	{SaveAs_ClassSWI    , saveas_g2t    , saveas_t2g    , "saveas_object"    },
-	{Scale_ClassSWI     , scale_g2t     , scale_t2g     , "scale_object"     },
-	{Window_ClassSWI    , window_g2t    , window_t2g    , "window_object"    },
-	{OptionsWindow_ClassSWI, optionswindow_g2t, optionswindow_t2g, "optionswindow_object"},
-	{UpdateCheck_ClassSWI  , updatecheck_g2t  , updatecheck_t2g  , "updatecheck_object"  }
+	{ColourDbox_ClassSWI, colourdbox_g2t, colourdbox_t2g, "colourdbox_object", sizeof(colourdbox_object), 100},
+	{ColourMenu_ClassSWI, colourmenu_g2t, colourmenu_t2g, "colourmenu_object", sizeof(colourmenu_object), 100},
+	{DCS_ClassSWI       , dcs_g2t       , dcs_t2g       , "dcs_object", sizeof(dcs_object), 100},
+	{FileInfo_ClassSWI  , fileinfo_g2t  , fileinfo_t2g  , "fileinfo_object", sizeof(fileinfo_object), 100},
+	{FontDbox_ClassSWI  , fontdbox_g2t  , fontdbox_t2g  , "fontdbox_object", sizeof(fontdbox_object), 100},
+	{FontMenu_ClassSWI  , fontmenu_g2t  , fontmenu_t2g  , "fontmenu_object", sizeof(fontmenu_object), 100},
+	{Iconbar_ClassSWI   , iconbar_g2t   , iconbar_t2g   , "iconbar_object", sizeof(iconbar_object), 100},
+	{Menu_ClassSWI      , menu_g2t      , menu_t2g      , "menu_object", sizeof(menu_object_base), 102},
+	{PrintDbox_ClassSWI , printdbox_g2t , printdbox_t2g , "printdbox_object", sizeof(printdbox_object), 100},
+	{ProgInfo_ClassSWI  , proginfo_g2t  , proginfo_t2g  , "proginfo_object", sizeof(proginfo_object), 101},
+	{Quit_ClassSWI      , quit_g2t      , quit_t2g      , "quit_object", sizeof(quit_object), 100},
+	{SaveAs_ClassSWI    , saveas_g2t    , saveas_t2g    , "saveas_object", sizeof(saveas_object), 100},
+	{Scale_ClassSWI     , scale_g2t     , scale_t2g     , "scale_object", sizeof(scale_object), 100},
+	{Window_ClassSWI    , window_g2t    , window_t2g    , "window_object", sizeof(window_object_base), 102},
+	{OptionsWindow_ClassSWI, optionswindow_g2t, optionswindow_t2g, "optionswindow_object", sizeof(optionswindow_object), 100},
+	{UpdateCheck_ClassSWI  , updatecheck_g2t  , updatecheck_t2g  , "updatecheck_object", sizeof(updatecheck_object), 100}
 };
 
 
@@ -273,27 +275,6 @@ fConverted = true;
 
 return fConverted;
 }
-
-#define template_NO_FONTS 	((bits)-1)
-#define template_TYPE_WINDOW	((bits)0x1u)
-
-typedef struct {
-	bits font_offset; /* Can be template_NO_FONTS too */
-	bits reserved[3];
-} template_header;
-
-typedef struct {
-	bits offset;
-	bits size;
-	int type;          /* See template_TYPE_* */
-	char name[12];
-} template_index;
-
-typedef struct {
-	bits x_point_size;
-	bits y_point_size;
-	char font_name[40];
-} template_font_data;
 
 // Returns the number of windows and the maximum number of icons used in
 // those windows (not the total number of icons !).
@@ -624,4 +605,34 @@ switch (data->nFiletypeIn)
   }
 
 return false;
+}
+
+
+        bool ccres_skeleton(DATA *data, bits nFiletype, char *pszOutFile)
+//      ================================================================
+{
+char *pImage;
+int cbImage;
+bool fBuilt, fConverted;
+
+if (nFiletype == osfile_TYPE_RESOURCE)
+  fBuilt = skeleton_resource(Classes, ELEMENTS(Classes), &pImage, &cbImage);
+else
+  fBuilt = skeleton_template(&pImage, &cbImage);
+if (!fBuilt)
+  {
+  error(data, "Unable to allocate memory for the skeleton");
+  return false;
+  }
+
+/* Decode the image as though it had been loaded */
+data->pszIn = pImage;
+data->cbIn = cbImage;
+data->nFiletypeIn = nFiletype;
+data->nFiletypeOut = osfile_TYPE_TEXT;
+fConverted = ccres_convert(data, pszOutFile);
+data->pszIn = NULL;
+data->cbIn = 0;
+MyFree(pImage);
+return fConverted;
 }

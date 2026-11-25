@@ -27,6 +27,17 @@ Changes by Gerph:
   never read beyond.
 - Added test cases for each of these, and a time limit on each conversion
   in the test runner.
+- CMD.c, Skeleton.c: added 'ccres --skeleton resource|template <file>',
+  which writes a text file holding one of every kind of object (with a
+  window holding every gadget and a keyboard shortcut, and a menu with a
+  text and a sprite entry), or a window with every kind of icon, each
+  field at its zero value.  'ccres --describe' writes the same with '#@'
+  comments giving each field's type, its limit field, and the names and
+  values of its flags or enumeration, which is used to generate the
+  documentation.  Both convert back to binary unchanged, which the tests
+  check.  The class and gadget tables now hold each structure's size, and
+  each class's usual version.
+- Template.h: the Templates file structures, moved from Convert.c.
 
 v1.14 25 Nov 2026
 ~~~~~~~~~~~~~~~~~

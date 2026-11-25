@@ -119,6 +119,13 @@ n = (cbObject >= (int) (offsetof(menu_object_base, entry_count) + sizeof(int))) 
 for (entry = (menu_entry_object *) (menu + 1); n > 0; n--, entry++)
   {
   fprintf(hf, "  Entry {\n    cmp:%d\n", (int) entry->cmp);
+  if (data->fDescribe)
+    {
+    if (entry->flags & menu_ENTRY_IS_SPRITE)
+      describe_variant(hf, "    ", "sprite-entry", "menu_ENTRY_IS_SPRITE");
+    else
+      describe_variant(hf, "    ", "text-entry", "not-menu_ENTRY_IS_SPRITE");
+    }
   MenuEntryObjectList[0].nTable = (entry->flags & menu_ENTRY_IS_SPRITE) ? iol_STRING : iol_MSG;		// text or sprite?
   get_objects(data, hf, pszStringTable, pszMessageTable, (const char *)entry, MenuEntryObjectListFlags, ELEMENTS(MenuEntryObjectListFlags), 2, sizeof(menu_entry_object));
   get_objects(data, hf, pszStringTable, pszMessageTable, (const char *)entry, MenuEntryObjectList, ELEMENTS(MenuEntryObjectList), 2, sizeof(menu_entry_object));

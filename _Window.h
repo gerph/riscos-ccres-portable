@@ -49,4 +49,13 @@ void window_g2t(DATA *data, FILE * hf, toolbox_resource_file_object_base * objec
 int window_text2template(DATA *data, char *pszIn, int nOffset, wimp_window_base * object);
 void window_template2text(DATA *data, FILE * hf, char *pszBuff);
 
+/*******************************************************************
+ Function:      window_gadgets
+ Description:   Give the table of the gadget classes known in windows,
+                so that a skeleton of each can be built.
+ Parameters:    pnGadgets = updated with the number of entries
+ Returns:       pointer to the table
+ ******************************************************************/
+const GADGETS *window_gadgets(int *pnGadgets);
+
 #endif
