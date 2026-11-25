@@ -742,10 +742,20 @@ wimp_window {<br/>
    <change>Corrected a missing text_and_sprite.text: column in indirected text-and-sprite Template handling.</change>
    <change>Made string allocation respect explicit limit values and warn when the limit is too small for the supplied text or sprite string.</change>
   </revision>
-  <revision number="7" author="Gerph" date="26 Jun 2026" title="Initial canonical CCres reference">
+  <revision number="7" author="Phil Pemberton" date="30 Mar 2026" title="Portable command-line version">
+   <change>Ported the command-line tool to Linux and other non-RISC OS systems, with the OSLib 7.00 headers adjusted so that structure layouts match the 32-bit file formats on 64-bit hosts.</change>
+   <change>Corrected strings containing top-bit-set characters being ended early on hosts where char is signed.</change>
+   <change>Removed leftover debugging output, and the abort after ten syntax errors.</change>
+   <change>Corrected compiler warnings found on 64-bit hosts.</change>
+   <change>Updated a stale test reference file, and added build instructions.</change>
+  </revision>
+  <revision number="8" author="Gerph" date="26 Jun 2026" title="Initial canonical CCres reference">
    <change>Created the canonical PRM-in-XML documentation for CCres, covering the standalone command-line tool, file recognition, the common text grammar, the Toolbox Resource textual format, and the Wimp Template textual format from the current implementation.</change>
   </revision>
-  <revision number="8" author="Gerph" date="25 Nov 2026" title="Version 1.14 released">
+  <revision number="9" author="Gerph" date="25 Nov 2026" title="Version 1.14 released">
+   <change>Corrected Wimp icon button type names, such as wimp_BUTTON_RADIO, being rejected when followed by other icon flags.</change>
+   <change>Limited Resource file decoding to the size actually stored for each object and gadget, so that older, shorter gadgets and truncated object bodies no longer cause crashes.</change>
+   <change>Added support for OptionsWindow and UpdateCheck objects, and for the Scrollbar, ImageFileGadget, ColourSwatch, AMPlayer, MDNSService, URLImage and Divider gadgets.</change>
    <change>Corrected heap corruption when converting Template text whose indirected title or icon buffers were larger than a fixed estimate, such as a window title buffer of 32 bytes or more in a window without icons.</change>
    <change>Corrected string table overflow for very long strings and large buffers.</change>
    <change>Made the warning for a too-small Template size value a warning only, so it no longer makes the conversion fail.</change>
